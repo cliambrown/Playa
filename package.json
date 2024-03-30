@@ -1,0 +1,29 @@
+{
+  "name": "playa",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@morev/vue-transitions": "^3.0.2",
+    "@tauri-apps/api": "^1",
+    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#v1",
+    "tauri-plugin-window-state-api": "github:tauri-apps/tauri-plugin-window-state#v1",
+    "vue": "^3.3.4",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "@tauri-apps/cli": "^1.5.11",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.0.0"
+  }
+}
