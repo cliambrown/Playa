@@ -12,6 +12,7 @@
   "dependencies": {
     "@morev/vue-transitions": "^3.0.2",
     "@tauri-apps/api": "^1",
+    "@vuepic/vue-datepicker": "^8.3.1",
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql#v1",
     "tauri-plugin-window-state-api": "github:tauri-apps/tauri-plugin-window-state#v1",
     "vue": "^3.3.4",

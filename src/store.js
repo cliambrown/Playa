@@ -21,6 +21,8 @@ export const nullItem = {
 
 export const store = reactive({
   
+  banner_dir_url: null,
+  poster_dir_url: null,
   db: null,
   loading: false,
   loading_msg: null,
@@ -52,6 +54,7 @@ export const store = reactive({
     shows_with_new_eps: new Set([]),
     new_episodes_count: 0,
     deleted_shows_count: 0,
+    deleted_episodes_count: 0,
     new_movies_count: 0,
     deleted_movies_count: 0,
   },
@@ -61,6 +64,7 @@ export const store = reactive({
     this.scan_results.shows_with_new_eps.clear();
     this.scan_results.new_episodes_count = 0;
     this.scan_results.deleted_shows_count = 0;
+    this.scan_results.deleted_episodes_count = 0;
     this.scan_results.new_movies_count = 0;
     this.scan_results.deleted_movies_count = 0;
   },
@@ -133,7 +137,7 @@ export const store = reactive({
       this.loading = false;
       return false;
     }
-    console.log('scan_shows response', response);
+    console.log('scan_shows', response);
     // Add shows
     let showDirNames = useGet(response, 'show_dir_names', []);
     let showsByDirName = {};
@@ -141,7 +145,7 @@ export const store = reactive({
     for (let i=0; i<showDirL; i++) {
       const dirName = showDirNames[i].show_dir_name;
       showDirNames[i] = dirName;
-      let show = await this.showFromDirName(dirName);
+      let show = await this.showFromDirName(dirName, true);
       showsByDirName[dirName] = show;
     }
     // Add episodes
@@ -164,8 +168,7 @@ export const store = reactive({
     for (const showID of this.show_ids) {
       this.shows[showID].setCurrentEpToNewEp();
     }
-    this.selectFirstHomeItem();
-    this.loading_msg = `Scan complete: ${this.scan_results.new_shows.size} new shows, ${this.scan_results.shows_with_new_eps.size} with new episodes, ${this.scan_results.deleted_shows_count} shows deleted`;
+    this.loading_msg = `Scan complete: ${this.scan_results.new_shows.size} new show${this.scan_results.new_shows.size == 1 ? '' : 's'}, ${this.scan_results.shows_with_new_eps.size} show${this.scan_results.shows_with_new_eps.size == 1 ? '' : 's'} added episodes, ${this.scan_results.deleted_shows_count} show${this.scan_results.deleted_shows_count == 1 ? '' : 's'} deleted, ${this.scan_results.deleted_episodes_count} episode${this.scan_results.deleted_episodes_count == 1 ? '' : 's'} deleted`;
     this.loading = false;
   },
   
@@ -192,7 +195,7 @@ export const store = reactive({
       this.loading = false;
       return false;
     }
-    console.log('scan_movies response', response);
+    console.log('scan_movies', response);
     if (!response || !Array.isArray (response)) {
       window.alert("Invalid response");
       return false;
@@ -255,11 +258,11 @@ export const store = reactive({
   
   // If a show already exists with that dirName, returns the show
   // Else, adds the show to DB and store
-  async showFromDirName(dirName) {
+  async showFromDirName(dirName, fromScan = false) {
     if (!this.db) return false;
     let show = this.findShowByDirName(dirName);
     if (show) return show;
-    show = new Show({dir_name: dirName});
+    show = new Show({dir_name: dirName, is_new: fromScan});
     await show.saveToDB();
     this.shows[show.id] = show;
     this.show_ids.push(show.id);
@@ -315,6 +318,7 @@ export const store = reactive({
       for (const row of response) {
         let episode = new Episode({id: row.id, show_id: row.show_id});
         episode.delete();
+        store.scan_results.deleted_episodes_count++;
       }
     }
     console.log('pruneMissingEpisodes', response);

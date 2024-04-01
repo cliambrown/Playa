@@ -60,12 +60,17 @@ async function fetchNewTvdbToken(store) {
   return token.token;
 }
 
-export async function searchShow(store, showName) {
-  if (!showName) return false;
+async function getToken(store) {
   let token = await useGetExistingTvdbToken(store);
   if (!token) token = await fetchNewTvdbToken(store);
+  return token;
+}
+
+export async function searchShow(store, showName) {
+  if (!showName) return false;
+  let token = await getToken(store);
   if (!token) return false;
-  const url = 'https://api4.thetvdb.com/v4/search?q=' + showName + '&type=series';
+  const url = 'https://api4.thetvdb.com/v4/search?q=' + encodeURI(showName) + '&type=series';
   const response = await fetch(url, {
     method: 'GET',
     headers: { Authorization: 'Bearer ' + token },
@@ -73,4 +78,53 @@ export async function searchShow(store, showName) {
   });
   console.log('searchShow', response);
   return getResponseData(response);
+}
+
+export async function getEpisodes(store, tvdbID) {
+  if (!tvdbID) return false;
+  let token = await getToken(store);
+  if (!token) return false;
+  const url = 'https://api4.thetvdb.com/v4/series/' + encodeURI(tvdbID) + '/episodes/default/eng';
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Authorization: 'Bearer ' + token },
+    timeout: 10,
+  });
+  console.log('getEpisodes', response);
+  const responseData = getResponseData(response);
+  if (
+    !responseData
+    || !responseData.hasOwnProperty('episodes')
+    || !Array.isArray(responseData.episodes)
+  ) {
+    return false;
+  }
+  return responseData.episodes;
+}
+
+export async function getBanners(store, tvdbID) {
+  if (!tvdbID) return false;
+  let token = await getToken(store);
+  if (!token) return false;
+  console.log('getBanners')
+  const url = 'https://api4.thetvdb.com/v4/series/' + encodeURI(tvdbID) + '/extended';
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Authorization: 'Bearer ' + token },
+    timeout: 10,
+  });
+  console.log('getEpisodes', response);
+  const responseData = getResponseData(response);
+  if (
+    !responseData
+    || !responseData.hasOwnProperty('artworks')
+    || !Array.isArray(responseData.artworks)
+  ) {
+    return false;
+  }
+  const artworks = [];
+  for (const artwork of responseData.artworks) {
+    if (parseInt(artwork.type) === 1) artworks.push(artwork);
+  }
+  return artworks;
 }

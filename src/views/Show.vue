@@ -1,39 +1,71 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch, onBeforeMount, onBeforeUnmount } from 'vue';
+import { invoke } from '@tauri-apps/api/tauri';
 import { open } from '@tauri-apps/api/shell';
+import { save } from '@tauri-apps/api/dialog';
 import { TransitionExpand } from '@morev/vue-transitions';
 import { store } from '../store.js'
-import { useGet, useOpenOrHomeDir } from '../helpers';
-import { searchShow } from '../tvdb';
+import { useGet, useOpenOrHomeDir, useAlphaName } from '../helpers';
+import { searchShow, getEpisodes, getBanners } from '../tvdb';
 import Button from '../components/Button.vue';
 import EpisodeCard from '../components/EpisodeCard.vue';
+import InputWithLabel from '../components/InputWithLabel.vue';
+import DirSelect from '../components/DirSelect.vue';
 
 let updateTimeoutId = null;
 let updateMsgTimoutId = null;
+let updateFilterStrTimeoutId = null;
 
 const showEdit = ref(false);
 const showMatches = ref(true);
+// const bannerAssetUrl = ref('');
+const bannerSrc = ref('url');
+const bannerSrcUrl = ref('');
+const bannerSrcFilepath = ref('');
+const banners = ref([]);
+const filterStr = ref('');
+const filterStrDebounced = ref('');
 
-const show = computed(() => {
-  return store.shows[store.route.params.id]
+const show = computed(() => store.shows[store.route.params.id]);
+const bannerAssetUrl = computed(() => {
+  return store.banner_dir_url +
+    (show.value
+      ? show.value.banner_filename
+      : 'blank.jpg');
 });
 
-function handleUpdate() {
+// const bannerFilename = computed(() => show.value ? show.value.banner_filename : null);
+// const localDataDir = computed(() => store.local_data_dir);
+// async function setBannerAssetUrl() {
+//   if (!localDataDir.value) return false;
+//   let filename = bannerFilename.value;
+//   if (!filename || typeof filename !== 'string') filename = 'blank.jpg';
+//   const filePath = await join(localDataDir.value, 'banners', filename);
+//   bannerAssetUrl.value = convertFileSrc(filePath);
+//   console.log(bannerAssetUrl.value)
+// }
+// setBannerAssetUrl(show.value ? show.value.banner_filename : null);
+// watch(
+//   [bannerFilename, localDataDir],
+//   newVal => setBannerAssetUrl()
+// )
+
+async function handleUpdate() {
   if (!store.loaded_from_db) return false;
   window.clearTimeout(updateTimeoutId);
   window.clearTimeout(updateMsgTimoutId);
   store.loading_msg = 'Waiting...'
   updateTimeoutId = window.setTimeout(async () => {
-    store.loading = true;
     store.loading_msg = 'Saving...'
     const response = await show.value.saveToDB();
-    if (parseInt(useGet(response, 'rowsAffected')))
+    console.log('show handleUpdate', response);
+    if (parseInt(useGet(response, 'rowsAffected'))) {
       store.loading_msg = 'Show saved';
-    store.loading = false;
-    updateMsgTimoutId = window.setTimeout(() => {
-      store.loading_msg = ''
-    }, 5000);
-  }, 250);
+      updateMsgTimoutId = window.setTimeout(() => {
+        store.loading_msg = ''
+      }, 5000);
+    }
+  }, 500);
 }
 
 function openTvdbSlug(slug) {
@@ -41,175 +73,11 @@ function openTvdbSlug(slug) {
 }
 
 async function searchShowInTvdb() {
-  // if (!show || !show.value.name) return false;
-  // const matches = searchShow(store, show.value.name);
-  // if (!matches || !Array.isArray(matches)) return false;
-  // show.value.tvdb_matches = matches;
-  // showMatches.value = true;
-  show.value.tvdb_matches = [
-    {
-        "objectID": "series-194031",
-        "aliases": [
-            "Bobs Burgers",
-            "Bob's Burgers (2011)",
-            "Bob Burgerfalodája",
-            "Бургеры Боба"
-        ],
-        "country": "usa",
-        "id": "series-194031",
-        "image_url": "https://artworks.thetvdb.com/banners/posters/194031-2.jpg",
-        "name": "Bob's Burgers",
-        "first_air_time": "2011-01-09",
-        "overview": "Bob's Burgers follows a third-generation restaurateur, Bob, as he runs Bob's Burgers with the help of his wife and their three kids. Bob and his quirky family have big ideas about burgers, but fall short on service and sophistication. Despite the greasy counters, lousy location and a dearth of customers, Bob and his family are determined to make Bob's Burgers \"grand re-re-re-opening\" a success.",
-        "primary_language": "eng",
-        "primary_type": "series",
-        "status": "Continuing",
-        "type": "series",
-        "tvdb_id": "194031",
-        "year": "2011",
-        "slug": "bobs-burgers",
-        "overviews": {
-            "ces": "Seznamme se s Belcherovými. Pětičlenná rodinka vlastnící restauraci, která je známá přípravou hamburgerů na mnoho způsobů. Hlavní hrdina Bob to nemá nejlehčí, musí se starat o rodinnou restauraci, vychovávat 3 nezvladatelné děti (Tina, Gen, Louise) a plnit své manželce Lindě po čem zrovna touží. Manželka se mu snaží pomáhat, stejně jako jeho nejstarší dcera Tina, která se z dětí vyvedla nejlépe. Kdežto mladší Gen a nejmladší Louise se snaží pouze připoutat na sebe pozornost a nadělat co nejvíce nepořádku. V každé epizodě se divákovi dostane nějaká ta porce zábavy a vtipu, takže oblíbit si novou seriálovou rodinku jistě nebude problém.",
-            "deu": "In einem heruntergekommenen Stadtteil betreiben Bob und seine Familie ein kleines Burgerrestaurtant. Auch wenn die Geschäfte derzeit ziemlich mies laufen ist Bob überzeugt davon, mit seinen Burgern irgendwann einmal den ganz großen Erfolg zu erzielen. Doch vorher machen ihm seine Frau und Kinder das Leben schwer ...",
-            "eng": "Bob's Burgers follows a third-generation restaurateur, Bob, as he runs Bob's Burgers with the help of his wife and their three kids. Bob and his quirky family have big ideas about burgers, but fall short on service and sophistication. Despite the greasy counters, lousy location and a dearth of customers, Bob and his family are determined to make Bob's Burgers \"grand re-re-re-opening\" a success.",
-            "fin": "Komediallinen animaatiosarja Bob-nimisestä miehestä, hänen perheestään sekä räpistelevästä hampurilaismestasta. Huolimatta surkeasta sijainnista ja lukemattomista vastoinkäymisistä Bob ja hänen rakastettavan kummallinen kotijoukkonsa on vakuuttunut siitä, että juuri burgerit ovat avain menestykseen.",
-            "fra": "Bob Belcher tient un petit restaurant de burgers dans une ville américaine, aidé par sa femme, l'exubérante Linda, ainsi que ses trois enfants : Tina, l'aînée passionnée par les chevaux et les postérieurs, Gene, le garçon excentrique qui ne recule jamais devant un challenge, et enfin Louise, la petite dernière au caractère bien trempé toujours en train de faire des manigances.",
-            "hun": "Az amerikai sitcom rajzfilmsorozat a Belcher családról és az általuk vezetett hamburgerbüféről szól. Bob Belcher a burgerfaloda tulaja, és büféjét a világon (szinte) mindennél jobban imádja. Linda Bob feleségeként társa az életben és az üzletben; mindig igyekszik új dolgokat kipróbálni még akkor is, ha nem tudja, mi sül ki a dologból.",
-            "ita": "La serie ruota attorno alle divertenti vicende di Bob, gestore del ristorante Bob's Burger ma totalmente inesperto e pasticcione, e della sua famiglia, formata da moglie e tre figli.",
-            "nor": "I denne populære animerte komiserien følger vi Bob Belcher, som sammen med sin hustru og deres tre barn driver restauranten Bob's Burger. Restauranten er familiens siste håp for å holde sammen.",
-            "por": "Uma série de desenhos animados que segue o dia a dia de um homem da classe trabalhadora, Bob, e da sua família peculiar. Juntos, gerem o restaurante Bob's Burgers.",
-            "pt": "A série acompanha Bob da terceira geração de uma família de proprietários de restaurantes, responsável por administrar a hamburgueria \"Bob's Burgers\" junto com sua esposa e seus três filhos. Bob e sua peculiar família têm grandes ideias para os hambúrgueres, mas estão pobres em serviço e em sofisticação.",
-            "rus": "«Закусочная Боба» — это забегаловка по соседству с крематорием, которой заправляет Боб Белчер со своей женой и тремя детьми. Сам Боб знает всё о приготовлении самых вкусных бургеров в округе, но такие понятия, как «обслуживание клиентов», «санитарные нормы» и «продвижение товара», даются ему с большим трудом. Но на то и существует семья, чтобы... Хотя нет, не тот случай: семья на рабочем месте — помощник тот ещё.",
-            "spa": "Bob's Burgers muestra la vida de un cocinero de tercera generación, Bob, trabajando en su hamburguesería Bob's Burgers con la ayuda de su mujer y sus tres hijos. Bob y su peculiar familia tienen grandes ideas sobre hamburguesas, pero les falta un mejor y más sofisticado servicio. A pesar del local grasiento, la terrible localización y la escasez de clientela, Bob y su familia están decididos a hacer de la \"gran re-re-re-apertura\" de Bob's Burgers un éxito.",
-            "swe": "“Bob’s Burgers” följer den underbart skandalösa familjen Belcher, med unika talanger för att förvandla de mest alldagliga situationer till komplett kaos.",
-            "tur": "Karısı ve üç çocuğunun yardımıyla işlettiği hamburger restoranı sahibi Bob ve ailesinin hikayesini konu alan animasyon dizisidir.",
-            "zhtw": "本劇圍繞Belcher一家和他們在Ocean Avenue上的漢堡店展開。創作者Loren Bouchard曾表示漢堡店位於美國東北部某個海邊小鎮。然而一些評論家根據「It Snakes a Village」推斷劇中的小鎮應該坐落在新澤西南部。 Bob的漢堡店是一座兩層的綠色樓房，一樓是漢堡店，二樓則是Bob一家生活的地方。店面周圍有不少其他店鋪，其中「It's Your Funeral Home and Crematorium」的主人Mort是漢堡店的常客。\r\n\r\n"
-        },
-        "translations": {
-            "bul": "Бургерите на Боб",
-            "ces": "Bobovy burgery",
-            "deu": "Bob's Burgers",
-            "eng": "Bob's Burgers",
-            "fin": "Bob's Burgers",
-            "fra": "Bob's Burgers",
-            "heb": "הבורגרים של בוב",
-            "hun": "Bob Burger Falodája",
-            "ita": "Bob's Burgers",
-            "por": "Bob's Burgers",
-            "pt": "Bob's Burgers",
-            "rus": "Закусочная Боба",
-            "spa": "Bob's Burgers",
-            "swe": "Bob's Burgers",
-            "tur": "Bob's Burgers",
-            "zhtw": "開心漢堡店"
-        },
-        "network": "FOX",
-        "remote_ids": [
-            {
-                "id": "10.5240/7312-38DB-5B25-19BB-BDCF-E",
-                "type": 13,
-                "sourceName": "EIDR"
-            },
-            {
-                "id": "tt1561755",
-                "type": 2,
-                "sourceName": "IMDB"
-            },
-            {
-                "id": "32726",
-                "type": 12,
-                "sourceName": "TheMovieDB.com"
-            },
-            {
-                "id": "EP01279298",
-                "type": 3,
-                "sourceName": "TMS (Zap2It)"
-            }
-        ],
-        "thumbnail": "https://artworks.thetvdb.com/banners/posters/194031-2_t.jpg"
-    },
-    {
-        "objectID": "series-194031",
-        "aliases": [
-            "Bobs Burgers",
-            "Bob's Burgers (2011)",
-            "Bob Burgerfalodája",
-            "Бургеры Боба"
-        ],
-        "country": "usa",
-        "id": "series-194031",
-        "image_url": "https://artworks.thetvdb.com/banners/posters/194031-2.jpg",
-        "name": "Bob's Burgers",
-        "first_air_time": "2011-01-09",
-        "overview": "Bob's Burgers follows a third-generation restaurateur, Bob, as he runs Bob's Burgers with the help of his wife and their three kids. Bob and his quirky family have big ideas about burgers, but fall short on service and sophistication. Despite the greasy counters, lousy location and a dearth of customers, Bob and his family are determined to make Bob's Burgers \"grand re-re-re-opening\" a success.",
-        "primary_language": "eng",
-        "primary_type": "series",
-        "status": "Continuing",
-        "type": "series",
-        "tvdb_id": "194031",
-        "year": "2012",
-        "slug": "bobs-burgers",
-        "overviews": {
-            "ces": "Seznamme se s Belcherovými. Pětičlenná rodinka vlastnící restauraci, která je známá přípravou hamburgerů na mnoho způsobů. Hlavní hrdina Bob to nemá nejlehčí, musí se starat o rodinnou restauraci, vychovávat 3 nezvladatelné děti (Tina, Gen, Louise) a plnit své manželce Lindě po čem zrovna touží. Manželka se mu snaží pomáhat, stejně jako jeho nejstarší dcera Tina, která se z dětí vyvedla nejlépe. Kdežto mladší Gen a nejmladší Louise se snaží pouze připoutat na sebe pozornost a nadělat co nejvíce nepořádku. V každé epizodě se divákovi dostane nějaká ta porce zábavy a vtipu, takže oblíbit si novou seriálovou rodinku jistě nebude problém.",
-            "deu": "In einem heruntergekommenen Stadtteil betreiben Bob und seine Familie ein kleines Burgerrestaurtant. Auch wenn die Geschäfte derzeit ziemlich mies laufen ist Bob überzeugt davon, mit seinen Burgern irgendwann einmal den ganz großen Erfolg zu erzielen. Doch vorher machen ihm seine Frau und Kinder das Leben schwer ...",
-            "eng": "Bob's Burgers follows a third-generation restaurateur, Bob, as he runs Bob's Burgers with the help of his wife and their three kids. Bob and his quirky family have big ideas about burgers, but fall short on service and sophistication. Despite the greasy counters, lousy location and a dearth of customers, Bob and his family are determined to make Bob's Burgers \"grand re-re-re-opening\" a success.",
-            "fin": "Komediallinen animaatiosarja Bob-nimisestä miehestä, hänen perheestään sekä räpistelevästä hampurilaismestasta. Huolimatta surkeasta sijainnista ja lukemattomista vastoinkäymisistä Bob ja hänen rakastettavan kummallinen kotijoukkonsa on vakuuttunut siitä, että juuri burgerit ovat avain menestykseen.",
-            "fra": "Bob Belcher tient un petit restaurant de burgers dans une ville américaine, aidé par sa femme, l'exubérante Linda, ainsi que ses trois enfants : Tina, l'aînée passionnée par les chevaux et les postérieurs, Gene, le garçon excentrique qui ne recule jamais devant un challenge, et enfin Louise, la petite dernière au caractère bien trempé toujours en train de faire des manigances.",
-            "hun": "Az amerikai sitcom rajzfilmsorozat a Belcher családról és az általuk vezetett hamburgerbüféről szól. Bob Belcher a burgerfaloda tulaja, és büféjét a világon (szinte) mindennél jobban imádja. Linda Bob feleségeként társa az életben és az üzletben; mindig igyekszik új dolgokat kipróbálni még akkor is, ha nem tudja, mi sül ki a dologból.",
-            "ita": "La serie ruota attorno alle divertenti vicende di Bob, gestore del ristorante Bob's Burger ma totalmente inesperto e pasticcione, e della sua famiglia, formata da moglie e tre figli.",
-            "nor": "I denne populære animerte komiserien følger vi Bob Belcher, som sammen med sin hustru og deres tre barn driver restauranten Bob's Burger. Restauranten er familiens siste håp for å holde sammen.",
-            "por": "Uma série de desenhos animados que segue o dia a dia de um homem da classe trabalhadora, Bob, e da sua família peculiar. Juntos, gerem o restaurante Bob's Burgers.",
-            "pt": "A série acompanha Bob da terceira geração de uma família de proprietários de restaurantes, responsável por administrar a hamburgueria \"Bob's Burgers\" junto com sua esposa e seus três filhos. Bob e sua peculiar família têm grandes ideias para os hambúrgueres, mas estão pobres em serviço e em sofisticação.",
-            "rus": "«Закусочная Боба» — это забегаловка по соседству с крематорием, которой заправляет Боб Белчер со своей женой и тремя детьми. Сам Боб знает всё о приготовлении самых вкусных бургеров в округе, но такие понятия, как «обслуживание клиентов», «санитарные нормы» и «продвижение товара», даются ему с большим трудом. Но на то и существует семья, чтобы... Хотя нет, не тот случай: семья на рабочем месте — помощник тот ещё.",
-            "spa": "Bob's Burgers muestra la vida de un cocinero de tercera generación, Bob, trabajando en su hamburguesería Bob's Burgers con la ayuda de su mujer y sus tres hijos. Bob y su peculiar familia tienen grandes ideas sobre hamburguesas, pero les falta un mejor y más sofisticado servicio. A pesar del local grasiento, la terrible localización y la escasez de clientela, Bob y su familia están decididos a hacer de la \"gran re-re-re-apertura\" de Bob's Burgers un éxito.",
-            "swe": "“Bob’s Burgers” följer den underbart skandalösa familjen Belcher, med unika talanger för att förvandla de mest alldagliga situationer till komplett kaos.",
-            "tur": "Karısı ve üç çocuğunun yardımıyla işlettiği hamburger restoranı sahibi Bob ve ailesinin hikayesini konu alan animasyon dizisidir.",
-            "zhtw": "本劇圍繞Belcher一家和他們在Ocean Avenue上的漢堡店展開。創作者Loren Bouchard曾表示漢堡店位於美國東北部某個海邊小鎮。然而一些評論家根據「It Snakes a Village」推斷劇中的小鎮應該坐落在新澤西南部。 Bob的漢堡店是一座兩層的綠色樓房，一樓是漢堡店，二樓則是Bob一家生活的地方。店面周圍有不少其他店鋪，其中「It's Your Funeral Home and Crematorium」的主人Mort是漢堡店的常客。\r\n\r\n"
-        },
-        "translations": {
-            "bul": "Бургерите на Боб",
-            "ces": "Bobovy burgery",
-            "deu": "Bob's Burgers",
-            "eng": "Bob's Burgers",
-            "fin": "Bob's Burgers",
-            "fra": "Bob's Burgers",
-            "heb": "הבורגרים של בוב",
-            "hun": "Bob Burger Falodája",
-            "ita": "Bob's Burgers",
-            "por": "Bob's Burgers",
-            "pt": "Bob's Burgers",
-            "rus": "Закусочная Боба",
-            "spa": "Bob's Burgers",
-            "swe": "Bob's Burgers",
-            "tur": "Bob's Burgers",
-            "zhtw": "開心漢堡店"
-        },
-        "network": "FOX",
-        "remote_ids": [
-            {
-                "id": "10.5240/7312-38DB-5B25-19BB-BDCF-E",
-                "type": 13,
-                "sourceName": "EIDR"
-            },
-            {
-                "id": "tt1561755",
-                "type": 2,
-                "sourceName": "IMDB"
-            },
-            {
-                "id": "32726",
-                "type": 12,
-                "sourceName": "TheMovieDB.com"
-            },
-            {
-                "id": "EP01279298",
-                "type": 3,
-                "sourceName": "TMS (Zap2It)"
-            }
-        ],
-        "thumbnail": "https://artworks.thetvdb.com/banners/posters/194031-2_t.jpg"
-    }
-]
+  if (!show || !show.value.name) return false;
+  const matches = await searchShow(store, show.value.name);
+  if (!matches || !Array.isArray(matches)) return false;
+  show.value.tvdb_matches = matches;
+  showMatches.value = true;
 }
 
 function selectTvdbMatch(match) {
@@ -219,13 +87,186 @@ function selectTvdbMatch(match) {
   handleUpdate();
 }
 
+function updateFilterStr(newVal) {
+  window.clearTimeout(updateFilterStrTimeoutId);
+  updateFilterStrTimeoutId = window.setTimeout(() => {
+    filterStrDebounced.value = useAlphaName(newVal);
+  }, 500);
+}
+watch(filterStr, newVal => updateFilterStr(newVal));
+
+function toggleArchived() {
+  show.value.is_archived = show.value.is_archived ? 0 : 1;
+  handleUpdate();
+}
+
+async function updateEpisodesFromTvdb() {
+  if (!show || !show.value.tvdb_id) return false;
+  const tvdbEpisodes = await getEpisodes(store, show.value.tvdb_id);
+  if (!tvdbEpisodes) return false;
+  for (const episodeID of show.value.episode_ids) {
+    let episode = show.value.episodes[episodeID];
+    let seasonNum = parseInt(episode.season_num);
+    if (isNaN(seasonNum)) continue;
+    let episodeNum = parseInt(episode.episode_num);
+    if (isNaN(episodeNum)) continue;
+    for (const tvdbEpisode of tvdbEpisodes) {
+      if (
+        tvdbEpisode.seasonNumber === seasonNum
+        && tvdbEpisode.number === episodeNum
+      ) {
+        episode.name = tvdbEpisode.name;
+        episode.overview = tvdbEpisode.overview;
+        const aired = tvdbEpisode.aired;
+        if (aired && typeof aired === 'string' && /^[\d]{4}-[\d]{2}-[\d]{2}$/.test(aired)) {
+          const [y, m, d] = aired.split('-');
+          const date = new Date(y, (m-1), d);
+          episode.released_on = date.getTime() / 1000;
+        }
+        episode.saveToDB();
+        break;
+      }
+    }
+  }
+}
+
+async function getBannersFromTvdb() {
+  if (!show || !show.value.tvdb_id) return false;
+  // const tvdbBanners = await getBanners(store, show.value.tvdb_id);
+  // if (!tvdbBanners) return false;
+  // banners.value = tvdbBanners;
+  banners.value = [
+    {
+        "id": 733651,
+        "image": "https://artworks.thetvdb.com/banners/graphical/194031-g.jpg",
+        "thumbnail": "https://artworks.thetvdb.com/banners/graphical/194031-g_t.jpg",
+        "language": "eng",
+        "type": 1,
+        "score": 100007,
+        "width": 758,
+        "height": 140,
+        "includesText": true,
+        "thumbnailWidth": 0,
+        "thumbnailHeight": 0,
+        "updatedAt": 0,
+        "status": {
+            "id": 0,
+            "name": null
+        },
+        "tagOptions": null
+    },
+    {
+        "id": 1010095,
+        "image": "https://artworks.thetvdb.com/banners/graphical/194031-g3.jpg",
+        "thumbnail": "https://artworks.thetvdb.com/banners/graphical/194031-g3_t.jpg",
+        "language": "eng",
+        "type": 1,
+        "score": 100004,
+        "width": 758,
+        "height": 140,
+        "includesText": true,
+        "thumbnailWidth": 0,
+        "thumbnailHeight": 0,
+        "updatedAt": 0,
+        "status": {
+            "id": 0,
+            "name": null
+        },
+        "tagOptions": null
+    },
+    {
+        "id": 1227345,
+        "image": "https://artworks.thetvdb.com/banners/graphical/194031-g4.jpg",
+        "thumbnail": "https://artworks.thetvdb.com/banners/graphical/194031-g4_t.jpg",
+        "language": "eng",
+        "type": 1,
+        "score": 100000,
+        "width": 758,
+        "height": 140,
+        "includesText": true,
+        "thumbnailWidth": 0,
+        "thumbnailHeight": 0,
+        "updatedAt": 0,
+        "status": {
+            "id": 0,
+            "name": null
+        },
+        "tagOptions": null
+    },
+    {
+        "id": 62561947,
+        "image": "https://artworks.thetvdb.com/banners/v4/series/194031/banners/6070af335a20f.jpg",
+        "thumbnail": "https://artworks.thetvdb.com/banners/v4/series/194031/banners/6070af335a20f_t.jpg",
+        "language": null,
+        "type": 1,
+        "score": 100000,
+        "width": 758,
+        "height": 140,
+        "includesText": false,
+        "thumbnailWidth": 0,
+        "thumbnailHeight": 0,
+        "updatedAt": 0,
+        "status": {
+            "id": 0,
+            "name": null
+        },
+        "tagOptions": null
+    }
+];
+}
+
+async function replaceBanner() {
+  if (bannerSrc.value === 'upload') {
+    if (!bannerSrcFilepath.value) return false;
+    store.loading = true;
+    let response;
+    try {
+      response = await invoke('copy_local_image', {
+        srcPathname: bannerSrcFilepath.value,
+        currentBannerPathnames: []
+      });
+    } catch (error) {
+      window.alert(error);
+      store.loading = false;
+      return false;
+    }
+    console.log('replaceBanner', response);
+    store.loading = false;
+  }
+}
+
+function handleKeydown(event) {
+  switch (event.key) {
+    case 'ArrowDown':
+    case 'ArrowUp':
+      event.preventDefault();
+      show.value.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev')
+      break;
+    case ' ':
+      event.preventDefault();
+      show.value.play()
+      break;
+  }
+  return true;
+}
+
+onBeforeMount(() => {
+  window.addEventListener('keydown', handleKeydown);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
+
 </script>
 
 <template>
   
-  <div v-if="!!show" class="max-w-5xl mx-auto dark">
+  <div v-if="!!show" class="max-w-3xl mx-auto dark">
     
-    <div class="flex">
+    <img :src="bannerAssetUrl">
+    <!-- <img :src="'https://asset.localhost/C%3A%5CUsers%5CLiam%5CAppData%5CLocal%5Ccom.tauri.dev%5Cbanners%5C' + 'bb.jpg'"> -->
+    
+    <div class="flex mt-4">
       <h2 class="text-2xl text-slate-200">
         {{ show.name }}
       </h2>
@@ -236,19 +277,7 @@ function selectTvdbMatch(match) {
     
     <div class="flex gap-8 mt-6">
       
-      <Button btnstyle="solid" btncolor="blue" @click="openTvdbSlug(show.tvdb_slug)" :disabled="!show.tvdb_slug">
-        <span class="relative bottom-0.5 right-0.5">📺</span>
-        TVDB
-      </Button>
-      
-      <Button btnstyle="outline" btncolor="green" @click="useOpenOrHomeDir(store.settings.tv_dir + '/' + show.dir_name)">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-          <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
-        </svg>
-        {{ show.dir_name }}
-      </Button>
-      
-      <Button btnstyle="solid" btncolor="gray" @click="showEdit = !showEdit">
+      <Button variant="black" @click="showEdit = !showEdit">
         <svg v-show="!showEdit" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z" clip-rule="evenodd" />
         </svg>
@@ -258,15 +287,44 @@ function selectTvdbMatch(match) {
         Edit
       </Button>
       
+      <Button variant="archive" @click="toggleArchived">
+        <svg v-if="show.is_archived" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+          <path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3Z" />
+          <path fill-rule="evenodd" d="M13 6H3v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6ZM5.72 7.47a.75.75 0 0 1 1.06 0L8 8.69l1.22-1.22a.75.75 0 1 1 1.06 1.06L9.06 9.75l1.22 1.22a.75.75 0 1 1-1.06 1.06L8 10.81l-1.22 1.22a.75.75 0 0 1-1.06-1.06l1.22-1.22-1.22-1.22a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+        </svg>
+        <span v-if="show.is_archived">
+          Unarchive
+        </span>
+        <svg v-if="!show.is_archived" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+          <path d="M3 2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H3Z" />
+          <path fill-rule="evenodd" d="M3 6h10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm3 2.75A.75.75 0 0 1 6.75 8h2.5a.75.75 0 0 1 0 1.5h-2.5A.75.75 0 0 1 6 8.75Z" clip-rule="evenodd" />
+        </svg>
+        <span v-if="!show.is_archived">
+          Archive
+        </span>
+      </Button>
+      
+      <Button variant="link" @click="openTvdbSlug(show.tvdb_slug)" :disabled="!show.tvdb_slug">
+        <span class="relative bottom-[1px]">📺</span>
+        TVDB
+      </Button>
+      
+      <Button variant="local-link" @click="useOpenOrHomeDir(store.settings.tv_dir + '/' + show.dir_name)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+          <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
+        </svg>
+        {{ show.dir_name }}
+      </Button>
+      
     </div>
     
     <TransitionExpand>
-      <div v-show="showEdit" class="py-1">
+      <form action="" method="get" @submit.prevent v-show="showEdit" class="pt-1 pb-8" autocapitalize="false" autocomplete="off">
         
-        <InputWithLabel class="mt-8" id="name" v-model="show.name" :readonly="store.loading" @input="handleUpdate">
+        <InputWithLabel class="max-w-2xl mt-8" id="name" v-model="show.name" :readonly="store.loading" @input="handleUpdate">
           Name
           <template v-slot:afterInput>
-            <Button btnstyle="outline" btncolor="green" @click="searchShowInTvdb">
+            <Button @click="searchShowInTvdb">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                 <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
               </svg>
@@ -276,17 +334,17 @@ function selectTvdbMatch(match) {
         </InputWithLabel>
         
         <div v-if="show.tvdb_matches.length" class="mt-4">
-          <div class="text-sm font-medium">
+          <div class="mb-1 text-sm font-medium text-slate-200">
             Search results ({{ show.tvdb_matches.length }})
-            <button type="button" @click="showMatches = !showMatches" class="ml-6 text-gray-300">
-              <span v-if="showMatches">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="relative inline-block w-4 h-4 bottom-0.5">
+            <button type="button" @click="showMatches = !showMatches" class="ml-6 text-white">
+              <span v-if="showMatches" class="inline-flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                   <path fill-rule="evenodd" d="M11.78 9.78a.75.75 0 0 1-1.06 0L8 7.06 5.28 9.78a.75.75 0 0 1-1.06-1.06l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
                 </svg>
                 hide
               </span>
-              <span v-if="!showMatches">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="relative inline-block w-4 h-4 bottom-0.5">
+              <span v-if="!showMatches" class="inline-flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 ">
                   <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
                 </svg>
                 show
@@ -295,47 +353,141 @@ function selectTvdbMatch(match) {
           </div>
           <TransitionExpand>
             <ul v-show="showMatches" class="p-1">
-              <li v-for="match in show.tvdb_matches" class="my-1">
-                <button type="button" @click="selectTvdbMatch(match)" class="py-1 font-semibold text-green-300">
+              <li v-for="match in show.tvdb_matches" class="flex flex-wrap gap-2 my-2">
+                <Button @click="selectTvdbMatch(match)" whitespace="normal">
                   {{ match.name }}
                   ({{ match.country }} {{ match.year }})
-                </button>
-                <button href="https://google.com" class="ml-6 hover:underline" @click="openTvdbSlug(match.slug)">
+                </Button>
+                <Button variant="black" @click="openTvdbSlug(match.slug)">
                   <span class="relative bottom-0.5">📺</span>
-                  TVDB
-                </button>
+                  <span>TVDB</span>
+                </Button>
               </li>
             </ul>
           </TransitionExpand>
         </div>
         
-        <div class="flex flex-wrap gap-8 mt-8">
+        <div class="flex flex-wrap gap-8 mt-4">
           
           <div class="">
-            <InputWithLabel class="w-40" id="tvdb_id" v-model="show.tvdb_id" :readonly="store.loading" @input="handleUpdate">
+            <InputWithLabel class="max-w-40" id="tvdb_id" v-model="show.tvdb_id" :readonly="store.loading" @input="handleUpdate">
               TVDB ID
             </InputWithLabel>
           </div>
           
           <div class="">
-            <InputWithLabel class="w-72" id="tvdb_slug" v-model="show.tvdb_slug" :readonly="store.loading" @input="handleUpdate">
+            <InputWithLabel class="max-w-72" id="tvdb_slug" v-model="show.tvdb_slug" :readonly="store.loading" @input="handleUpdate">
               TVDB Slug
+            </InputWithLabel>
+          </div>
+          
+          <div>
+            <InputWithLabel :datepicker="true" id="last_watched_at" v-model="show.last_watched_at" :readonly="store.loading" @input="handleUpdate">
+              Last Watched At
             </InputWithLabel>
           </div>
           
         </div>
         
-      </div>
+        <div class="flex items-center mt-8">
+          
+          <fieldset class="flex flex-wrap items-center gap-x-6">
+            <div>
+              <legend class="text-sm font-medium text-slate-200">
+                Replace banner from:
+              </legend>
+            </div>
+            <div class="flex items-center">
+              <input id="banner-src-url" name="banner-src" type="radio" value="url" v-model="bannerSrc" class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500">
+              <label for="banner-src-url" class="block pl-2 text-sm font-medium leading-6 cursor-pointer">URL</label>
+            </div>
+            <div class="flex items-center">
+              <input id="banner-src-upload" name="banner-src" type="radio" value="upload" v-model="bannerSrc" class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500">
+              <label for="banner-src-upload" class="block pl-2 text-sm font-medium leading-6 cursor-pointer">Upload</label>
+            </div>
+          </fieldset>
+          
+          <div class="ml-auto">
+            <Button :disabled="store.loading || (bannerSrc === 'url' && !bannerSrcUrl) || (bannerSrc === 'upload' && !bannerSrcFilepath)" @click="replaceBanner">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd" d="M13.836 2.477a.75.75 0 0 1 .75.75v3.182a.75.75 0 0 1-.75.75h-3.182a.75.75 0 0 1 0-1.5h1.37l-.84-.841a4.5 4.5 0 0 0-7.08.932.75.75 0 0 1-1.3-.75 6 6 0 0 1 9.44-1.242l.842.84V3.227a.75.75 0 0 1 .75-.75Zm-.911 7.5A.75.75 0 0 1 13.199 11a6 6 0 0 1-9.44 1.241l-.84-.84v1.371a.75.75 0 0 1-1.5 0V9.591a.75.75 0 0 1 .75-.75H5.35a.75.75 0 0 1 0 1.5H3.98l.841.841a4.5 4.5 0 0 0 7.08-.932.75.75 0 0 1 1.025-.273Z" clip-rule="evenodd" />
+              </svg>
+              Replace Banner
+            </Button>
+          </div>
+          
+        </div>
+        
+        <div v-if="bannerSrc === 'url'" class="mt-4">
+          
+          <InputWithLabel id="banner-url" class="max-w-2xl" v-model="bannerSrcUrl">
+            URL
+            <template v-slot:afterInput>
+            <Button @click="getBannersFromTvdb" :disabled="!show.tvdb_id || store.loading">
+              <span class="relative bottom-[1px]">📺</span>
+              Get from TVDB
+            </Button>
+          </template>
+          </InputWithLabel>
+          
+          <div v-if="banners.length" class="flex flex-wrap gap-2 mt-4">
+            <button type="button" v-for="banner in banners" class=" w-80" @click="bannerSrcUrl = banner.image">
+              <img :src="banner.image">
+            </button>
+          </div>
+          
+        </div>
+        
+        <div v-if="bannerSrc !== 'url'" class="mt-4">
+          <InputWithLabel id="tv_dir" v-model="bannerSrcFilepath">
+            File location
+            <template v-slot:afterInput>
+              <div class="flex items-center gap-x-2">
+                <DirSelect v-model="bannerSrcFilepath" :directory="false" defaultPath="%HomeDrive%"/>
+              </div>
+            </template>
+          </InputWithLabel>
+        </div>
+        
+      </form>
     </TransitionExpand>
     
+    <div class="flex items-center mt-12 gap-x-4">
+      <h3 class="text-xl text-slate-200">
+        {{ show.episode_ids.length }}
+        Episodes
+        {{ filterStrDebounced }}
+      </h3>
+      <Button @click="updateEpisodesFromTvdb" :disabled="!show.tvdb_id || store.loading">
+        <span class="relative bottom-[1px]">📺</span>
+        Update from TVDB
+      </Button>
+      <InputWithLabel class="ml-auto" :with-label="false" :is-search="true" v-model="filterStr"></InputWithLabel>
+    </div>
+    
     <div class="mt-8">
+      
       <EpisodeCard
         v-for="episodeID in show.episode_ids"
         :episode="show.episodes[episodeID]"
         :is-selected="show.current_episode_id == episodeID"
         :playback-position="store.playback_positions[show.episodes[episodeID].filename]"
+        @click="show.current_episode_id = episodeID"
+        :class="{
+          'hidden': !show.episodes[episodeID].searchable_text.includes(filterStrDebounced)
+        }"
         >
       </EpisodeCard>
+      
+      <EpisodeCard
+        :episode="{is_finished: true}"
+        :is-selected="show.current_episode_id === null"
+        :playback-position="null"
+        @click="show.current_episode_id = null"
+        :class="{ 'hidden': !!filterStrDebounced }"
+        >
+      </EpisodeCard>
+      
     </div>
     
   </div>

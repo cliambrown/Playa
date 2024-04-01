@@ -4,6 +4,7 @@
 pub mod playback_positions;
 pub mod scanner;
 pub mod emitter;
+pub mod images;
 
 use trash;
 use std::path::Path;
@@ -71,6 +72,7 @@ fn main() {
                 playback_positions::get_playback_positions,
                 scanner::scan_shows,
                 scanner::scan_movies,
+                images::copy_local_image,
                 trash_files,
                 get_home_dir
             ])

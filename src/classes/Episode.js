@@ -6,7 +6,7 @@ export function Episode(episodeData, fromScan = false) {
   this.table_name = 'episodes';
   this.created_at = useGet(episodeData, 'created_at');
   this.updated_at = useGet(episodeData, 'updated_at');
-  this.is_archived = useGet(episodeData, 'is_archived', 0);
+  this.is_new = useGet(episodeData, 'is_new');
   this.show_id = useGet(episodeData, 'show_id');
   this.pathname = useGet(episodeData, 'pathname');
   this.filename = useGet(episodeData, 'filename');
@@ -66,14 +66,14 @@ Episode.prototype.setSlug = function() {
 }
 
 Episode.prototype.saveToDB = async function() {
-  const response = await useSaveToDB(store, this, ['is_archived', 'show_id', 'pathname', 'filename', 'season_num', 'episode_num', 'name', 'overview', 'released_on', 'duration', 'searchable_text']);
+  const response = await useSaveToDB(store, this, ['show_id', 'pathname', 'filename', 'season_num', 'episode_num', 'name', 'overview', 'released_on', 'duration', 'searchable_text']);
   console.log('episode.saveToDB', response);
   return response;
 }
 
 Episode.prototype.delete = async function() {
   if (!store.db) return false;
-  let result, query;
+  let response, query;
   // Delete episode
   query = "DELETE FROM episodes WHERE id=?"
   response = await store.db.execute(query, [this.id]);
@@ -83,5 +83,7 @@ Episode.prototype.delete = async function() {
     let show = store.shows[this.show_id];
     show.episode_ids = show.episode_ids.filter(episodeID => episodeID != this.id);
     delete show.episodes[this.id];
+    if (this.current_episode_id == this.id) 
+      show.episodeNav('next');
   }
 }

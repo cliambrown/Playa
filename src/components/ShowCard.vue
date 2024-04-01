@@ -16,6 +16,15 @@ const currentEp = computed(() => {
     : null
 });
 
+const hasNewEpisodes = computed(() => {
+  if (!props.show) return false;
+  for (const episodeID of props.show.episode_ids) {
+    const episode = props.show.episodes[episodeID];
+    if (episode.is_new) return true;
+  }
+  return false;
+});
+
 const playbackPosition = computed(() => {
   if (
     !props.show.current_episode_id
@@ -34,9 +43,14 @@ const playbackPosition = computed(() => {
         ✔
       </span>
       {{ show.name }}
+      <span v-if="show.is_new" class="ml-2">
+        NEW
+      </span>
     </div>
     <div>
-      {{ (show.episode_ids.length - currentEpIndex) }} unwatched / 
+      {{ (show.episode_ids.length - currentEpIndex) }} unwatched
+      <span v-show="hasNewEpisodes">*</span>
+      / 
       {{ show.episode_ids.length }} total
     </div>
     <div v-if="currentEp">

@@ -1,6 +1,11 @@
 import { createApp } from 'vue';
+
 import { plugin as vueTransitionsPlugin } from '@morev/vue-transitions';
 import '@morev/vue-transitions/styles';
+
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
+
 import './styles.css';
 import App from './App.vue';
 
@@ -31,6 +36,7 @@ window.addEventListener('keyup', event => {
 
 createApp(App)
   .component('InputWithLabel', InputWithLabel)
+  .component('VueDatePicker', VueDatePicker)
   .use(router)
   .use(vueTransitionsPlugin({}))
   .mount('#app');

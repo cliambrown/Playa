@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { ref, watch } from 'vue';
+
+const props = defineProps({
   type: {
     type: String,
     default: 'text'
@@ -9,25 +11,79 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  withLabel: {
+    type: Boolean,
+    default: true,
+  },
+  isSearch: {
+    type: Boolean,
+    default: false,
+  },
+  datepicker: {
+    type: Boolean,
+    default: false
+  }
 })
 
 const val = defineModel();
+defineEmits(['input']);
+
+// Convert between ms (js) and seconds (db)
+let valMs = null;
+if (props.datepicker) {
+  valMs = ref(val.value ? val.value * 1000 : null);
+  watch(valMs, newValMs => {
+      val.value = valMs.value ? Math.floor(valMs.value / 1000) : null;
+    }
+  );
+  watch(val, newVal => {
+    valMs.value = newVal ? newVal * 1000 : null;
+  });
+}
+
+// Use random text to block webkit's insanely persistent autocomplete
+let randstr = '-';
+const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const charactersLength = characters.length;
+let counter = 0;
+while (counter < 8) {
+  randstr += characters.charAt(Math.floor(Math.random() * charactersLength));
+  counter += 1;
+}
 </script>
 
 <template>
-  <div>
-    <label :for="id" class="block mb-2 text-sm font-medium">
+  <div @keydown.stop>
+    <label v-if="withLabel" :for="id" class="block mb-2 text-sm font-medium text-slate-200">
       <slot></slot>
     </label>
-    <div class="flex gap-x-2">
+    <div class="relative flex items-center gap-x-2">
       <input
+        v-if="!datepicker"
         :type="type"
         :id="id"
-        class="block w-full px-4 py-3 text-sm text-gray-900 transition duration-150 ease-in-out bg-white border-gray-200 rounded-lg focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none read-only:opacity-70"
+        :name="id + randstr"
+        class="block w-full px-3 py-2 text-sm leading-6 text-gray-900 border-0 rounded-md ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-500"
+        :class="{
+          'pr-10': isSearch
+        }"
         v-model="val"
         :readonly="readonly"
-        autocomplete="off"
+        autocomplete="new-password"
+        spellcheck="false"
         >
+      <svg v-if="isSearch" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="absolute w-6 h-6 text-gray-900 right-2">
+        <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd" />
+      </svg>
+
+      <VueDatePicker
+        v-if="datepicker"
+        v-model="valMs"
+        model-type="timestamp"
+        format="yyyy-MM-dd HH:mm"
+        @update:model-value="$emit('input')"
+        >
+      </VueDatePicker>
         <slot name="afterInput"></slot>
     </div>
   </div>

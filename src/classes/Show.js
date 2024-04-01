@@ -10,6 +10,7 @@ export function Show(showData) {
   this.setSlug(); // 'show-' + this.id
   this.created_at = useGet(showData, 'created_at');
   this.updated_at = useGet(showData, 'updated_at');
+  this.is_new = useGet(showData, 'is_new');
   this.is_archived = useGet(showData, 'is_archived', 0);
   this.dir_name = useGet(showData, 'dir_name');
   this.setName(useGet(showData, 'name'));
@@ -48,6 +49,15 @@ Show.prototype.updateCurrentEpInDB = async function() {
   console.log('show.updateCurrentEpInDB', response);
 }
 
+Show.prototype.updateLastWatchedAtInDB = async function() {
+  if (!store.db || !this.id) return false;
+  let response = await store.db.execute(
+    "UPDATE shows SET last_watched_at=? WHERE id=?",
+    [this.last_watched_at, this.id]
+  );
+  console.log('show.updateLastWatchedAtInDB', response);
+}
+
 Show.prototype.findEpisodeByPathname = function(pathname) {
   if (!this.episode_ids.length) return false;
   const episodeID = this.episode_ids.find(
@@ -64,6 +74,7 @@ Show.prototype.episodeFromPathname = async function(episodeData, fromScan = fals
   if (episode) return episode;
   episode = new Episode({
     show_id: this.id,
+    is_new: fromScan,
     pathname: episodeData.pathname,
     filename: episodeData.filename,
     duration: episodeData.duration,
@@ -73,8 +84,9 @@ Show.prototype.episodeFromPathname = async function(episodeData, fromScan = fals
   this.episode_ids.push(episode.id);
   this.new_episode_ids.add(episode.id);
   if (fromScan) {
-    if (!store.scan_results.new_shows.has(this.id))
+    if (!store.scan_results.new_shows.has(this.id)) {
       store.scan_results.shows_with_new_eps.add(this.id);
+    }
     store.scan_results.new_episodes_count++;
   }
   return episode;
@@ -140,6 +152,8 @@ Show.prototype.episodeNav = function(nextOrPrev) {
 Show.prototype.play = function() {
   if (!this.current_episode_id) return false;
   open(this.episodes[this.current_episode_id].pathname);
+  this.last_watched_at = Math.round(Date.now() / 1000);
+  this.updateLastWatchedAtInDB();
   return true;
 }
 

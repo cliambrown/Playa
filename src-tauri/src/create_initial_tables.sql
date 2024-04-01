@@ -16,7 +16,6 @@ CREATE TABLE episodes (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     created_at INTEGER DEFAULT NULL,
     updated_at INTEGER DEFAULT NULL,
-    is_archived INTEGER DEFAULT 0,
     show_id INTEGER NOT NULL,
     pathname TEXT NOT NULL,
     filename TEXT NOT NULL,
@@ -62,8 +61,14 @@ CREATE TABLE movies (
 CREATE TABLE settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
     name TEXT NOT NULL,
-    value TEXT NOT NULL
+    value TEXT DEFAULT NULL
 );
+
+INSERT INTO settings (name, value) VALUES ('tv_dir', NULL);
+INSERT INTO settings (name, value) VALUES ('movie_dir', NULL);
+INSERT INTO settings (name, value) VALUES ('tvdb_apikey', NULL);
+INSERT INTO settings (name, value) VALUES ('tvdb_pin', NULL);
+INSERT INTO settings (name, value) VALUES ('mpv_watched_dir', NULL);
 
 CREATE TABLE tvdb_tokens (
     id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,

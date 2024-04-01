@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch, onBeforeMount, onBeforeUnmount } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount } from 'vue';
 import { invoke } from '@tauri-apps/api/tauri';
 import { TransitionExpand } from '@morev/vue-transitions';
 import { store, showIdLists, movieIdLists, homeItems, nullItem, homeSelectedItemIndex } from '../store';
@@ -76,7 +76,7 @@ function toggleShowFinished() {
       <h2 class="text-2xl text-slate-200">
         TV
       </h2>
-      <Button btnstyle="ghost" btncolor="gray" @click="toggleShowFinished" class="ml-auto">
+      <Button variant="black" @click="toggleShowFinished" class="ml-auto">
         <svg v-show="!store.home.show_finished_shows" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
         </svg>
@@ -85,7 +85,7 @@ function toggleShowFinished() {
         </svg>
         Finished
       </Button>
-      <Button btnstyle="ghost" btncolor="green" @click="scanShows" :disabled="store.loading">
+      <Button @click="scanShows" :disabled="store.loading">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
         </svg>
@@ -115,7 +115,7 @@ function toggleShowFinished() {
       <h2 class="text-2xl text-slate-200">
         Movies
       </h2>
-      <Button btnstyle="ghost" btncolor="green" @click="scanMovies" :disabled="store.loading" class="ml-auto">
+      <Button @click="scanMovies" :disabled="store.loading" class="ml-auto">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
         </svg>
