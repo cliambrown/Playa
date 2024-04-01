@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { store } from '../store.js'
 
 const props = defineProps(['episode', 'isSelected', 'playbackPosition']);
@@ -16,13 +16,22 @@ const releasedOnStr = computed(() => {
     + (date.getUTCDate() + '').padStart(2, '0');
 });
 
-// scrollWrapperEl.scrollIntoView({behavior: behavior, block: 'nearest'});
+function scrollIntoView() {
+  if (props.isSelected) {
+    wrapper.value.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  }
+}
+
+onMounted(async () => {
+  await nextTick();
+  window.setTimeout(() => {
+    scrollIntoView();
+  }, 200);
+});
 
 watch(
   () => props.isSelected,
-  (newVal) => {
-    if (newVal) wrapper.value.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-  }
+  (newVal) => scrollIntoView()
 );
 </script>
 
@@ -36,7 +45,7 @@ watch(
     }"
     >
     <div v-if="episode.is_finished">
-      Finished
+      [Finished]
     </div>
     <div v-else>
       <div class="text-xl font-semibold">

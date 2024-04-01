@@ -1,21 +1,90 @@
-// use std::fs;
+use std::fs;
 use std::path::Path;
 use::tauri::AppHandle;
-// use api::path::resource_dir;
+use trash;
+use reqwest;
+use image;
+use image::ImageFormat;
 
 #[tauri::command]
 pub fn copy_local_image(
 	app_handle: AppHandle,
 	src_pathname: &str,
-	current_banner_pathnames: Vec<&str>
+	new_filename: &str,
+    dest_folder: &str
 ) -> Result<String, String> {
     let src_path = Path::new(&src_pathname);
+    let ext = src_path.extension().unwrap().to_str().unwrap();
+    let new_filename_with_ext = format!("{new_filename}.{ext}");
     let file_exists = src_path.try_exists().unwrap();
     if !file_exists {
         return Err("File does not exist!".into())
     }
     let data_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
-    let dest_path = Path::new(&data_dir);
-    // fs::copy(src_path, dest_path);
-    Ok(data_dir.to_str().unwrap().to_string().into())
+    let dest_path = Path::new(&data_dir).join(dest_folder).join(&new_filename_with_ext);
+    let _result = match fs::copy(src_path, &dest_path) {
+        Err(error) => return Err(error.to_string().into()),
+        Ok(_r) => "success"
+    };
+    Ok(new_filename_with_ext.to_string().into())
+}
+
+#[tauri::command]
+pub fn download_image(
+    app_handle: AppHandle,
+    src_url: &str,
+    new_filename: &str,
+    dest_folder: &str
+) -> Result<String, String> {
+    let img_get = match reqwest::blocking::get(src_url) {
+        Ok(r) => r,
+        Err(error) => return Err(error.to_string().into())
+    };
+    let img_bytes = match img_get.bytes() {
+        Ok(r) => r,
+        Err(error) => return Err(error.to_string().into())
+    };
+    let image = match image::load_from_memory(&img_bytes) {
+        Ok(r) => r,
+        Err(error) => return Err(error.to_string().into())
+    };
+    let img_format = match image::guess_format(&img_bytes) {
+        Ok(r) => r,
+        Err(error) => return Err(error.to_string().into())
+    };
+    let ext = match img_format {
+        ImageFormat::Png => "png",
+        ImageFormat::Jpeg => "jpg",
+        ImageFormat::Gif => "gif",
+        ImageFormat::WebP => "webp",
+        _ => return Err("Invalid image format".into())
+    };
+    let data_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
+    let new_filename_with_ext = format!("{new_filename}.{ext}");
+    let dest_path = Path::new(&data_dir).join(dest_folder).join(&new_filename_with_ext);
+    match image.save(dest_path) {
+        Ok(_r) => (),
+        Err(error) => return Err(error.to_string().into())
+    };
+    Ok(new_filename_with_ext.into())
+}
+
+#[tauri::command]
+pub fn delete_image(
+	app_handle: AppHandle,
+	delete_filename: Option<&str>,
+    from_folder: &str
+) -> Result<String, String> {
+    match delete_filename {
+        Some(_f) => (),
+        None => return Ok("Nothing to delete".into())
+    }
+    let data_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
+    let delete_path = Path::new(&data_dir)
+        .join(from_folder)
+        .join(delete_filename.unwrap());
+    match trash::delete(delete_path) {
+        Ok(()) => return Ok("File deleted".into()),
+        Err(error) => return Ok(error.to_string().into())
+    }
 }

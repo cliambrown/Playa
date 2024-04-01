@@ -47,7 +47,7 @@ listen('loading-event', (event) => {
         <div class="mt-1.5 text-gray-200 w-4">
           <Transition name="fade">
             <span v-show="store.loading">
-              <div class="relative top-0.5 animate-spin inline-block size-4 border-[3px] border-current border-t-transparent text-blue-200 rounded-full dark:text-blue-100" role="status" aria-label="loading">
+              <div class="relative top-0.5 animate-spin inline-block size-4 border-[3px] border-current border-t-transparent rounded-full text-blue-100" role="status" aria-label="loading">
                 <span class="sr-only">Loading...</span>
               </div>
             </span>
@@ -66,13 +66,15 @@ listen('loading-event', (event) => {
       </nav>
     </header>
     
-    <main class="w-full pt-8 pb-40 overflow-y-scroll grow">
-      <div class="w-full px-4 mx-auto">
-        <RouterView />
-      </div>
+    <main
+      class="w-full overflow-y-auto grow"
+      :class="{
+        'flex flex-col': $route.name === 'clearPlayback' || $route.name === 'show'
+      }"
+      >
+      <RouterView />
     </main>
     
   </div>
-  
   
 </template>

@@ -109,3 +109,24 @@ export async function useSaveToDB(store, item, fields, setUpdatedAt = true) {
   }
   return response;
 }
+
+// export async function useGetCurrentBanners(store, ignoreID, ignoreIdFromTable) {
+//     if (!store.db) return [];
+//     let result = [];
+//     if (store.db) {
+//       for (const tableName of ['shows', 'external_items']) {
+//         let query = `SELECT id, banner_filename FROM ${tableName} WHERE banner_filename IS NOT NULL`;
+//         let rows;
+//         if (ignoreID && ignoreIdFromTable === tableName) {
+//           query += ' AND id!=?';
+//           rows = await store.db.select(query, [ignoreID]);
+//         } else {
+//           rows = await store.db.select(query);
+//         }
+//         for (const row of rows) {
+//           result.push(row.banner_filename)
+//         }
+//       }
+//     }
+//     return result;
+// }

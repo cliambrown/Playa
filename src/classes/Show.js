@@ -1,4 +1,5 @@
 import { open } from '@tauri-apps/api/shell';
+import { invoke } from '@tauri-apps/api/tauri';
 import { store } from '../store';
 import { useGet, useSaveToDB } from '../helpers.js';
 import { Episode } from './Episode.js';
@@ -118,20 +119,32 @@ Show.prototype.setCurrentEpToNewEp = function() {
   }
 }
 
-Show.prototype.episodeNav = function(nextOrPrev) {
+Show.prototype.episodeNav = function(destination) {
   let prevCurrentEpID = this.current_episode_id;
   if (!this.episode_ids.length) return true;
   let epIndex = this.current_episode_id
     ? this.episode_ids.indexOf(this.current_episode_id)
     : this.episode_ids.length;
-  switch (nextOrPrev) {
-    case 'next':
-      epIndex++;
-      if (epIndex > this.episode_ids.length - 1) epIndex = null;
+  switch (destination) {
+    case 'first':
+      epIndex = 0;
       break;
     case 'prev':
       epIndex--;
       if (epIndex < 0) epIndex = 0;
+      break;
+    case 'next':
+      epIndex++;
+      if (epIndex > this.episode_ids.length - 1) epIndex = null;
+      break;
+    case 'finished':
+      epIndex = null;
+      break;
+    case 'random':
+      const oldEpIndex = epIndex;
+      while (oldEpIndex == epIndex) {
+        epIndex = Math.floor(Math.random()*this.episode_ids.length);
+      }
       break;
   }
   if (epIndex === null) {
@@ -174,4 +187,10 @@ Show.prototype.delete = async function() {
   // If this show is selected, store.selectFirst
   if (store.home.selected_item.slug === this.slug)
     store.selectFirstHomeItem();
+  if (this.banner_filename) {
+    invoke('delete_image', {
+      deleteFilename: this.banner_filename,
+      fromFolder: 'banners',
+    });
+  }
 }

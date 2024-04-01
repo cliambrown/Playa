@@ -14,7 +14,7 @@ import { createWebHistory, createRouter } from 'vue-router'
 import HomeView from './views/HomeView.vue';
 import SettingsView from './views/SettingsView.vue';
 import ClearPlaybackView from './views/ClearPlaybackView.vue';
-import Show from './views/Show.vue';
+import ShowPage from './views/ShowPage.vue';
 
 import InputWithLabel from './components/InputWithLabel.vue';
 
@@ -22,7 +22,7 @@ const routes = [
   { path: '/', name: 'home', component: HomeView },
   { path: '/settings', name: 'settings', component: SettingsView },
   { path: '/clear-playback', name: 'clearPlayback', component: ClearPlaybackView },
-  { path: '/shows/:id', name: 'show', component: Show },
+  { path: '/shows/:id', name: 'show', component: ShowPage },
 ]
 
 const router = createRouter({

@@ -23,6 +23,7 @@ defineEmits(['buttonClick']);
     class="inline-flex items-center px-3 py-2 text-sm font-semibold leading-6 transition duration-150 ease-in-out rounded-md shadow-sm gap-x-2 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-blue-500 disabled:opacity-60 disabled:pointer-events-none"
     :class="{
       'bg-green-700 hover:bg-green-600': variant === 'action',
+      'bg-green-50 hover:bg-green-100 text-green-700 hover:text-green-800': variant === 'action-secondary',
       'bg-blue-700 hover:bg-blue-600': variant === 'link',
       'bg-black hover:bg-gray-800 outline outline-1 outline-gray-600': variant === 'black',
       'bg-violet-700 hover:bg-violet-600': variant === 'local-link',

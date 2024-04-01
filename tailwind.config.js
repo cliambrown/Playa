@@ -8,7 +8,6 @@ export default {
   },
   plugins: [
     require('@tailwindcss/forms'),
-  ],
-  darkMode: 'class',
+  ]
 }
 
