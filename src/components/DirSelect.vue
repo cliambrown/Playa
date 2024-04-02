@@ -1,6 +1,5 @@
 <script setup>
 import { open } from '@tauri-apps/api/dialog';
-import Button from '../components/Button.vue';
 
 const props = defineProps({
   defaultPath: {

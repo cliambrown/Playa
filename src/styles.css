@@ -35,3 +35,12 @@ body {
 dp__input {
   line-height: 1.25rem;
 }
+
+textarea {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+textarea::-webkit-scrollbar {
+  display: none;
+}

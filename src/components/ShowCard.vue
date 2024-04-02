@@ -36,10 +36,9 @@ const playbackPosition = computed(() => {
 });
 
 const bannerAssetUrl = computed(() => {
-  return store.banner_dir_url +
-    (props.show && props.show.banner_filename
-      ? props.show.banner_filename
-      : 'blank.jpg');
+  return (store.banner_dir_url && props.show && props.show.banner_filename)
+    ? store.banner_dir_url + props.show.banner_filename
+    : '/assets/blank_banner.jpg';
 });
 </script>
 
@@ -59,7 +58,7 @@ const bannerAssetUrl = computed(() => {
       <div class="px-6 pt-3 pb-4">
         <div class="flex items-center">
           <div class="grow">
-            <span v-if="show.is_new" class="relative inline-block px-2 text-sm text-white bg-orange-700 rounded-full bottom-0.5 mr-2">
+            <span v-if="show.is_new" class="relative inline-block px-2 mr-2 text-sm text-white bg-orange-700 rounded-full bottom-1">
               NEW
             </span>
             <span class="text-2xl font-semibold">
@@ -74,7 +73,9 @@ const bannerAssetUrl = computed(() => {
         </div>
         <div class="mt-1 text-gray-600">
           {{ (show.episode_ids.length - currentEpIndex) }} unwatched
-          <span v-show="hasNewEpisodes">*</span>
+          <span v-show="hasNewEpisodes" class="relative inline-block px-2 text-sm text-white bg-orange-700 rounded-full bottom-0.5 mr-2">
+            NEW
+          </span>
           / 
           {{ show.episode_ids.length }} total
         </div>

@@ -3,7 +3,6 @@ import { watch } from 'vue'
 import { store } from '../store.js'
 import { useGet, useOpenOrHomeDir } from '../helpers.js';
 import DirSelect from '../components/DirSelect.vue';
-import Button from '../components/Button.vue';
 
 let updateTimeoutId = null;
 let updateMsgTimoutId = null;

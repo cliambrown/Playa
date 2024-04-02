@@ -4,7 +4,6 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { TransitionExpand } from '@morev/vue-transitions';
 import { store, showIdLists, movieIdLists, homeItems, nullItem, homeSelectedItemIndex } from '../store';
 import { useGet, useSecondsToTimeStr } from '../helpers';
-import Button from '../components/Button.vue';
 import ShowCard from '../components/ShowCard.vue';
 import MovieCard from '../components/MovieCard.vue';
 

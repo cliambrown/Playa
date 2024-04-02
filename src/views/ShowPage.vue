@@ -7,9 +7,7 @@ import { TransitionExpand } from '@morev/vue-transitions';
 import { store } from '../store.js'
 import { useGet, useOpenOrHomeDir, useAlphaName } from '../helpers';
 import { searchShow, getEpisodes, getBanners } from '../tvdb';
-import Button from '../components/Button.vue';
 import EpisodeCard from '../components/EpisodeCard.vue';
-import InputWithLabel from '../components/InputWithLabel.vue';
 import DirSelect from '../components/DirSelect.vue';
 
 let updateTimeoutId = null;
@@ -29,10 +27,9 @@ const filterStrDebounced = ref('');
 const show = computed(() => store.shows[store.route.params.id]);
 
 const bannerAssetUrl = computed(() => {
-  return store.banner_dir_url +
-    (show.value && show.value.banner_filename
-      ? show.value.banner_filename
-      : 'blank.jpg');
+  return (store.banner_dir_url && show.value && show.value.banner_filename)
+    ? store.banner_dir_url + show.value.banner_filename
+    : '/assets/blank_banner.jpg';
 });
 
 async function handleUpdate() {
@@ -41,7 +38,7 @@ async function handleUpdate() {
   window.clearTimeout(updateMsgTimoutId);
   store.loading_msg = 'Waiting...'
   updateTimeoutId = window.setTimeout(async () => {
-    store.loading_msg = 'Saving...'
+    store.loading_msg = 'Saving Show...'
     const response = await show.value.saveToDB();
     console.log('show handleUpdate', response);
     if (parseInt(useGet(response, 'rowsAffected'))) {
@@ -196,7 +193,7 @@ onBeforeUnmount(() => {
       
       <div class="relative">
         <img :src="bannerAssetUrl">
-        <Button :variant="showEditBanner ? 'black' : 'action-secondary'" @click="showEditBanner = !showEditBanner" class="absolute top-0 right-0 opacity-30 hover:opacity-100">
+        <Button :variant="showEditBanner ? 'gray' : 'action-secondary'" @click="showEditBanner = !showEditBanner" class="absolute top-0 right-0 opacity-30 hover:opacity-100">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
           </svg>
@@ -238,7 +235,7 @@ onBeforeUnmount(() => {
           </span>
         </Button>
         
-        <Button :variant="showEdit ? 'black' : 'action-secondary'" @click="showEdit = !showEdit">
+        <Button :variant="showEdit ? 'gray' : 'action-secondary'" @click="showEdit = !showEdit">
           <svg v-show="!showEdit" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
             <path fill-rule="evenodd" d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z" clip-rule="evenodd" />
           </svg>
@@ -266,7 +263,7 @@ onBeforeUnmount(() => {
           </InputWithLabel>
           
           <div v-if="show.tvdb_matches.length" class="mt-4">
-            <div class="mb-1 text-sm font-medium text-slate-200">
+            <div class="mb-1 text-sm font-medium uppercase text-slate-200">
               Search results ({{ show.tvdb_matches.length }})
               <button type="button" @click="showMatches = !showMatches" class="ml-6 text-white">
                 <span v-if="showMatches" class="inline-flex items-center">
@@ -290,7 +287,7 @@ onBeforeUnmount(() => {
                     {{ match.name }}
                     ({{ match.country }} {{ match.year }})
                   </Button>
-                  <Button variant="black" @click="openTvdbSlug(match.slug)">
+                  <Button variant="gray" @click="openTvdbSlug(match.slug)">
                     <span class="relative bottom-0.5">📺</span>
                     <span>TVDB</span>
                   </Button>
@@ -301,23 +298,17 @@ onBeforeUnmount(() => {
           
           <div class="flex flex-wrap gap-8 mt-4">
             
-            <div class="">
-              <InputWithLabel class="max-w-40" id="tvdb_id" v-model="show.tvdb_id" :readonly="store.loading" @input="handleUpdate">
-                TVDB ID
-              </InputWithLabel>
-            </div>
-            
-            <div class="">
-              <InputWithLabel class="max-w-72" id="tvdb_slug" v-model="show.tvdb_slug" :readonly="store.loading" @input="handleUpdate">
-                TVDB Slug
-              </InputWithLabel>
-            </div>
-            
-            <div>
-              <InputWithLabel :datepicker="true" id="last_watched_at" v-model="show.last_watched_at" :readonly="store.loading" @input="handleUpdate">
-                Last Watched At
-              </InputWithLabel>
-            </div>
+            <InputWithLabel class="max-w-40" id="tvdb_id" v-model="show.tvdb_id" :readonly="store.loading" @input="handleUpdate">
+              TVDB ID
+            </InputWithLabel>
+          
+            <InputWithLabel class="max-w-72" id="tvdb_slug" v-model="show.tvdb_slug" :readonly="store.loading" @input="handleUpdate">
+              TVDB Slug
+            </InputWithLabel>
+          
+            <InputWithLabel :datepicker="true" id="last_watched_at" v-model="show.last_watched_at" :readonly="store.loading" @input="handleUpdate">
+              Last Watched At
+            </InputWithLabel>
             
           </div>
           
@@ -331,7 +322,7 @@ onBeforeUnmount(() => {
             
             <fieldset class="flex flex-wrap items-center gap-x-6">
               <div>
-                <legend class="text-sm font-medium text-slate-200">
+                <legend class="text-sm font-medium uppercase text-slate-200">
                   Replace banner from:
                 </legend>
               </div>
@@ -345,7 +336,7 @@ onBeforeUnmount(() => {
               </div>
             </fieldset>
             
-            <Button variant="black" @click="showEditBanner = false" class="ml-auto">
+            <Button variant="gray" @click="showEditBanner = false" class="ml-auto">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                 <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
               </svg>

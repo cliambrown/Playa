@@ -17,6 +17,7 @@ import ClearPlaybackView from './views/ClearPlaybackView.vue';
 import ShowPage from './views/ShowPage.vue';
 
 import InputWithLabel from './components/InputWithLabel.vue';
+import Button from './components/Button.vue';
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -36,6 +37,7 @@ window.addEventListener('keyup', event => {
 
 createApp(App)
   .component('InputWithLabel', InputWithLabel)
+  .component('Button', Button)
   .component('VueDatePicker', VueDatePicker)
   .use(router)
   .use(vueTransitionsPlugin({}))

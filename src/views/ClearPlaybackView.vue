@@ -6,7 +6,6 @@ import { store } from '../store.js';
 import { useSlugify, useOpenOrHomeDir } from '../helpers.js';
 import { Level } from '../classes/Level.js';
 import PlaybackPosnLevel from '../components/PlaybackPosnLevel.vue';
-import Button from '../components/Button.vue';
 
 const levels = ref(new Level());
 const entriesByFilename = ref({});
