@@ -46,6 +46,7 @@ export const store = reactive({
     selected_item: nullItem,
     show_finished_shows: false,
   },
+  archives_selected_item: nullItem,
   
   settings: {
     tv_dir: null,
@@ -480,6 +481,24 @@ export const homeItems = computed(() => {
   return items;
 });
 
+export const archivesItems = computed(() => {
+  let items = [];
+  for (const showID of showIdLists.value.archived) {
+    items.push(store.shows[showID]);
+  }
+  for (const itemID of externalItemIdLists.value.archived) {
+    items.push(store.external_items[itemID]);
+  }
+  for (const movieID of movieIdLists.value.archived) {
+    items.push(store.movies[movieID]);
+  }
+  return items;
+});
+
 export const homeSelectedItemIndex = computed(() =>
   homeItems.value.findIndex(item => store.home.selected_item.slug === item.slug)
+);
+
+export const archivesSelectedItemIndex = computed(() =>
+  archivesItems.value.findIndex(item => store.archives_selected_item.slug === item.slug)
 );

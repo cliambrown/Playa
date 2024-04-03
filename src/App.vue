@@ -63,6 +63,7 @@ listen('loading-event', (event) => {
         
         <div class="flex flex-row items-center gap-5 mt-5 ml-auto sm:justify-end sm:mt-0 sm:ps-5">
           <NavLink :to="{ name: 'home' }" :isActive="$route.name === 'home'">Home</NavLink>
+          <NavLink :to="{ name: 'archives' }" :isActive="$route.name === 'archives'">Archives</NavLink>
           <NavLink :to="{ name: 'settings' }" :isActive="$route.name === 'settings'">Settings</NavLink>
         </div>
         

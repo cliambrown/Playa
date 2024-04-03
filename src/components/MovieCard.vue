@@ -39,11 +39,19 @@ watch(
   () => props.isSelected,
   (newVal) => scrollIntoView()
 );
+
+function setAsSelected() {
+  if (props.movie.is_archived) {
+    store.archives_selected_item = props.movie;
+  } else {
+    store.home.selected_item = props.movie;
+  }
+}
 </script>
 
 <template>
   <div
-    @click="store.home.selected_item = movie"
+    @click="setAsSelected"
     class="relative text-lg text-left text-gray-900 transition duration-150 ease-in-out bg-white rounded-b-xl"
     :class="{
       'ring-[6px] ring-green-400 ring-offset-[6px] ring-offset-slate-900': isSelected,

@@ -2,8 +2,7 @@
 import { invoke } from '@tauri-apps/api/tauri';
 import { computed, onBeforeMount, onBeforeUnmount } from 'vue';
 import { TransitionExpand } from '@morev/vue-transitions';
-import { store, showIdLists, externalItemIdLists, movieIdLists, homeItems, nullItem, homeSelectedItemIndex } from '../store';
-import { useGet, useSecondsToTimeStr } from '../helpers';
+import { store, showIdLists, externalItemIdLists, movieIdLists, homeItems, homeSelectedItemIndex } from '../store';
 import ShowCard from '../components/ShowCard.vue';
 import ExternalItemCard from '../components/ExternalItemCard.vue';
 import MovieCard from '../components/MovieCard.vue';

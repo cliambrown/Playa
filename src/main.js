@@ -12,6 +12,7 @@ import App from './App.vue';
 import { createWebHistory, createRouter } from 'vue-router'
 
 import HomeView from './views/HomeView.vue';
+import ArchivesView from './views/ArchivesView.vue';
 import SettingsView from './views/SettingsView.vue';
 import ClearPlaybackView from './views/ClearPlaybackView.vue';
 import ShowPageView from './views/ShowPageView.vue';
@@ -23,6 +24,7 @@ import Button from './components/Button.vue';
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
+  { path: '/archives', name: 'archives', component: ArchivesView },
   { path: '/settings', name: 'settings', component: SettingsView },
   { path: '/clear-playback', name: 'clearPlayback', component: ClearPlaybackView },
   { path: '/shows/:id', name: 'show', component: ShowPageView },
