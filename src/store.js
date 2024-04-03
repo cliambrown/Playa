@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { useSecondsToTimeStr, useGet } from './helpers.js';
 import { Show } from './classes/Show.js';
 import { Episode } from './classes/Episode.js';
+import { ExternalItem } from './classes/ExternalItem.js';
 import { Movie } from './classes/Movie.js';
 
 /*
@@ -32,6 +33,8 @@ export const store = reactive({
   
   show_ids: [],
   shows: {},
+  external_item_ids: [],
+  external_items: {},
   movie_ids: [],
   movies: {},
   playback_positions: {},
@@ -69,6 +72,46 @@ export const store = reactive({
     this.scan_results.deleted_movies_count = 0;
   },
   
+  addShowFromDB(showData) {
+    if (this.show_ids.includes(showData.id)) {
+      this.shows[showData.id].updateFromDB(showData);
+    } else {
+      this.shows[showData.id] = new Show(showData);
+      this.show_ids.push(showData.id);
+    }
+  },
+  
+  addEpisodeFromDB(episodeData) {
+    const showID = parseInt(episodeData.show_id);
+    if (!this.shows.hasOwnProperty(showID)) return false;
+    let show = this.shows[showID];
+    const episodeID = parseInt(episodeData.id);
+    if (this.shows[showID].episode_ids.includes(episodeID)) {
+      show.episodes[episodeID].updateFromDB(episodeData);
+    } else {
+      show.episodes[episodeID] = new Episode(episodeData);
+      show.episode_ids.push(episodeID);
+    }
+  },
+  
+  addExternalItemFromDB(itemData) {
+    if (this.external_item_ids.includes(itemData.id)) {
+      this.external_items[itemData.id].updateFromDB(itemData);
+    } else {
+      this.external_items[itemData.id] = new ExternalItem(itemData);
+      this.external_item_ids.push(itemData.id);
+    }
+  },
+  
+  addMovieFromDB(movieData) {
+    if (this.movie_ids.includes(movieData.id)) {
+      this.movies[movieData.id].updateFromDB(movieData);
+    } else {
+      this.movies[movieData.id] = new Movie(movieData);
+      this.movie_ids.push(movieData.id);
+    }
+  },
+  
   async loadFromDB() {
     // Get settings
     const rows = await this.db.select('SELECT * FROM settings');
@@ -78,32 +121,27 @@ export const store = reactive({
     // Get shows
     const showsData = await this.db.select('SELECT * FROM shows');
     for (const showData of showsData) {
-      this.shows[showData.id] = new Show(showData);
-      if (!this.show_ids.includes(showData.id))
-        this.show_ids.push(showData.id);
+      this.addShowFromDB(showData);
     }
     // Get episodes
     const episodesData = await this.db.select('SELECT * FROM episodes');
     for (const episodeData of episodesData) {
-      const showID = parseInt(episodeData.show_id);
-      const episodeID = parseInt(episodeData.id);
-      if (
-        this.shows.hasOwnProperty(showID)
-        && !this.shows[showID].episode_ids.includes(episodeID)
-      ) {
-        this.shows[showID].episodes[episodeID] = new Episode(episodeData);
-        this.shows[showID].episode_ids.push(episodeID);
-      }
+      this.addEpisodeFromDB(episodeData);
+    }
+    // Get External Items
+    const externalItemsData = await this.db.select('SELECT * FROM external_items');
+    for (const itemData of externalItemsData) {
+      this.addExternalItemFromDB(itemData);
     }
     // Get Movies
     const moviesData = await this.db.select('SELECT * FROM movies');
     for (const movieData of moviesData) {
-      this.movies[movieData.id] = new Movie(movieData);
-      if (!this.movie_ids.includes(movieData.id))
-        this.movie_ids.push(movieData.id);
+      this.addMovieFromDB(movieData);
     }
     // Sort everything and select first item
     this.sortShowsAndEpisodes();
+    this.sortExternalItems();
+    this.sortMovies();
     if (this.home.selected_item.slug === null) this.selectFirstHomeItem();
     await nextTick();
     this.loaded_from_db = true;
@@ -116,7 +154,6 @@ export const store = reactive({
     this.loading = true;
     this.loading_msg = null;
     this.resetScanResults();
-    await this.loadFromDB();
     // Scan shows
     let response;
     let episodePathnames = [];
@@ -179,16 +216,15 @@ export const store = reactive({
     this.loading = true;
     this.loading_msg = null;
     this.resetScanResults();
-    await this.loadFromDB();
     // Scan movies
     let response;
-    let moviePathnames = this.movie_ids.map(movieID => 
+    let currentMoviePathnames = this.movie_ids.map(movieID => 
       this.movies[movieID].pathname
     );
     try {
       response = await invoke('scan_movies', {
         movieDir: this.settings.movie_dir,
-        currentMoviePathnames: moviePathnames
+        currentMoviePathnames: currentMoviePathnames
       });
     } catch (error) {
       window.alert(error);
@@ -201,27 +237,28 @@ export const store = reactive({
       return false;
     }
     const movieCount = response.length;
+    let updatedMoviePathnames = [];
     for (let i=0; i<movieCount; i++) {
       const movieData = response[i];
       const duration = useGet(movieData, 'duration');
       if (duration) movieData.duration = useSecondsToTimeStr(duration);
-      let movie = await this.movieFromPathname(movieData);
+      let movie = await this.movieFromPathname(movieData, true);
+      updatedMoviePathnames.push(movieData.pathname);
     }
     // Prune and sort
-    await this.pruneMissingMovies(moviePathnames);
+    await this.pruneMissingMovies(updatedMoviePathnames);
     this.sortMovies();
     this.loading_msg = `Scan complete: ${this.scan_results.new_movies_count} new movies, ${this.scan_results.deleted_movies_count} deleted`;
     this.loading = false;
   },
   
   sortShowsAndEpisodes() {
-    // Sort shows
     this.show_ids.sort((showIdA, showIdB) => {
       const showA = this.shows[showIdA];
       const showB = this.shows[showIdB];
       if (showA.last_watched_at > showB.last_watched_at) return -1;
       else if (showA.last_watched_at < showB.last_watched_at) return 1;
-      return showA.name.localeCompare(showB.name, 'en', { sensitivity: 'base' });
+      return showA.alpha_name.localeCompare(showB.alpha_name);
     });
     // Sort episodes
     for (const showID of this.show_ids) {
@@ -229,14 +266,23 @@ export const store = reactive({
     }
   },
   
+  sortExternalItems() {
+    this.external_item_ids.sort((itemIdA, itemIdB) => {
+      const itemA = this.external_items[itemIdA];
+      const itemB = this.external_items[itemIdB];
+      if (itemA.last_watched_at > itemB.last_watched_at) return -1;
+      else if (itemA.last_watched_at < itemB.last_watched_at) return 1;
+      return itemA.alpha_name.localeCompare(itemB.alpha_name);
+    });
+  },
+  
   sortMovies() {
-    // Sort movies
     this.movie_ids.sort((movieIdA, movieIdB) => {
       const movieA = this.movies[movieIdA];
       const movieB = this.movies[movieIdB];
       if (movieA.last_watched_at > movieB.last_watched_at) return -1;
       else if (movieA.last_watched_at < movieB.last_watched_at) return 1;
-      return movieA.name.localeCompare(movieB.name, 'en', { sensitivity: 'base' });
+      return movieA.alpha_name.localeCompare(movieB.alpha_name);
     });
   },
   
@@ -280,10 +326,11 @@ export const store = reactive({
   
   // If a movie already exists with that pathname, returns the movie
   // Else, adds the movie to DB and store
-  async movieFromPathname(movieData) {
+  async movieFromPathname(movieData, fromScan = false) {
     if (!this.db) return false;
     let movie = this.findMovieByPathname(movieData.pathname);
     if (movie) return movie;
+    movieData.is_new = fromScan;
     movie = new Movie(movieData);
     await movie.saveToDB();
     this.movies[movie.id] = movie;
@@ -360,6 +407,13 @@ export const store = reactive({
         this.playback_positions[entry.media_filename] = useSecondsToTimeStr(entry.position);
       }
     }
+  },
+  
+  async addExternalItem() {
+    if (!this.db) return false;
+    let item = new ExternalItem();
+    await item.saveToDB();
+    return item.id;
   }
 });
 
@@ -384,6 +438,13 @@ export const showIdLists = computed(() => {
   }
 });
 
+export const externalItemIdLists = computed(() => {
+  return {
+    external_item_ids: store.external_item_ids.filter(itemID => !store.external_items[itemID].is_archived),
+    archived_external_item_ids: store.external_item_ids.filter(itemID => store.external_items[itemID].is_archived)
+  }
+});
+
 export const movieIdLists = computed(() => {
   return {
     movie_ids: store.movie_ids.filter(movieID => !store.movies[movieID].is_archived),
@@ -393,16 +454,22 @@ export const movieIdLists = computed(() => {
 
 export const homeItems = computed(() => {
   let showIdVals = showIdLists.value;
-  let segs = [
-    showIdVals.unfinished_show_ids.map(showID => store.shows[showID])
-  ];
-  if (store.home.show_finished_shows) {
-    segs.push(showIdVals.finished_show_ids.map(showID => store.shows[showID]));
+  let items = [];
+  for (const showID of showIdVals.unfinished_show_ids) {
+    items.push(store.shows[showID]);
   }
-  segs.push(
-    movieIdLists.value.movie_ids.map(movieID => store.movies[movieID])
-  );
-  return segs.flat(1);
+  if (store.home.show_finished_shows) {
+    for (const showID of showIdVals.finished_show_ids) {
+      items.push(store.shows[showID]);
+    }
+  }
+  for (const itemID of externalItemIdLists.value.external_item_ids) {
+    items.push(store.external_items[itemID]);
+  }
+  for (const movieID of movieIdLists.value.movie_ids) {
+    items.push(store.movies[movieID]);
+  }
+  return items;
 });
 
 export const homeSelectedItemIndex = computed(() =>

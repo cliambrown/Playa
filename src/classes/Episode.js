@@ -14,15 +14,26 @@ export function Episode(episodeData, fromScan = false) {
   this.released_on = useGet(episodeData, 'released_on');
   this.duration = useGet(episodeData, 'duration');
   this.is_new_addition = useGet(episodeData, 'is_new_addition');
+  this.is_updated_from_tvdb = useGet(episodeData, 'is_updated_from_tvdb');
   if (fromScan) {
     this.parseFilename();
-    this.setSearchableText();
   } else {
     this.season_num = useGet(episodeData, 'season_num');
     this.episode_num = useGet(episodeData, 'episode_num');
     this.name = useGet(episodeData, 'name');
     this.searchable_text = useGet(episodeData, 'searchable_text');
   }
+  this.setSearchableText();
+}
+
+Episode.prototype.updateFromDB = function(episodeData) {
+  this.overview = useGet(episodeData, 'overview');
+  this.released_on = useGet(episodeData, 'released_on');
+  this.duration = useGet(episodeData, 'duration');
+  this.season_num = useGet(episodeData, 'season_num');
+  this.episode_num = useGet(episodeData, 'episode_num');
+  this.name = useGet(episodeData, 'name');
+  this.setSearchableText();
 }
 
 Episode.prototype.setSearchableText = function() {
@@ -66,8 +77,8 @@ Episode.prototype.setSlug = function() {
 }
 
 Episode.prototype.saveToDB = async function() {
-  const response = await useSaveToDB(store, this, ['show_id', 'pathname', 'filename', 'season_num', 'episode_num', 'name', 'overview', 'released_on', 'duration', 'searchable_text']);
-  console.log('episode.saveToDB', response);
+  const response = await useSaveToDB(store, this, ['show_id', 'pathname', 'filename', 'season_num', 'episode_num', 'name', 'overview', 'released_on', 'duration']);
+  console.log('Episode.saveToDB', response);
   return response;
 }
 
@@ -77,7 +88,7 @@ Episode.prototype.delete = async function() {
   // Delete episode
   query = "DELETE FROM episodes WHERE id=?"
   response = await store.db.execute(query, [this.id]);
-  console.log('episode.delete episode', response);
+  console.log('Episode.delete episode', response);
   // Remove from store
   if (store.shows.hasOwnProperty(this.show_id)) {
     let show = store.shows[this.show_id];

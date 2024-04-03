@@ -47,12 +47,16 @@ export function useGet(obj, path, defValue = null) {
 }
 
 export function useSlugify(str, seperator = '-') {
+  if (!str) str = '';
   return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, seperator)
-    .replace(/^-+|-+$/g, '');
+    .replace(/^-+|-+$/g, '')
+    .trim();
 }
 
 export function useAlphaName(name) {
@@ -60,7 +64,7 @@ export function useAlphaName(name) {
   if (name.startsWith('the ')) name = name.slice(4);
   if (name.startsWith('a ')) name = name.slice(2);
   if (name.startsWith('an ')) name = name.slice(3);
-  return name;
+  return name.trim();
 }
 
 export async function useOpenOrHomeDir(dir) {
@@ -74,6 +78,10 @@ export async function useOpenOrHomeDir(dir) {
       window.alert(`Failed to open "${dir}": ${e1}${"\n"}Failed to open "/": ${e2}`);
     }
   }
+}
+
+export function useShowInExplorer(path) {
+  invoke('show_in_folder', {path});
 }
 
 export async function useSaveToDB(store, item, fields, setUpdatedAt = true) {

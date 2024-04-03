@@ -1,7 +1,7 @@
 import { open } from '@tauri-apps/api/shell';
 import { invoke } from '@tauri-apps/api/tauri';
 import { store } from '../store';
-import { useGet, useSaveToDB } from '../helpers.js';
+import { useGet, useAlphaName, useSaveToDB } from '../helpers.js';
 import { Episode } from './Episode.js';
 
 export function Show(showData) {
@@ -26,9 +26,20 @@ export function Show(showData) {
   this.tvdb_matches = [];
 }
 
+Show.prototype.updateFromDB = function(showData) {
+  this.setName(useGet(showData, 'name'));
+  this.is_archived = useGet(showData, 'is_archived');
+  this.tvdb_id = useGet(showData, 'tvdb_id');
+  this.tvdb_slug = useGet(showData, 'tvdb_slug');
+  this.last_watched_at = useGet(showData, 'last_watched_at');
+  this.banner_filename = useGet(showData, 'banner_filename');
+  this.current_episode_id = useGet(showData, 'current_episode_id');
+}
+
 Show.prototype.setName = function(newName = null) {
   if (!newName) newName = this.dir_name;
   this.name = newName;
+  this.alpha_name = useAlphaName(newName);
 }
 
 Show.prototype.setSlug = function() {
@@ -37,7 +48,7 @@ Show.prototype.setSlug = function() {
 
 Show.prototype.saveToDB = async function() {
   const response = await useSaveToDB(store, this, ['is_archived', 'name', 'dir_name', 'tvdb_id', 'tvdb_slug', 'last_watched_at', 'banner_filename', 'current_episode_id']);
-  console.log('show.saveToDB', response);
+  console.log('Show.saveToDB', response);
   return response;
 }
 
@@ -47,7 +58,7 @@ Show.prototype.updateCurrentEpInDB = async function() {
     "UPDATE shows SET current_episode_id=? WHERE id=?",
     [this.current_episode_id, this.id]
   );
-  console.log('show.updateCurrentEpInDB', response);
+  console.log('Show.updateCurrentEpInDB', response);
 }
 
 Show.prototype.updateLastWatchedAtInDB = async function() {
@@ -56,7 +67,7 @@ Show.prototype.updateLastWatchedAtInDB = async function() {
     "UPDATE shows SET last_watched_at=? WHERE id=?",
     [this.last_watched_at, this.id]
   );
-  console.log('show.updateLastWatchedAtInDB', response);
+  console.log('Show.updateLastWatchedAtInDB', response);
 }
 
 Show.prototype.findEpisodeByPathname = function(pathname) {
@@ -176,11 +187,11 @@ Show.prototype.delete = async function() {
   // Delete show episodes
   query = "DELETE FROM episodes WHERE show_id=?"
   response = await store.db.execute(query, [this.id]);
-  console.log('show.delete episodes', response);
+  console.log('Show.delete episodes', response);
   // Delete show
   query = "DELETE FROM shows WHERE id=?"
   response = await store.db.execute(query, [this.id]);
-  console.log('show.delete show', response);
+  console.log('Show.delete show', response);
   // Remove from store
   store.show_ids = store.show_ids.filter(showID => showID != this.id);
   delete store.shows[this.id];

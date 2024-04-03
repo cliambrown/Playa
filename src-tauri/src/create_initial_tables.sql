@@ -24,8 +24,7 @@ CREATE TABLE episodes (
     name TEXT NOT NULL,
     overview TEXT DEFAULT NULL,
     released_on INTEGER DEFAULT NULL,
-    duration TEXT DEFAULT NULL,
-    searchable_text TEXT DEFAULT NULL
+    duration TEXT DEFAULT NULL
 );
 
 CREATE TABLE external_items (
@@ -33,12 +32,12 @@ CREATE TABLE external_items (
     created_at INTEGER DEFAULT NULL,
     updated_at INTEGER DEFAULT NULL,
     is_archived INTEGER DEFAULT 0,
-    name TEXT NOT NULL,
+    name TEXT DEFAULT NULL,
     tvdb_id INTEGER DEFAULT NULL,
     tvdb_slug TEXT DEFAULT NULL,
     last_watched_at INTEGER DEFAULT NULL,
     banner_filename TEXT DEFAULT NULL,
-    url TEXT NOT NULL
+    url TEXT DEFAULT NULL
 );
 
 CREATE TABLE movies (
@@ -53,9 +52,7 @@ CREATE TABLE movies (
     tvdb_slug TEXT DEFAULT NULL,
     duration TEXT DEFAULT NULL,
     last_watched_at INTEGER DEFAULT NULL,
-    poster_filename TEXT DEFAULT NULL,
-    poster_width INTEGER DEFAULT NULL,
-    poster_height INTEGER DEFAULT NULL
+    poster_filename TEXT DEFAULT NULL
 );
 
 CREATE TABLE settings (

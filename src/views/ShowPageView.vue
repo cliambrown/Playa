@@ -4,9 +4,9 @@ import { invoke } from '@tauri-apps/api/tauri';
 import { open } from '@tauri-apps/api/shell';
 import { save } from '@tauri-apps/api/dialog';
 import { TransitionExpand } from '@morev/vue-transitions';
-import { store } from '../store.js'
+import { store } from '../store.js';
 import { useGet, useOpenOrHomeDir, useAlphaName } from '../helpers';
-import { searchShow, getEpisodes, getBanners } from '../tvdb';
+import { searchTvdb, getEpisodes, getArtwork } from '../tvdb';
 import EpisodeCard from '../components/EpisodeCard.vue';
 import DirSelect from '../components/DirSelect.vue';
 
@@ -21,6 +21,7 @@ const bannerSrc = ref('url');
 const bannerSrcUrl = ref('');
 const bannerSrcFilepath = ref('');
 const banners = ref([]);
+const showBanners = ref(true);
 const filterStr = ref('');
 const filterStrDebounced = ref('');
 
@@ -36,19 +37,29 @@ async function handleUpdate() {
   if (!store.loaded_from_db) return false;
   window.clearTimeout(updateTimeoutId);
   window.clearTimeout(updateMsgTimoutId);
-  store.loading_msg = 'Waiting...'
+  store.loading_msg = 'Waiting...';
   updateTimeoutId = window.setTimeout(async () => {
-    store.loading_msg = 'Saving Show...'
+    store.loading_msg = 'Saving Show...';
     const response = await show.value.saveToDB();
     console.log('show handleUpdate', response);
     if (parseInt(useGet(response, 'rowsAffected'))) {
       store.loading_msg = 'Show saved';
       updateMsgTimoutId = window.setTimeout(() => {
-        store.loading_msg = ''
+        store.loading_msg = '';
       }, 5000);
     }
   }, 500);
 }
+
+watch(
+  () => show.value ? show.value.name : null,
+  (newName) => {
+    if (show.value) {
+      show.value.setName(newName);
+      handleUpdate();
+    }
+  }
+)
 
 function openTvdbSlug(slug) {
   if (slug) open('https://www.thetvdb.com/series/' + slug);
@@ -56,7 +67,7 @@ function openTvdbSlug(slug) {
 
 async function searchShowInTvdb() {
   if (!show || !show.value.name) return false;
-  const matches = await searchShow(store, show.value.name);
+  const matches = await searchTvdb(store, show.value.name, 'show');
   if (!matches || !Array.isArray(matches)) return false;
   show.value.tvdb_matches = matches;
   showMatches.value = true;
@@ -86,6 +97,8 @@ async function updateEpisodesFromTvdb() {
   if (!show || !show.value.tvdb_id) return false;
   const tvdbEpisodes = await getEpisodes(store, show.value.tvdb_id);
   if (!tvdbEpisodes) return false;
+  store.loading_msg = '';
+  let updatedCount = 0;
   for (const episodeID of show.value.episode_ids) {
     let episode = show.value.episodes[episodeID];
     let seasonNum = parseInt(episode.season_num);
@@ -97,6 +110,9 @@ async function updateEpisodesFromTvdb() {
         tvdbEpisode.seasonNumber === seasonNum
         && tvdbEpisode.number === episodeNum
       ) {
+        const origName = episode.name;
+        const origOverview = episode.overview;
+        const origReleasedOn = episode.released_on;
         episode.name = tvdbEpisode.name;
         episode.overview = tvdbEpisode.overview;
         const aired = tvdbEpisode.aired;
@@ -105,18 +121,28 @@ async function updateEpisodesFromTvdb() {
           const date = new Date(y, (m-1), d);
           episode.released_on = date.getTime() / 1000;
         }
-        episode.saveToDB();
+        if (
+          origName !== episode.name
+          || origOverview !== episode.overview
+          || origReleasedOn !== episode.released_on
+        ) {
+          updatedCount++;
+          episode.is_updated_from_tvdb = true;
+          episode.saveToDB();
+        }
         break;
       }
     }
   }
+  store.loading_msg = `${updatedCount} episode${updatedCount == 1 ? '' : 's'} updated`;
 }
 
 async function getBannersFromTvdb() {
   if (!show || !show.value.tvdb_id) return false;
-  const tvdbBanners = await getBanners(store, show.value.tvdb_id);
+  const tvdbBanners = await getArtwork(store, show.value.tvdb_id, 'show');
   if (!tvdbBanners) return false;
   banners.value = tvdbBanners;
+  showBanners.value = true;
 }
 
 async function replaceBanner() {
@@ -153,10 +179,12 @@ async function replaceBanner() {
   if (newFilename === response.split('.')[0]) {
     show.value.banner_filename = response;
     handleUpdate();
-    invoke('delete_image', {
-      deleteFilename: oldFilename,
-      fromFolder: 'banners',
-    });
+    if (oldFilename) {
+      invoke('delete_image', {
+        deleteFilename: oldFilename,
+        fromFolder: 'banners',
+      });
+    }
   }
   store.loading = false;
 }
@@ -250,7 +278,7 @@ onBeforeUnmount(() => {
       <TransitionExpand>
         <form action="" method="get" @submit.prevent v-show="showEdit" class="pt-1 pb-4" autocapitalize="false" autocomplete="off">
           
-          <InputWithLabel class="max-w-2xl mt-4" id="name" v-model="show.name" :readonly="store.loading" @input="handleUpdate">
+          <InputWithLabel class="max-w-2xl mt-4" id="name" v-model="show.name" :readonly="store.loading">
             Name
             <template v-slot:afterInput>
               <Button variant="action-secondary" @click="searchShowInTvdb">
@@ -263,9 +291,11 @@ onBeforeUnmount(() => {
           </InputWithLabel>
           
           <div v-if="show.tvdb_matches.length" class="mt-4">
-            <div class="mb-1 text-sm font-medium uppercase text-slate-200">
-              Search results ({{ show.tvdb_matches.length }})
-              <button type="button" @click="showMatches = !showMatches" class="ml-6 text-white">
+            <div class="flex items-center gap-6">
+              <div class="text-sm font-medium uppercase text-slate-200">
+                Search results ({{ show.tvdb_matches.length }})
+              </div>
+              <button type="button" @click="showMatches = !showMatches" class="text-white">
                 <span v-if="showMatches" class="inline-flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                     <path fill-rule="evenodd" d="M11.78 9.78a.75.75 0 0 1-1.06 0L8 7.06 5.28 9.78a.75.75 0 0 1-1.06-1.06l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
@@ -283,11 +313,11 @@ onBeforeUnmount(() => {
             <TransitionExpand>
               <ul v-show="showMatches" class="p-1">
                 <li v-for="match in show.tvdb_matches" class="flex flex-wrap gap-2 my-2">
-                  <Button @click="selectTvdbMatch(match)" whitespace="normal">
+                  <Button variant="action-secondary" @click="selectTvdbMatch(match)" whitespace="normal">
                     {{ match.name }}
                     ({{ match.country }} {{ match.year }})
                   </Button>
-                  <Button variant="gray" @click="openTvdbSlug(match.slug)">
+                  <Button variant="link-secondary" @click="openTvdbSlug(match.slug)">
                     <span class="relative bottom-0.5">📺</span>
                     <span>TVDB</span>
                   </Button>
@@ -352,6 +382,17 @@ onBeforeUnmount(() => {
             
           </div>
           
+          <div v-if="bannerSrc === 'upload'" class="mt-4">
+            <InputWithLabel id="tv_dir" v-model="bannerSrcFilepath">
+              File location
+              <template v-slot:afterInput>
+                <div class="flex items-center gap-x-2">
+                  <DirSelect v-model="bannerSrcFilepath" :directory="false" defaultPath="%HomeDrive%"/>
+                </div>
+              </template>
+            </InputWithLabel>
+          </div>
+          
           <div v-if="bannerSrc === 'url'" class="mt-4">
             
             <InputWithLabel id="banner-url" class="max-w-2xl" v-model="bannerSrcUrl">
@@ -364,23 +405,35 @@ onBeforeUnmount(() => {
             </template>
             </InputWithLabel>
             
-            <div v-if="banners.length" class="flex flex-wrap gap-2 mt-4">
-              <button type="button" v-for="banner in banners" class=" w-80" @click="bannerSrcUrl = banner.image">
-                <img :src="banner.image">
-              </button>
+            <div v-if="banners.length" class="mt-4">
+              <div class="flex items-center gap-6">
+                <div class="text-sm font-medium uppercase text-slate-200">
+                  Banners ({{ banners.length }})
+                </div>
+                <button type="button" @click="showBanners = !showBanners" class="text-white">
+                  <span v-if="showBanners" class="inline-flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                      <path fill-rule="evenodd" d="M11.78 9.78a.75.75 0 0 1-1.06 0L8 7.06 5.28 9.78a.75.75 0 0 1-1.06-1.06l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
+                    </svg>
+                    hide
+                  </span>
+                  <span v-if="!showBanners" class="inline-flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 ">
+                      <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                    </svg>
+                    show
+                  </span>
+                </button>
+              </div>
+              <TransitionExpand>
+                <div v-show="showBanners" class="flex flex-wrap gap-2 mt-2">
+                  <button type="button" v-for="banner in banners" class=" w-80" @click="bannerSrcUrl = banner.image">
+                    <img :src="banner.image">
+                  </button>
+                </div>
+              </TransitionExpand>
             </div>
             
-          </div>
-          
-          <div v-if="bannerSrc !== 'url'" class="mt-4">
-            <InputWithLabel id="tv_dir" v-model="bannerSrcFilepath">
-              File location
-              <template v-slot:afterInput>
-                <div class="flex items-center gap-x-2">
-                  <DirSelect v-model="bannerSrcFilepath" :directory="false" defaultPath="%HomeDrive%"/>
-                </div>
-              </template>
-            </InputWithLabel>
           </div>
           
         </form>

@@ -10,7 +10,7 @@ const props = defineProps(['episode', 'isSelected', 'playbackPosition']);
 let updateTimeoutId = null;
 let updateMsgTimoutId = null;
 
-const wrapper = ref(null)
+const wrapper = ref(null);
 const showOverview = ref(false);
 const showEdit = ref(false);
 
@@ -67,6 +67,16 @@ async function handleUpdate() {
     }
   }, 500);
 }
+
+watch(
+  () => props.episode ? '' + props.episode.name + props.episode.overview : null,
+  (newVal) => {
+    if (props.episode) {
+      props.episode.setSearchableText();
+      handleUpdate();
+    }
+  }
+);
 </script>
 
 <template>
@@ -87,6 +97,9 @@ async function handleUpdate() {
         <div class="text-xl font-semibold">
           <span v-if="episode.is_new" class="relative inline-block px-2 text-sm text-white bg-orange-700 rounded-full bottom-0.5 mr-2">
             NEW
+          </span>
+          <span v-if="episode.is_updated_from_tvdb" class="relative inline-block px-2 text-sm text-white bg-teal-700 rounded-full bottom-0.5 mr-2">
+            UPDATED
           </span>
           S{{ (episode.season_num + '').padStart(2, '0') }}E{{ (episode.episode_num + '').padStart(2, '0') }}
           {{ episode.name }}
@@ -134,7 +147,7 @@ async function handleUpdate() {
       <TransitionExpand>
         <div v-show="showEdit" class="py-4">
           
-          <InputWithLabel class="w-full" :isDark="false" :id="`episode-${episode.id}-name`" v-model="episode.name" :readonly="store.loading" @input="handleUpdate">
+          <InputWithLabel class="w-full" :isDark="false" :id="`episode-${episode.id}-name`" v-model="episode.name" :readonly="store.loading">
             Name
           </InputWithLabel>
           
@@ -158,7 +171,7 @@ async function handleUpdate() {
             
           </div>
           
-          <TextareaWithLabel class="mt-4" :isDark="false" :id="`episode-${episode.id}-overview`" v-model="episode.overview" :readonly="store.loading" @input="handleUpdate">
+          <TextareaWithLabel class="mt-4" :isDark="false" :id="`episode-${episode.id}-overview`" v-model="episode.overview" :readonly="store.loading">
             Overview
           </TextareaWithLabel>
           

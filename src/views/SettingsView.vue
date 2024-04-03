@@ -20,7 +20,6 @@ function handleUpdate() {
       query += 'UPDATE settings SET value=? WHERE name=?; ';
       paramsArr.push(store.settings[property], property);
     }
-    console.log(query, paramsArr)
     const response = await store.db.execute(query, paramsArr);
     if (parseInt(useGet(response, 'rowsAffected'))) {
       store.loading_msg = 'Settings saved';

@@ -66,17 +66,18 @@ async function getToken(store) {
   return token;
 }
 
-export async function searchShow(store, showName) {
+export async function searchTvdb(store, showName, type) {
   if (!showName) return false;
   let token = await getToken(store);
   if (!token) return false;
-  const url = 'https://api4.thetvdb.com/v4/search?q=' + encodeURI(showName) + '&type=series';
+  const typeParam = (type === 'show' ? 'series' : 'movie');
+  const url = 'https://api4.thetvdb.com/v4/search?q=' + encodeURI(showName) + '&type=' + typeParam;
   const response = await fetch(url, {
     method: 'GET',
     headers: { Authorization: 'Bearer ' + token },
     timeout: 10,
   });
-  console.log('searchShow', response);
+  console.log('searchTvdb', response);
   return getResponseData(response);
 }
 
@@ -102,18 +103,18 @@ export async function getEpisodes(store, tvdbID) {
   return responseData.episodes;
 }
 
-export async function getBanners(store, tvdbID) {
+export async function getArtwork(store, tvdbID, type) {
   if (!tvdbID) return false;
   let token = await getToken(store);
   if (!token) return false;
-  console.log('getBanners')
-  const url = 'https://api4.thetvdb.com/v4/series/' + encodeURI(tvdbID) + '/extended';
+  const typeParam = (type === 'show' ? 'series' : 'movies');
+  const url = 'https://api4.thetvdb.com/v4/' + typeParam + '/' + encodeURI(tvdbID) + '/extended';
   const response = await fetch(url, {
     method: 'GET',
     headers: { Authorization: 'Bearer ' + token },
     timeout: 10,
   });
-  console.log('getEpisodes', response);
+  console.log('getArtwork', response);
   const responseData = getResponseData(response);
   if (
     !responseData
@@ -124,9 +125,14 @@ export async function getBanners(store, tvdbID) {
   }
   const artworks = [];
   for (const artwork of responseData.artworks) {
-    if (parseInt(artwork.type) === 1) artworks.push(artwork);
+    const artworkType = parseInt(artwork.type);
+    if (
+      (type === 'show' && artworkType === 1)
+      || (type === 'movie' && artworkType === 14)
+    ) {
+      artworks.push(artwork);
+    }
+    if (artworks.length >= 12) break;
   }
   return artworks;
 }
-
-// export 

@@ -1,11 +1,14 @@
 <script setup>
-import { computed, onBeforeMount, onBeforeUnmount } from 'vue';
 import { invoke } from '@tauri-apps/api/tauri';
+import { computed, onBeforeMount, onBeforeUnmount } from 'vue';
+import { useRouter } from 'vue-router'
 import { TransitionExpand } from '@morev/vue-transitions';
 import { store, showIdLists, movieIdLists, homeItems, nullItem, homeSelectedItemIndex } from '../store';
 import { useGet, useSecondsToTimeStr } from '../helpers';
 import ShowCard from '../components/ShowCard.vue';
 import MovieCard from '../components/MovieCard.vue';
+
+const router = useRouter();
 
 function handleKeydown(event) {
   switch (event.key) {
@@ -65,17 +68,20 @@ function toggleShowFinished() {
   store.home.show_finished_shows = !store.home.show_finished_shows;
 }
 
+function addItem() {
+  let itemID = store.addExternalItem();
+  router.push({ name: 'externalItem', params: { id: itemID } });
+}
+
 </script>
 
 <template>
   
-  <div class="px-4 pt-8 pb-8">
+  <div class="px-12 pt-8 pb-8">
     
-    <div class="flex items-baseline gap-x-6">
-      <h2 class="text-2xl text-slate-200">
-        TV
-      </h2>
-      <Button variant="action-secondary" @click="toggleShowFinished" class="ml-auto">
+    <div class="flex justify-center gap-6">
+      
+      <Button variant="action-secondary" @click="toggleShowFinished">
         <svg v-show="!store.home.show_finished_shows" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
         </svg>
@@ -84,15 +90,31 @@ function toggleShowFinished() {
         </svg>
         Finished
       </Button>
+      
       <Button @click="scanShows" :disabled="store.loading">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
         </svg>
         Scan shows
       </Button>
+      
+      <Button @click="scanMovies" :disabled="store.loading">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+          <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
+        </svg>
+        Scan movies
+      </Button>
+      
+      <Button variant="link-secondary" @click="addItem" :disabled="store.loading">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+          <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
+        </svg>
+        Add external
+      </Button>
+      
     </div>
     
-    <div class="flex flex-wrap sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))] gap-12 px-12 justify-center items-start">
+    <div class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
       <ShowCard
         v-for="showID in showIdLists.unfinished_show_ids"
         :show="store.shows[showID]"
@@ -101,7 +123,7 @@ function toggleShowFinished() {
     </div>
     
     <TransitionExpand>
-      <div v-show="store.home.show_finished_shows && showIdLists.finished_show_ids.length" class="flex flex-wrap gap-6 mt-12">
+      <div v-show="store.home.show_finished_shows && showIdLists.finished_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
         <ShowCard
           v-for="showID in showIdLists.finished_show_ids"
           :show="store.shows[showID]"
@@ -110,51 +132,13 @@ function toggleShowFinished() {
       </div>
     </TransitionExpand>
     
-    <div class="flex items-baseline mt-12 gap-x-6">
-      <h2 class="text-2xl text-slate-200">
-        Movies
-      </h2>
-      <Button @click="scanMovies" :disabled="store.loading" class="ml-auto">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-          <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
-        </svg>
-        Scan movies
-      </Button>
-    </div>
-    
-    <div class="flex flex-wrap gap-6">
+    <div class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,_360px))]">
       <MovieCard
         v-for="movieID in movieIdLists.movie_ids"
         :movie="store.movies[movieID]"
         :is-selected="store.home.selected_item.slug === store.movies[movieID].slug"
       ></MovieCard>
     </div>
-    
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
     
   </div>
   

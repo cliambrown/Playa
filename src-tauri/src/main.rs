@@ -6,9 +6,10 @@ pub mod scanner;
 pub mod emitter;
 pub mod images;
 
-use trash;
+use std::process::Command;
 use std::path::Path;
 use tauri_plugin_sql::{Migration, MigrationKind};
+use trash;
 
 #[tauri::command]
 fn trash_files(dir: &str, filenames: Vec<&str>) -> String {
@@ -26,10 +27,14 @@ fn get_home_dir() -> String {
         .into_os_string().into_string().unwrap();
 }
 
-// the payload type must implement `Serialize` and `Clone`.
-#[derive(Clone, serde::Serialize)]
-struct Payload {
-    message: String,
+// https://github.com/tauri-apps/plugins-workspace/issues/999#issuecomment-1965624567
+#[tauri::command]
+fn show_in_folder(path: String) -> Result<(), String> {
+    Command::new("explorer")
+        .args(["/select,", &path]) // The comma after select is not a typo
+        .spawn()
+        .map_err(|e| e.to_string())?;
+  Ok(())
 }
 
 fn main() {
@@ -58,7 +63,8 @@ fn main() {
                 images::download_image,
                 images::delete_image,
                 trash_files,
-                get_home_dir
+                get_home_dir,
+                show_in_folder
             ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

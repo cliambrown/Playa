@@ -7,10 +7,6 @@ import { appLocalDataDir } from '@tauri-apps/api/path';
 import Database from 'tauri-plugin-sql-api';
 import NavLink from './components/NavLink.vue';
 import { store } from './store.js';
-import { useRoute } from "vue-router";
-
-const route = useRoute();
-store.route = route;
 
 onBeforeMount(async () => {
   store.loading_msg = null;
