@@ -27,6 +27,7 @@
       "dialog": {
         "open": true,
         "message": true,
+        "confirm": true,
         "save": true
       },
       "http": {
