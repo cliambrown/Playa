@@ -58,7 +58,6 @@ async function handleUpdate() {
   updateTimeoutId = window.setTimeout(async () => {
     store.loading_msg = 'Saving Episode...'
     const response = await props.episode.saveToDB();
-    console.log('episode handleUpdate', response);
     if (parseInt(useGet(response, 'rowsAffected'))) {
       store.loading_msg = 'Episode saved';
       updateMsgTimoutId = window.setTimeout(() => {

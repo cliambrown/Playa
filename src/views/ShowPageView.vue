@@ -41,7 +41,6 @@ async function handleUpdate() {
   updateTimeoutId = window.setTimeout(async () => {
     store.loading_msg = 'Saving Show...';
     const response = await show.value.saveToDB();
-    console.log('show handleUpdate', response);
     if (parseInt(useGet(response, 'rowsAffected'))) {
       store.loading_msg = 'Show saved';
       updateMsgTimoutId = window.setTimeout(() => {
@@ -66,7 +65,7 @@ function openTvdbSlug(slug) {
 }
 
 async function searchShowInTvdb() {
-  if (!show || !show.value.name) return false;
+  if (!show.value || !show.value.name) return false;
   const matches = await searchTvdb(store, show.value.name, 'show');
   if (!matches || !Array.isArray(matches)) return false;
   show.value.tvdb_matches = matches;
@@ -94,7 +93,7 @@ function toggleArchived() {
 }
 
 async function updateEpisodesFromTvdb() {
-  if (!show || !show.value.tvdb_id) return false;
+  if (!show.value || !show.value.tvdb_id) return false;
   const tvdbEpisodes = await getEpisodes(store, show.value.tvdb_id);
   if (!tvdbEpisodes) return false;
   store.loading_msg = '';
@@ -138,7 +137,7 @@ async function updateEpisodesFromTvdb() {
 }
 
 async function getBannersFromTvdb() {
-  if (!show || !show.value.tvdb_id) return false;
+  if (!show.value || !show.value.tvdb_id) return false;
   const tvdbBanners = await getArtwork(store, show.value.tvdb_id, 'show');
   if (!tvdbBanners) return false;
   banners.value = tvdbBanners;
@@ -246,7 +245,7 @@ onBeforeUnmount(() => {
           {{ show.dir_name }}
         </Button>
         
-        <Button variant="archive" @click="toggleArchived">
+        <Button variant="archive" @click="toggleArchived" :disabled="store.loading">
           <svg v-if="show.is_archived" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
             <path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3Z" />
             <path fill-rule="evenodd" d="M13 6H3v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6ZM5.72 7.47a.75.75 0 0 1 1.06 0L8 8.69l1.22-1.22a.75.75 0 1 1 1.06 1.06L9.06 9.75l1.22 1.22a.75.75 0 1 1-1.06 1.06L8 10.81l-1.22 1.22a.75.75 0 0 1-1.06-1.06l1.22-1.22-1.22-1.22a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
@@ -278,7 +277,7 @@ onBeforeUnmount(() => {
       <TransitionExpand>
         <form action="" method="get" @submit.prevent v-show="showEdit" class="pt-1 pb-4" autocapitalize="false" autocomplete="off">
           
-          <InputWithLabel class="max-w-2xl mt-4" id="name" v-model="show.name" :readonly="store.loading">
+          <InputWithLabel class="mt-4" id="name" v-model="show.name" :readonly="store.loading">
             Name
             <template v-slot:afterInput>
               <Button variant="action-secondary" @click="searchShowInTvdb">
@@ -395,7 +394,7 @@ onBeforeUnmount(() => {
           
           <div v-if="bannerSrc === 'url'" class="mt-4">
             
-            <InputWithLabel id="banner-url" class="max-w-2xl" v-model="bannerSrcUrl">
+            <InputWithLabel id="banner-url" class="" v-model="bannerSrcUrl">
               URL
               <template v-slot:afterInput>
               <Button variant="action-secondary" @click="getBannersFromTvdb" :disabled="!show.tvdb_id || store.loading">

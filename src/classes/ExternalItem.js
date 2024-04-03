@@ -31,7 +31,7 @@ ExternalItem.prototype.updateFromDB = function(itemData) {
 }
 
 ExternalItem.prototype.setName = function(newName = null) {
-  if (!newName) newName = this.dir_name;
+  if (!newName) newName = this.url;
   this.name = newName;
   this.alpha_name = useAlphaName(newName);
 }

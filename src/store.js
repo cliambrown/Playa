@@ -29,12 +29,14 @@ export const store = reactive({
   loading_msg: null,
   loaded_from_db: false,
   router: null,
+  route: null,
   tvdb_token: null,
   
   show_ids: [],
   shows: {},
   external_item_ids: [],
   external_items: {},
+  new_external_item: null,
   movie_ids: [],
   movies: {},
   playback_positions: {},
@@ -72,7 +74,7 @@ export const store = reactive({
     this.scan_results.deleted_movies_count = 0;
   },
   
-  addShowFromDB(showData) {
+  addShow(showData) {
     if (this.show_ids.includes(showData.id)) {
       this.shows[showData.id].updateFromDB(showData);
     } else {
@@ -81,7 +83,7 @@ export const store = reactive({
     }
   },
   
-  addEpisodeFromDB(episodeData) {
+  addEpisode(episodeData) {
     const showID = parseInt(episodeData.show_id);
     if (!this.shows.hasOwnProperty(showID)) return false;
     let show = this.shows[showID];
@@ -94,7 +96,7 @@ export const store = reactive({
     }
   },
   
-  addExternalItemFromDB(itemData) {
+  addExternalItem(itemData) {
     if (this.external_item_ids.includes(itemData.id)) {
       this.external_items[itemData.id].updateFromDB(itemData);
     } else {
@@ -103,7 +105,7 @@ export const store = reactive({
     }
   },
   
-  addMovieFromDB(movieData) {
+  addMovie(movieData) {
     if (this.movie_ids.includes(movieData.id)) {
       this.movies[movieData.id].updateFromDB(movieData);
     } else {
@@ -121,22 +123,22 @@ export const store = reactive({
     // Get shows
     const showsData = await this.db.select('SELECT * FROM shows');
     for (const showData of showsData) {
-      this.addShowFromDB(showData);
+      this.addShow(showData);
     }
     // Get episodes
     const episodesData = await this.db.select('SELECT * FROM episodes');
     for (const episodeData of episodesData) {
-      this.addEpisodeFromDB(episodeData);
+      this.addEpisode(episodeData);
     }
     // Get External Items
     const externalItemsData = await this.db.select('SELECT * FROM external_items');
     for (const itemData of externalItemsData) {
-      this.addExternalItemFromDB(itemData);
+      this.addExternalItem(itemData);
     }
     // Get Movies
     const moviesData = await this.db.select('SELECT * FROM movies');
     for (const movieData of moviesData) {
-      this.addMovieFromDB(movieData);
+      this.addMovie(movieData);
     }
     // Sort everything and select first item
     this.sortShowsAndEpisodes();
@@ -407,13 +409,6 @@ export const store = reactive({
         this.playback_positions[entry.media_filename] = useSecondsToTimeStr(entry.position);
       }
     }
-  },
-  
-  async addExternalItem() {
-    if (!this.db) return false;
-    let item = new ExternalItem();
-    await item.saveToDB();
-    return item.id;
   }
 });
 
@@ -432,41 +427,53 @@ export const showIdLists = computed(() => {
     else finishedShowIDs.push(showID);
   }
   return {
-    unfinished_show_ids: unfinishedShowIDs,
-    finished_show_ids: finishedShowIDs,
-    archived_show_ids: archivedShowIDs,
+    unfinished: unfinishedShowIDs,
+    finished: finishedShowIDs,
+    archived: archivedShowIDs,
   }
 });
 
 export const externalItemIdLists = computed(() => {
+  let unarchived = [];
+  let archived = [];
+  for (const itemID of store.external_item_ids) {
+    if (store.external_items[itemID].is_archived) archived.push(itemID);
+    else unarchived.push(itemID);
+  }
   return {
-    external_item_ids: store.external_item_ids.filter(itemID => !store.external_items[itemID].is_archived),
-    archived_external_item_ids: store.external_item_ids.filter(itemID => store.external_items[itemID].is_archived)
+    unarchived: unarchived,
+    archived: archived
   }
 });
 
 export const movieIdLists = computed(() => {
+  let unarchived = [];
+  let archived = [];
+  for (const movieID of store.movie_ids) {
+    if (store.movies[movieID].is_archived) archived.push(movieID);
+    else unarchived.push(movieID);
+  }
   return {
-    movie_ids: store.movie_ids.filter(movieID => !store.movies[movieID].is_archived),
-    archived_movie_ids: store.movie_ids.filter(movieID => store.movies[movieID].is_archived)
+    unarchived: unarchived,
+    archived: archived
   }
 });
 
 export const homeItems = computed(() => {
   let showIdVals = showIdLists.value;
   let items = [];
-  for (const showID of showIdVals.unfinished_show_ids) {
+  for (const showID of showIdVals.unfinished) {
     items.push(store.shows[showID]);
   }
   if (store.home.show_finished_shows) {
-    for (const showID of showIdVals.finished_show_ids) {
+    for (const showID of showIdVals.finished) {
       items.push(store.shows[showID]);
     }
   }
-  for (const itemID of externalItemIdLists.value.external_item_ids) {
+  for (const itemID of externalItemIdLists.value.unarchived) {
     items.push(store.external_items[itemID]);
   }
-  for (const movieID of movieIdLists.value.movie_ids) {
+  for (const movieID of movieIdLists.value.unarchived) {
     items.push(store.movies[movieID]);
   }
   return items;

@@ -26,7 +26,7 @@ const routes = [
   { path: '/settings', name: 'settings', component: SettingsView },
   { path: '/clear-playback', name: 'clearPlayback', component: ClearPlaybackView },
   { path: '/shows/:id', name: 'show', component: ShowPageView },
-  { path: '/external-items/:id', name: 'externalItem', component: ExternalItemPageView },
+  { path: '/external-items/:id?', name: 'externalItem', component: ExternalItemPageView },
   { path: '/movies/:id', name: 'movie', component: MoviePageView },
 ]
 

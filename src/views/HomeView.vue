@@ -1,14 +1,12 @@
 <script setup>
 import { invoke } from '@tauri-apps/api/tauri';
 import { computed, onBeforeMount, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router'
 import { TransitionExpand } from '@morev/vue-transitions';
-import { store, showIdLists, movieIdLists, homeItems, nullItem, homeSelectedItemIndex } from '../store';
+import { store, showIdLists, externalItemIdLists, movieIdLists, homeItems, nullItem, homeSelectedItemIndex } from '../store';
 import { useGet, useSecondsToTimeStr } from '../helpers';
 import ShowCard from '../components/ShowCard.vue';
+import ExternalItemCard from '../components/ExternalItemCard.vue';
 import MovieCard from '../components/MovieCard.vue';
-
-const router = useRouter();
 
 function handleKeydown(event) {
   switch (event.key) {
@@ -69,8 +67,7 @@ function toggleShowFinished() {
 }
 
 function addItem() {
-  let itemID = store.addExternalItem();
-  router.push({ name: 'externalItem', params: { id: itemID } });
+  store.router.push({ name: 'externalItem' });
 }
 
 </script>
@@ -91,14 +88,14 @@ function addItem() {
         Finished
       </Button>
       
-      <Button @click="scanShows" :disabled="store.loading">
+      <Button @click="scanShows" :disabled="store.loading || !store.settings.tv_dir">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
         </svg>
         Scan shows
       </Button>
       
-      <Button @click="scanMovies" :disabled="store.loading">
+      <Button @click="scanMovies" :disabled="store.loading || !store.settings.movie_dir">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
         </svg>
@@ -116,25 +113,33 @@ function addItem() {
     
     <div class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
       <ShowCard
-        v-for="showID in showIdLists.unfinished_show_ids"
+        v-for="showID in showIdLists.unfinished"
         :show="store.shows[showID]"
         :is-selected="store.home.selected_item.slug === store.shows[showID].slug"
       ></ShowCard>
     </div>
     
     <TransitionExpand>
-      <div v-show="store.home.show_finished_shows && showIdLists.finished_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
+      <div v-show="store.home.show_finished_shows && showIdLists.finished.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
         <ShowCard
-          v-for="showID in showIdLists.finished_show_ids"
+          v-for="showID in showIdLists.finished"
           :show="store.shows[showID]"
           :is-selected="store.home.selected_item.slug === store.shows[showID].slug"
         ></ShowCard>
       </div>
     </TransitionExpand>
     
+    <div class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
+      <ExternalItemCard
+        v-for="itemID in externalItemIdLists.unarchived"
+        :item="store.external_items[itemID]"
+        :is-selected="store.home.selected_item.slug === store.external_items[itemID].slug"
+      ></ExternalItemCard>
+    </div>
+    
     <div class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,_360px))]">
       <MovieCard
-        v-for="movieID in movieIdLists.movie_ids"
+        v-for="movieID in movieIdLists.unarchived"
         :movie="store.movies[movieID]"
         :is-selected="store.home.selected_item.slug === store.movies[movieID].slug"
       ></MovieCard>
