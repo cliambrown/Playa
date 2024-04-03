@@ -18,6 +18,7 @@ onBeforeMount(async () => {
   store.loading_msg = null;
   store.loading = true;
   const localDataDir = await appLocalDataDir();
+  store.local_data_dir = localDataDir;
   // Add 'x' at the end to get the trailing dir slash
   const bannerFilepath = await join(localDataDir, 'banners', 'x');
   const posterFilepath = await join(localDataDir, 'posters', 'x');

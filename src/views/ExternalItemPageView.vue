@@ -67,9 +67,10 @@ async function handleUpdate() {
 watch(
   () => (item.value && item.value.id),
   (newVal, oldVal) => {
-    if (newVal && !oldVal) {
-      store.external_items[item.id] = item;
-      store.external_item_ids.push(item.id);
+    const itemID = item.value.id;
+    if (itemID && !store.external_item_ids.includes(itemID)) {
+      store.external_items[itemID] = item;
+      store.external_item_ids.push(itemID);
       store.sortExternalItems();
     }
   }
@@ -317,7 +318,7 @@ onBeforeUnmount(() => {
         
         <div v-if="bannerSrc === 'upload'" class="mt-4">
           <InputWithLabel id="tv_dir" v-model="bannerSrcFilepath">
-            File location
+            Banner File Location
             <template v-slot:afterInput>
               <div class="flex items-center gap-x-2">
                 <DirSelect v-model="bannerSrcFilepath" :directory="false" defaultPath="%HomeDrive%"/>
@@ -329,7 +330,7 @@ onBeforeUnmount(() => {
         <div v-if="bannerSrc === 'url'" class="mt-4">
           
           <InputWithLabel id="banner-url" class="" v-model="bannerSrcUrl">
-            URL
+            Banner URL
             <template v-slot:afterInput>
             <Button variant="action-secondary" @click="getBannersFromTvdb" :disabled="!item.tvdb_id || store.loading">
               <span class="relative bottom-[1px]">📺</span>

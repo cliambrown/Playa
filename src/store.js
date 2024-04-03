@@ -22,6 +22,7 @@ export const nullItem = {
 
 export const store = reactive({
   
+  local_data_dir: null,
   banner_dir_url: null,
   poster_dir_url: null,
   db: null,

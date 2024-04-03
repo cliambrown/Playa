@@ -291,7 +291,7 @@ onBeforeUnmount(() => {
         
         <div v-if="posterSrc === 'upload'" class="mt-4">
           <InputWithLabel id="tv_dir" v-model="posterSrcFilepath">
-            File location
+            Banner File Location
             <template v-slot:afterInput>
               <div class="flex items-center gap-x-2">
                 <DirSelect v-model="posterSrcFilepath" :directory="false" defaultPath="%HomeDrive%"/>
@@ -303,7 +303,7 @@ onBeforeUnmount(() => {
         <div v-if="posterSrc === 'url'" class="mt-4">
           
           <InputWithLabel id="poster-url" class="" v-model="posterSrcUrl">
-            URL
+            Banner URL
             <template v-slot:afterInput>
             <Button variant="action-secondary" @click="getPostersFromTvdb" :disabled="!movie.tvdb_id || store.loading">
               <span class="relative bottom-[1px]">📺</span>

@@ -1,5 +1,6 @@
 <script setup>
 import { watch } from 'vue'
+import { open } from '@tauri-apps/api/shell';
 import { store } from '../store.js'
 import { useGet, useOpenOrHomeDir } from '../helpers.js';
 import DirSelect from '../components/DirSelect.vue';
@@ -37,13 +38,23 @@ function handleUpdate() {
   <div class="px-4 pt-8 mx-auto max-w-7xl">
     <form action="" method="get" @submit.prevent autocomplete="off">
       
-      <div class="flex">
+      <div class="flex items-center gap-6">
+        
         <h2 class="text-2xl text-slate-200">
           Settings
         </h2>
-        <RouterLink :to="{ name: 'clearPlayback' }" class="px-1 py-2 ml-auto font-medium text-blue-300 transition duration-150 ease-in-out focus:outline-none focus:ring-1 focus:ring-gray-600 hover:text-blue-400">
+        
+        <Button variant="link-secondary" @click="open(store.local_data_dir)" class="ml-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 shrink-0">
+            <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
+          </svg>
+          Artwork
+        </Button>
+        
+        <RouterLink :to="{ name: 'clearPlayback' }" class="px-1 py-2 font-medium text-blue-300 transition duration-150 ease-in-out focus:outline-none focus:ring-1 focus:ring-gray-600 hover:text-blue-400">
           Clear playback positions
         </RouterLink>
+        
       </div>
         
       <InputWithLabel class="mt-10" id="tv_dir" v-model="store.settings.tv_dir" :readonly="store.loading" @input="handleUpdate">
