@@ -1,11 +1,14 @@
 <script setup>
 import { invoke } from '@tauri-apps/api/tauri';
-import { computed, onBeforeMount, onBeforeUnmount } from 'vue';
+import { computed, ref, onBeforeMount, onBeforeUnmount } from 'vue';
 import { TransitionExpand } from '@morev/vue-transitions';
 import { store, showIdLists, externalItemIdLists, movieIdLists, homeItems, homeSelectedItemIndex } from '../store';
 import ShowCard from '../components/ShowCard.vue';
 import ExternalItemCard from '../components/ExternalItemCard.vue';
 import MovieCard from '../components/MovieCard.vue';
+import SearchModal from '../components/SearchModal.vue';
+
+const showSearch = ref(true);
 
 function handleKeydown(event) {
   switch (event.key) {
@@ -89,16 +92,10 @@ function addItem() {
       
       <Button @click="scanShows" :disabled="store.loading || !store.settings.tv_dir">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-          <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
+          <path d="M6 7.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+          <path fill-rule="evenodd" d="M4 2a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 4 14h8a1.5 1.5 0 0 0 1.5-1.5V6.621a1.5 1.5 0 0 0-.44-1.06L9.94 2.439A1.5 1.5 0 0 0 8.878 2H4Zm3.5 2.5a3 3 0 1 0 1.524 5.585l1.196 1.195a.75.75 0 1 0 1.06-1.06l-1.195-1.196A3 3 0 0 0 7.5 4.5Z" clip-rule="evenodd" />
         </svg>
         Scan shows
-      </Button>
-      
-      <Button @click="scanMovies" :disabled="store.loading || !store.settings.movie_dir">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-          <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
-        </svg>
-        Scan movies
       </Button>
       
       <Button variant="link-secondary" @click="addItem" :disabled="store.loading">
@@ -106,6 +103,21 @@ function addItem() {
           <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
         </svg>
         Add external
+      </Button>
+      
+      <Button @click="scanMovies" :disabled="store.loading || !store.settings.movie_dir">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+          <path d="M6 7.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+          <path fill-rule="evenodd" d="M4 2a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 4 14h8a1.5 1.5 0 0 0 1.5-1.5V6.621a1.5 1.5 0 0 0-.44-1.06L9.94 2.439A1.5 1.5 0 0 0 8.878 2H4Zm3.5 2.5a3 3 0 1 0 1.524 5.585l1.196 1.195a.75.75 0 1 0 1.06-1.06l-1.195-1.196A3 3 0 0 0 7.5 4.5Z" clip-rule="evenodd" />
+        </svg>
+        Scan movies
+      </Button>
+      
+      <Button variant="link-secondary" @click="showSearch = true" :disabled="store.loading">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+          <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
+        </svg>
+        Search
       </Button>
       
     </div>
@@ -145,5 +157,7 @@ function addItem() {
     </div>
     
   </div>
+  
+  <SearchModal v-model="showSearch"></SearchModal>
   
 </template>
