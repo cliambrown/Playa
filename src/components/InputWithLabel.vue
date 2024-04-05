@@ -62,30 +62,18 @@ while (counter < 8) {
   randstr += characters.charAt(Math.floor(Math.random() * charactersLength));
   counter += 1;
 }
-
-function handleKeydown(event) {
-  switch (event.key) {
-    case 'ArrowRight':
-    case 'ArrowLeft':
-    case 'ArrowDown':
-    case 'ArrowUp':
-    case ' ':
-      event.preventDefault();
-      break;
-  }
-  return true;
-}
 </script>
 
 <template>
-  <div @keydown="handleKeydown">
+  <div
+    >
     <label
       v-if="withLabel"
       :for="datepicker ? 'dp-input-'+id : id"
-      class="block mb-2 text-sm font-medium uppercase"
+      class="block mb-2 text-sm font-medium leading-6"
       :class="{
-        'text-slate-200': isDark,
-        'text-slate-600': !isDark
+        'text-slate-100': isDark,
+        'text-gray-900': !isDark
       }"
       >
       <slot></slot>
@@ -98,15 +86,22 @@ function handleKeydown(event) {
         :id="id"
         :name="id + randstr"
         ref="input"
-        class="block w-full px-3 py-2 text-sm leading-6 text-gray-900 border-0 rounded-md ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-500"
+        class="block w-full px-3 py-2 text-sm leading-6 transition duration-150 ease-in-out border-0 rounded-md ring-1 ring-inset focus:ring-2 focus:ring-inset focus:ring-blue-500"
         :class="{
-          'pr-10': isSearch
+          'pr-10': isSearch,
+          'bg-slate-800 ring-gray-600': isDark,
+          'text-gray-900 ring-gray-300': !isDark,
         }"
         v-model="val"
         :readonly="readonly"
         autocomplete="new-password"
         spellcheck="false"
         @input="$emit('input')"
+        @keydown.up.stop
+        @keydown.down.stop
+        @keydown.left.stop
+        @keydown.right.stop
+        @keydown.space.stop
         />
         
       <svg v-if="isSearch" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="absolute w-6 h-6 text-gray-900 right-2">
@@ -121,6 +116,12 @@ function handleKeydown(event) {
         :uid="id"
         :enable-time-picker="enableTimePicker"
         @update:model-value="$emit('input')"
+        @keydown.up.stop
+        @keydown.down.stop
+        @keydown.left.stop
+        @keydown.right.stop
+        @keydown.space.stop
+        @keydown.esc.stop
         >
       </VueDatePicker>
       

@@ -10,5 +10,10 @@ const { textarea, input } = useTextareaAutosize()
     ref="textarea"
     v-model="input"
     class="resize-none"
+    @keydown.up.stop
+    @keydown.down.stop
+    @keydown.left.stop
+    @keydown.right.stop
+    @keydown.space.stop
     ></textarea>
 </template>

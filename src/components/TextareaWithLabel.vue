@@ -29,7 +29,7 @@ while (counter < 8) {
 </script>
 
 <template>
-  <div @keydown.stop>
+  <div>
     <label
       :for="id"
       class="block mb-2 text-sm font-medium uppercase"
@@ -44,7 +44,7 @@ while (counter < 8) {
       
       <Textarea
         :id="id"
-        class="block w-full px-3 py-2 text-sm leading-6 text-gray-900 border-0 rounded-md resize-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-500"
+        class="block w-full px-3 py-2 text-sm leading-6 text-gray-900 transition duration-150 ease-in-out border-0 rounded-md resize-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-500"
         v-model="val"
         :readonly="readonly"
         autocomplete="new-password"

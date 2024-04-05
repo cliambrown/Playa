@@ -35,8 +35,8 @@ function handleUpdate() {
 
 <template>
   
-  <div class="px-4 pt-8 mx-auto max-w-7xl">
-    <form action="" method="get" @submit.prevent autocomplete="off">
+  <div class="w-full px-4 pt-8 overflow-y-auto">
+    <form action="" method="get" @submit.prevent autocomplete="off" class="w-full max-w-4xl mx-auto">
       
       <div class="flex items-center gap-6">
         

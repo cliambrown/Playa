@@ -96,4 +96,6 @@ Movie.prototype.delete = async function() {
   // If this movie is selected, store.selectFirst
   if (store.home.selected_item.slug === this.slug)
     store.selectFirstHomeItem();
+  if (store.archives_selected_item.slug === this.slug)
+    store.selectFirstArchivesItem();
 }

@@ -76,4 +76,6 @@ ExternalItem.prototype.delete = async function() {
   // If this item is selected, store.selectFirst
   if (store.home.selected_item.slug === this.slug)
     store.selectFirstHomeItem();
+  if (store.archives_selected_item.slug === this.slug)
+    store.selectFirstArchivesItem();
 }

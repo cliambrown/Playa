@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeMount, onMounted } from 'vue';
+import { onBeforeMount, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { join } from '@tauri-apps/api/path';
@@ -28,19 +28,40 @@ onBeforeMount(async () => {
   await store.loadFromDB();
   await store.getPlaybackPositions();
   store.selectFirstHomeItem();
+  store.selectFirstArchivesItem();
   store.loading = false;
 });
 
 listen('loading-event', (event) => {
   if (event.payload) store.loading_msg = event.payload.message;
 });
+
+// @keydown.esc="router.go(-1)"
+
+function handleKeydown(event) {
+  if (route.name === 'home') return true;
+  switch (event.key) {
+    case 'Escape':
+    router.go(-1);
+    break;
+  }
+  return true;
+}
+
+onBeforeMount(() => {
+  window.addEventListener('keydown', handleKeydown);
+});
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeydown);
+});
+
 </script>
 
 <template>
   
   <div class="flex flex-col h-full max-h-full">
     
-    <header class="flex flex-wrap w-full max-w-full py-2 text-sm bg-gray-900 sm:justify-start sm:flex-nowrap">
+    <header class="flex flex-wrap w-full max-w-full py-2 text-sm bg-black sm:justify-start sm:flex-nowrap">
       <nav class="w-full max-w-full px-4 mx-auto sm:gap-x-3 sm:flex sm:items-center sm:justify-between" aria-label="Global">
         
         <RouterLink :to="{ name: 'home' }" class="flex-none py-2 text-xl font-semibold text-white">
@@ -70,12 +91,7 @@ listen('loading-event', (event) => {
       </nav>
     </header>
     
-    <main
-      class="w-full overflow-y-auto grow"
-      :class="{
-        'flex flex-col': $route.name === 'clearPlayback' || $route.name === 'show'
-      }"
-      >
+    <main class="flex flex-col w-full min-h-0 grow">
       <RouterView />
     </main>
     

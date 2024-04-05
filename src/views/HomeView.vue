@@ -8,10 +8,26 @@ import ExternalItemCard from '../components/ExternalItemCard.vue';
 import MovieCard from '../components/MovieCard.vue';
 import SearchModal from '../components/SearchModal.vue';
 
-const showSearch = ref(true);
+let ctrlIsDown = false;
+
+function scanShows() {
+  store.scanShows();
+}
+
+function scanMovies() {
+  store.scanMovies();
+}
 
 function handleKeydown(event) {
+  if (store.home.show_search) return false;
   switch (event.key) {
+    case 'Control':
+      ctrlIsDown = true;
+      break;
+    case 'k':
+      console.log(ctrlIsDown)
+      if (ctrlIsDown) store.home.show_search = !store.home.show_search;
+      break;
     case 'ArrowRight':
     case 'ArrowLeft':
       let itemIndex = homeSelectedItemIndex.value;
@@ -42,19 +58,17 @@ function handleKeydown(event) {
   return true;
 }
 
-function scanShows() {
-  store.scanShows();
-}
-
-function scanMovies() {
-  store.scanMovies();
+function handleKeyup(event) {
+  if (event.key === 'Control') ctrlIsDown = false;
 }
 
 onBeforeMount(() => {
   window.addEventListener('keydown', handleKeydown);
+  window.addEventListener('keyup', handleKeyup);
 });
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown);
+  window.removeEventListener('keyup', handleKeyup);
 });
 
 function toggleShowFinished() {
@@ -76,11 +90,11 @@ function addItem() {
 
 <template>
   
-  <div class="px-12 pt-8 pb-8">
+  <div class="px-12 pt-8 pb-8 overflow-y-auto">
     
-    <div class="flex justify-center gap-6">
+    <div class="flex justify-end gap-6">
       
-      <Button variant="action-secondary" @click="toggleShowFinished">
+      <Button variant="secondary" @click="toggleShowFinished">
         <svg v-show="!store.home.show_finished_shows" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
         </svg>
@@ -98,13 +112,6 @@ function addItem() {
         Scan shows
       </Button>
       
-      <Button variant="link-secondary" @click="addItem" :disabled="store.loading">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-          <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
-        </svg>
-        Add external
-      </Button>
-      
       <Button @click="scanMovies" :disabled="store.loading || !store.settings.movie_dir">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path d="M6 7.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
@@ -113,7 +120,14 @@ function addItem() {
         Scan movies
       </Button>
       
-      <Button variant="link-secondary" @click="showSearch = true" :disabled="store.loading">
+      <Button @click="addItem" :disabled="store.loading">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+          <path d="M8.75 3.75a.75.75 0 0 0-1.5 0v3.5h-3.5a.75.75 0 0 0 0 1.5h3.5v3.5a.75.75 0 0 0 1.5 0v-3.5h3.5a.75.75 0 0 0 0-1.5h-3.5v-3.5Z" />
+        </svg>
+        External show
+      </Button>
+      
+      <Button variant="secondary" @click="store.home.show_search = true" :disabled="store.loading">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
         </svg>
@@ -158,6 +172,6 @@ function addItem() {
     
   </div>
   
-  <SearchModal v-model="showSearch"></SearchModal>
+  <SearchModal v-model="store.home.show_search"></SearchModal>
   
 </template>

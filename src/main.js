@@ -37,10 +37,6 @@ const router = createRouter({
   routes,
 });
 
-window.addEventListener('keyup', event => {
-  if (event.key === 'Escape') router.go(-1);
-});
-
 createApp(App)
   .component('InputWithLabel', InputWithLabel)
   .component('Button', Button)

@@ -198,6 +198,8 @@ Show.prototype.delete = async function() {
   // If this show is selected, store.selectFirst
   if (store.home.selected_item.slug === this.slug)
     store.selectFirstHomeItem();
+  if (store.archives_selected_item.slug === this.slug)
+    store.selectFirstArchivesItem();
   if (this.banner_filename) {
     invoke('delete_image', {
       deleteFilename: this.banner_filename,

@@ -1,6 +1,6 @@
 import { reactive, nextTick, computed, toRaw } from 'vue';
 import { invoke } from '@tauri-apps/api/tauri';
-import { useSecondsToTimeStr, useGet } from './helpers.js';
+import { useSecondsToTimeStr, useGet, useAlphaName } from './helpers.js';
 import { Show } from './classes/Show.js';
 import { Episode } from './classes/Episode.js';
 import { ExternalItem } from './classes/ExternalItem.js';
@@ -42,9 +42,13 @@ export const store = reactive({
   movies: {},
   playback_positions: {},
   
+  search_string: null,
+  search_results: [],
+  
   home: {
     selected_item: nullItem,
     show_finished_shows: false,
+    show_search: false,
   },
   archives_selected_item: nullItem,
   
@@ -147,6 +151,7 @@ export const store = reactive({
     this.sortExternalItems();
     this.sortMovies();
     if (this.home.selected_item.slug === null) this.selectFirstHomeItem();
+    if (this.archives_selected_item.slug === null) this.selectFirstArchivesItem();
     await nextTick();
     this.loaded_from_db = true;
   },
@@ -298,6 +303,14 @@ export const store = reactive({
     this.home.selected_item = homeItems.value[0];
   },
   
+  selectFirstArchivesItem() {
+    if (!archivesItems.value.length) {
+      this.archives_selected_item = nullItem;
+      return false;
+    }
+    this.archives_selected_item = archivesItems.value[0];
+  },
+  
   findShowByDirName(dirName) {
     if (!this.show_ids.length) return false;
     const showID = this.show_ids.find(
@@ -410,6 +423,43 @@ export const store = reactive({
       ) {
         this.playback_positions[entry.media_filename] = useSecondsToTimeStr(entry.position);
       }
+    }
+  },
+  
+  searchAllItems(searchStr) {
+    this.search_results = [];
+    searchStr = useAlphaName(searchStr);
+    this.search_string = searchStr;
+    if (!searchStr) return false;
+    for (const showID of this.show_ids) {
+      const show = this.shows[showID];
+      if (!show.alpha_name.includes(searchStr)) continue;
+      this.search_results.push({
+        name: show.name,
+        type_label: 'Show',
+        route_name: 'show',
+        id: showID
+      });
+    }
+    for (const itemID of this.external_item_ids) {
+      const item = this.external_items[itemID];
+      if (!item.alpha_name.includes(searchStr)) continue;
+      this.search_results.push({
+        name: item.name,
+        type_label: 'External',
+        route_name: 'externalItem',
+        id: itemID
+      });
+    }
+    for (const movieID of this.movie_ids) {
+      const movie = this.movies[movieID];
+      if (!movie.alpha_name.includes(searchStr)) continue;
+      this.search_results.push({
+        name: movie.name,
+        type_label: 'Movie',
+        route_name: 'movie',
+        id: movieID
+      });
     }
   }
 });

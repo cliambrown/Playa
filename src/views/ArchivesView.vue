@@ -48,7 +48,7 @@ onBeforeUnmount(() => {
 
 <template>
   
-  <div class="px-12 pt-8 pb-8">
+  <div class="px-12 pt-8 pb-8 overflow-y-auto">
     
     <div class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
       <ShowCard
