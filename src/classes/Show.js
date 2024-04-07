@@ -6,7 +6,8 @@ import { Episode } from './Episode.js';
 
 export function Show(showData) {
   this.id = useGet(showData, 'id');
-  this.type = 'show';
+  this.class = 'Show';
+  this.type = 'Show';
   this.table_name = 'shows';
   this.setSlug(); // 'show-' + this.id
   this.created_at = useGet(showData, 'created_at');
@@ -18,7 +19,7 @@ export function Show(showData) {
   this.tvdb_id = useGet(showData, 'tvdb_id');
   this.tvdb_slug = useGet(showData, 'tvdb_slug');
   this.last_watched_at = useGet(showData, 'last_watched_at');
-  this.banner_filename = useGet(showData, 'banner_filename');
+  this.artwork_filename = useGet(showData, 'artwork_filename');
   this.current_episode_id = useGet(showData, 'current_episode_id');
   this.episode_ids = [];
   this.episodes = {};
@@ -32,7 +33,7 @@ Show.prototype.updateFromDB = function(showData) {
   this.tvdb_id = useGet(showData, 'tvdb_id');
   this.tvdb_slug = useGet(showData, 'tvdb_slug');
   this.last_watched_at = useGet(showData, 'last_watched_at');
-  this.banner_filename = useGet(showData, 'banner_filename');
+  this.artwork_filename = useGet(showData, 'artwork_filename');
   this.current_episode_id = useGet(showData, 'current_episode_id');
 }
 
@@ -47,7 +48,7 @@ Show.prototype.setSlug = function() {
 }
 
 Show.prototype.saveToDB = async function() {
-  const response = await useSaveToDB(store, this, ['is_archived', 'name', 'dir_name', 'tvdb_id', 'tvdb_slug', 'last_watched_at', 'banner_filename', 'current_episode_id']);
+  const response = await useSaveToDB(store, this, ['is_archived', 'name', 'dir_name', 'tvdb_id', 'tvdb_slug', 'last_watched_at', 'artwork_filename', 'current_episode_id']);
   console.log('Show.saveToDB', response);
   return response;
 }
@@ -89,7 +90,7 @@ Show.prototype.episodeFromPathname = async function(episodeData, fromScan = fals
     is_new: fromScan,
     pathname: episodeData.pathname,
     filename: episodeData.filename,
-    duration: episodeData.duration,
+    duration: useGet(episodeData, 'duration'),
   }, fromScan);
   await episode.saveToDB();
   this.episodes[episode.id] = episode;
@@ -98,6 +99,10 @@ Show.prototype.episodeFromPathname = async function(episodeData, fromScan = fals
   if (fromScan) {
     if (!store.scan_results.new_shows.has(this.id)) {
       store.scan_results.shows_with_new_eps.add(this.id);
+      if (this.is_archived) {
+        this.is_archived = null;
+        await this.saveToDB();
+      }
     }
     store.scan_results.new_episodes_count++;
   }
@@ -160,12 +165,6 @@ Show.prototype.episodeNav = function(destination) {
   }
   if (epIndex === null) {
     this.current_episode_id = null;
-    if (
-      store.home.selected_item.slug === this.slug
-      && !store.home.show_finished_shows
-    ) {
-      store.selectFirstHomeItem();
-    }
   } else {
     this.current_episode_id = this.episode_ids[epIndex];
   }
@@ -195,15 +194,15 @@ Show.prototype.delete = async function() {
   // Remove from store
   store.show_ids = store.show_ids.filter(showID => showID != this.id);
   delete store.shows[this.id];
+  store.removeItemFromLists(this.slug);
   // If this show is selected, store.selectFirst
-  if (store.home.selected_item.slug === this.slug)
+  if (store.home_selected_item.slug === this.slug)
     store.selectFirstHomeItem();
   if (store.archives_selected_item.slug === this.slug)
     store.selectFirstArchivesItem();
-  if (this.banner_filename) {
+  if (this.artwork_filename) {
     invoke('delete_image', {
-      deleteFilename: this.banner_filename,
-      fromFolder: 'banners',
+      deleteFilename: this.artwork_filename,
     });
   }
 }

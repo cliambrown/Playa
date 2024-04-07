@@ -1,10 +1,12 @@
 import { open } from '@tauri-apps/api/shell';
+import { invoke } from '@tauri-apps/api/tauri';
 import { store } from '../store';
 import { useGet, useAlphaName, useSaveToDB } from '../helpers.js';
 
 export function ExternalItem(itemData) {
   this.id = useGet(itemData, 'id');
-  this.type = 'external_item';
+  this.class = 'ExternalItem';
+  this.type = useGet(itemData, 'type');
   this.table_name = 'external_items';
   this.setSlug(); // 'external_item-' + this.id
   this.created_at = useGet(itemData, 'created_at');
@@ -16,7 +18,7 @@ export function ExternalItem(itemData) {
   this.tvdb_id = useGet(itemData, 'tvdb_id');
   this.tvdb_slug = useGet(itemData, 'tvdb_slug');
   this.last_watched_at = useGet(itemData, 'last_watched_at');
-  this.banner_filename = useGet(itemData, 'banner_filename');
+  this.artwork_filename = useGet(itemData, 'artwork_filename');
   this.tvdb_matches = [];
 }
 
@@ -26,7 +28,7 @@ ExternalItem.prototype.updateFromDB = function(itemData) {
   this.tvdb_id = useGet(itemData, 'tvdb_id');
   this.tvdb_slug = useGet(itemData, 'tvdb_slug');
   this.last_watched_at = useGet(itemData, 'last_watched_at');
-  this.banner_filename = useGet(itemData, 'banner_filename');
+  this.artwork_filename = useGet(itemData, 'artwork_filename');
   this.url = useGet(itemData, 'url');
 }
 
@@ -41,7 +43,7 @@ ExternalItem.prototype.setSlug = function() {
 }
 
 ExternalItem.prototype.saveToDB = async function() {
-  const response = await useSaveToDB(store, this, ['is_archived', 'name', 'tvdb_id', 'tvdb_slug', 'last_watched_at', 'banner_filename', 'url']);
+  const response = await useSaveToDB(store, this, ['is_archived', 'type', 'name', 'tvdb_id', 'tvdb_slug', 'last_watched_at', 'artwork_filename', 'url']);
   console.log('ExternalItem.saveToDB', response);
   return response;
 }
@@ -73,9 +75,15 @@ ExternalItem.prototype.delete = async function() {
   // Remove from store
   store.external_item_ids = store.external_item_ids.filter(itemID => itemID != this.id);
   delete store.external_items[this.id];
+  store.removeItemFromLists(this.slug);
   // If this item is selected, store.selectFirst
-  if (store.home.selected_item.slug === this.slug)
+  if (store.home_selected_item.slug === this.slug)
     store.selectFirstHomeItem();
   if (store.archives_selected_item.slug === this.slug)
     store.selectFirstArchivesItem();
+  if (this.artwork_filename) {
+    invoke('delete_image', {
+      deleteFilename: this.artwork_filename,
+    });
+  }
 }

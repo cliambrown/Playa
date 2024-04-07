@@ -70,7 +70,7 @@ export async function searchTvdb(store, showName, type) {
   if (!showName) return false;
   let token = await getToken(store);
   if (!token) return false;
-  const typeParam = (type === 'show' ? 'series' : 'movie');
+  const typeParam = (type === 'Show' ? 'series' : 'movie');
   const url = 'https://api4.thetvdb.com/v4/search?q=' + encodeURI(showName) + '&type=' + typeParam;
   const response = await fetch(url, {
     method: 'GET',
@@ -107,7 +107,7 @@ export async function getArtwork(store, tvdbID, type) {
   if (!tvdbID) return false;
   let token = await getToken(store);
   if (!token) return false;
-  const typeParam = (type === 'show' ? 'series' : 'movies');
+  const typeParam = (type === 'Show' ? 'series' : 'movies');
   const url = 'https://api4.thetvdb.com/v4/' + typeParam + '/' + encodeURI(tvdbID) + '/extended';
   const response = await fetch(url, {
     method: 'GET',
@@ -127,8 +127,8 @@ export async function getArtwork(store, tvdbID, type) {
   for (const artwork of responseData.artworks) {
     const artworkType = parseInt(artwork.type);
     if (
-      (type === 'show' && artworkType === 1)
-      || (type === 'movie' && artworkType === 14)
+      (type === 'Show' && artworkType === 1)
+      || (type === 'Movie' && artworkType === 14)
     ) {
       artworks.push(artwork);
     }

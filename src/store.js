@@ -1,4 +1,4 @@
-import { reactive, nextTick, computed, toRaw } from 'vue';
+import { reactive } from 'vue';
 import { invoke } from '@tauri-apps/api/tauri';
 import { useSecondsToTimeStr, useGet, useAlphaName } from './helpers.js';
 import { Show } from './classes/Show.js';
@@ -7,13 +7,24 @@ import { ExternalItem } from './classes/ExternalItem.js';
 import { Movie } from './classes/Movie.js';
 
 /*
- * Constants
+ * Utilities
  */
 
 export const nullItem = {
   slug: null,
   type: null,
   play: () => false,
+}
+
+function compareItems(itemA, itemB) {
+  if (itemA.last_watched_at > itemB.last_watched_at) return -1;
+  else if (itemA.last_watched_at < itemB.last_watched_at) return 1;
+  const nameComp = itemA.alpha_name.localeCompare(itemB.alpha_name);
+  if (nameComp == 0) {
+    if (itemA.created_at < itemB.created_at) return -1;
+    else return 1;
+  }
+  return nameComp;
 }
 
 /*
@@ -23,8 +34,8 @@ export const nullItem = {
 export const store = reactive({
   
   local_data_dir: null,
-  banner_dir_url: null,
-  poster_dir_url: null,
+  artworks_dir: null,
+  artworks_dir_url: null,
   db: null,
   loading: false,
   loading_msg: null,
@@ -33,24 +44,28 @@ export const store = reactive({
   route: null,
   tvdb_token: null,
   
+  playback_positions: {},
   show_ids: [],
   shows: {},
+  movie_ids: [],
+  movies: {},
   external_item_ids: [],
   external_items: {},
   new_external_item: null,
-  movie_ids: [],
-  movies: {},
-  playback_positions: {},
+  
+  home_unfinished_showtype_items: [],
+  home_finished_showtype_items: [],
+  home_movietype_items: [],
+  archives_showtype_items: [],
+  archives_movietype_items: [],
   
   search_string: null,
   search_results: [],
   
-  home: {
-    selected_item: nullItem,
-    show_finished_shows: false,
-    show_search: false,
-  },
+  home_selected_item: nullItem,
   archives_selected_item: nullItem,
+  show_finished_shows: false,
+  show_search: false,
   
   settings: {
     tv_dir: null,
@@ -146,13 +161,12 @@ export const store = reactive({
     for (const movieData of moviesData) {
       this.addMovie(movieData);
     }
-    // Sort everything and select first item
-    this.sortShowsAndEpisodes();
-    this.sortExternalItems();
-    this.sortMovies();
-    if (this.home.selected_item.slug === null) this.selectFirstHomeItem();
+    this.sortAllEpisodes();
+    this.sortShowtypeLists();
+    this.sortMovietypeLists();
+    if (this.home_selected_item.slug === null) this.selectFirstHomeItem()
     if (this.archives_selected_item.slug === null) this.selectFirstArchivesItem();
-    await nextTick();
+    
     this.loaded_from_db = true;
   },
   
@@ -161,28 +175,24 @@ export const store = reactive({
       return false;
     }
     this.loading = true;
-    this.loading_msg = null;
+    this.loading_msg = 'Starting scan...';
     this.resetScanResults();
     // Scan shows
     let response;
-    let episodePathnames = [];
     for (const showID of this.show_ids) {
       let show = this.shows[showID];
       show.new_episode_ids.clear();
-      for (const episodeID of show.episode_ids) {
-        episodePathnames.push(show.episodes[episodeID].pathname);
-      }
     }
     try {
       response = await invoke('scan_shows', {
-        tvDir: this.settings.tv_dir,
-        currentEpisodePathnames: episodePathnames
+        tvDir: this.settings.tv_dir
       });
     } catch (error) {
       window.alert(error);
       this.loading = false;
       return false;
     }
+    this.loading_msg = 'Processing files...';
     console.log('scan_shows', response);
     // Add shows
     let showDirNames = useGet(response, 'show_dir_names', []);
@@ -200,20 +210,28 @@ export const store = reactive({
     const epFileL = episodeFiles.length;
     for (let i=0; i<epFileL; i++) {
       const episodeData = episodeFiles[i];
-      const duration = useGet(episodeData, 'duration');
-      if (duration) episodeData.duration = useSecondsToTimeStr(duration);
       foundEpisodePathnames.push(episodeData.pathname);
       let show = showsByDirName[episodeData.show_dir_name];
       let episode = await show.episodeFromPathname(episodeData, true);
+      if (episode.is_new && !episode.duration) {
+        let duration = await invoke('get_duration', { path: episode.pathname });
+        console.log('get_duration', duration);
+        duration = useSecondsToTimeStr(duration);
+          if (duration) {
+          episode.duration = duration;
+          await episode.saveToDB();
+        }
+      }
     }
     // Prune and sort
     await this.pruneMissingShows(showDirNames);
     await this.pruneMissingEpisodes(foundEpisodePathnames);
-    this.sortShowsAndEpisodes();
+    this.sortAllEpisodes();
     // Set shows to new episodes if applicable
     for (const showID of this.show_ids) {
       this.shows[showID].setCurrentEpToNewEp();
     }
+    this.sortShowtypeLists();
     this.loading_msg = `Scan complete: ${this.scan_results.new_shows.size} new show${this.scan_results.new_shows.size == 1 ? '' : 's'}, ${this.scan_results.shows_with_new_eps.size} show${this.scan_results.shows_with_new_eps.size == 1 ? '' : 's'} added episodes, ${this.scan_results.deleted_shows_count} show${this.scan_results.deleted_shows_count == 1 ? '' : 's'} deleted, ${this.scan_results.deleted_episodes_count} episode${this.scan_results.deleted_episodes_count == 1 ? '' : 's'} deleted`;
     this.loading = false;
   },
@@ -223,17 +241,13 @@ export const store = reactive({
       return false;
     }
     this.loading = true;
-    this.loading_msg = null;
+    this.loading_msg = 'Starting scan...';
     this.resetScanResults();
     // Scan movies
     let response;
-    let currentMoviePathnames = this.movie_ids.map(movieID => 
-      this.movies[movieID].pathname
-    );
     try {
       response = await invoke('scan_movies', {
         movieDir: this.settings.movie_dir,
-        currentMoviePathnames: currentMoviePathnames
       });
     } catch (error) {
       window.alert(error);
@@ -245,6 +259,7 @@ export const store = reactive({
       window.alert("Invalid response");
       return false;
     }
+    this.loading_msg = 'Processing files...';
     const movieCount = response.length;
     let updatedMoviePathnames = [];
     for (let i=0; i<movieCount; i++) {
@@ -252,63 +267,157 @@ export const store = reactive({
       const duration = useGet(movieData, 'duration');
       if (duration) movieData.duration = useSecondsToTimeStr(duration);
       let movie = await this.movieFromPathname(movieData, true);
+      if (movie.is_new && !movie.duration) {
+        let duration = await invoke('get_duration', { path: movie.pathname });
+        duration = useSecondsToTimeStr(duration);
+        console.log('get_duration', duration);
+        if (duration) {
+          movie.duration = duration;
+          await movie.saveToDB();
+        }
+      }
       updatedMoviePathnames.push(movieData.pathname);
     }
     // Prune and sort
     await this.pruneMissingMovies(updatedMoviePathnames);
-    this.sortMovies();
+    this.sortMovietypeLists();
     this.loading_msg = `Scan complete: ${this.scan_results.new_movies_count} new movies, ${this.scan_results.deleted_movies_count} deleted`;
     this.loading = false;
   },
   
-  sortShowsAndEpisodes() {
-    this.show_ids.sort((showIdA, showIdB) => {
-      const showA = this.shows[showIdA];
-      const showB = this.shows[showIdB];
-      if (showA.last_watched_at > showB.last_watched_at) return -1;
-      else if (showA.last_watched_at < showB.last_watched_at) return 1;
-      return showA.alpha_name.localeCompare(showB.alpha_name);
-    });
-    // Sort episodes
+  sortAllEpisodes() {
     for (const showID of this.show_ids) {
       this.shows[showID].sortEpisodes();
     }
   },
   
-  sortExternalItems() {
-    this.external_item_ids.sort((itemIdA, itemIdB) => {
-      const itemA = this.external_items[itemIdA];
-      const itemB = this.external_items[itemIdB];
-      if (itemA.last_watched_at > itemB.last_watched_at) return -1;
-      else if (itemA.last_watched_at < itemB.last_watched_at) return 1;
-      return itemA.alpha_name.localeCompare(itemB.alpha_name);
-    });
+  sortShowtypeLists() {
+    this.home_unfinished_showtype_items = [];
+    this.home_finished_showtype_items = [];
+    this.archives_showtype_items = [];
+    for (const showID of this.show_ids) {
+      const show = this.shows[showID];
+      if (show.is_archived) this.archives_showtype_items.push(show);
+      else if (!show.current_episode_id) this.home_finished_showtype_items.push(show);
+      else this.home_unfinished_showtype_items.push(show);
+    }
+    for (const itemID of this.external_item_ids) {
+      const item = this.external_items[itemID];
+      if (item.type !== 'Show') continue;
+      if (item.is_archived) this.archives_showtype_items.push(item);
+      else this.home_unfinished_showtype_items.push(item);
+    }
+    this.home_unfinished_showtype_items.sort(compareItems);
+    this.home_finished_showtype_items.sort(compareItems);
+    this.archives_showtype_items.sort(compareItems);
   },
   
-  sortMovies() {
-    this.movie_ids.sort((movieIdA, movieIdB) => {
-      const movieA = this.movies[movieIdA];
-      const movieB = this.movies[movieIdB];
-      if (movieA.last_watched_at > movieB.last_watched_at) return -1;
-      else if (movieA.last_watched_at < movieB.last_watched_at) return 1;
-      return movieA.alpha_name.localeCompare(movieB.alpha_name);
-    });
+  sortMovietypeLists() {
+    this.home_movietype_items = [];
+    this.archives_movietype_items = [];
+    for (const movieID of this.movie_ids) {
+      const movie = this.movies[movieID];
+      if (movie.is_archived) this.archives_movietype_items.push(movie);
+      else this.home_movietype_items.push(movie);
+    }
+    for (const itemID of this.external_item_ids) {
+      const item = this.external_items[itemID];
+      if (item.type !== 'Movie') continue;
+      if (item.is_archived) this.archives_movietype_items.push(item);
+      else this.home_movietype_items.push(item);
+    }
+    this.home_movietype_items.sort(compareItems);
+    this.archives_movietype_items.sort(compareItems);
+  },
+  
+  homeItemNav(isNext) {
+    let items = this.home_unfinished_showtype_items;
+    if (this.show_finished_shows) items = items.concat(this.home_finished_showtype_items);
+    items = items.concat(this.home_movietype_items);
+    let itemIsFound = false;
+    let prevItem = nullItem;
+    let firstItem = nullItem;
+    let lastItem = nullItem;
+    for (const item of items) {
+      if (isNext) {
+        if (itemIsFound) {
+          this.home_selected_item = item;
+          return true;
+        }
+        lastItem = item;
+      } else {
+        if (!firstItem.slug) firstItem = item;
+      }
+      if (item.slug === this.home_selected_item.slug) {
+        if (isNext) {
+          itemIsFound = true;
+          continue;
+        } else {
+          if (prevItem.slug) this.home_selected_item = prevItem;
+          return true;
+        }
+      } else if (!isNext) {
+        prevItem = item;
+      }
+    }
+    if (isNext) this.home_selected_item = lastItem;
+    else this.home_selected_item = firstItem;
   },
   
   selectFirstHomeItem() {
-    if (!homeItems.value.length) {
-      this.home.selected_item = nullItem;
-      return false;
+    if (this.home_unfinished_showtype_items.length) {
+      this.home_selected_item = this.home_unfinished_showtype_items[0];
+      return true;
     }
-    this.home.selected_item = homeItems.value[0];
+    if (this.show_finished_shows && this.home_finished_showtype_items.length) {
+      this.home_selected_item = this.home_finished_showtype_items[0];
+      return true;
+    }
+    if (this.home_movietype_items.length) {
+      this.home_selected_item = this.home_movietype_items[0];
+    }
+  },
+  
+  archivesItemNav(isNext) {
+    let items = this.archives_showtype_items.concat(this.archives_movietype_items);
+    let itemIsFound = false;
+    let prevItem = nullItem;
+    let firstItem = nullItem;
+    let lastItem = nullItem;
+    for (const item of items) {
+      if (isNext) {
+        if (itemIsFound) {
+          this.archives_selected_item = item;
+          return true;
+        }
+        lastItem = item;
+      } else {
+        if (!firstItem.slug) firstItem = item;
+      }
+      if (item.slug === this.archives_selected_item.slug) {
+        if (isNext) {
+          itemIsFound = true;
+          continue;
+        } else {
+          if (prevItem.slug) this.archives_selected_item = prevItem;
+          return true;
+        }
+      } else if (!isNext) {
+        prevItem = item;
+      }
+    }
+    if (isNext) this.archives_selected_item = lastItem;
+    else this.archives_selected_item = firstItem;
   },
   
   selectFirstArchivesItem() {
-    if (!archivesItems.value.length) {
-      this.archives_selected_item = nullItem;
-      return false;
+    if (this.archives_showtype_items.length) {
+      this.archives_selected_item = this.archives_showtype_items[0];
+      return true;
     }
-    this.archives_selected_item = archivesItems.value[0];
+    if (this.archives_movietype_items.length) {
+      this.archives_selected_item = this.archives_movietype_items[0];
+    }
   },
   
   findShowByDirName(dirName) {
@@ -317,6 +426,14 @@ export const store = reactive({
       showID => this.shows[showID].dir_name === dirName
     );
     return showID ? this.shows[showID] : false;
+  },
+  
+  removeItemFromLists(slug) {
+    this.home_unfinished_showtype_items = this.home_unfinished_showtype_items.filter(item => item.slug !== slug);
+    this.home_finished_showtype_items = this.home_finished_showtype_items.filter(item => item.slug !== slug);
+    this.home_movietype_items = this.home_movietype_items.filter(item => item.slug !== slug);
+    this.archives_showtype_items = this.archives_showtype_items.filter(item => item.slug !== slug);
+    this.archives_movietype_items = this.archives_movietype_items.filter(item => item.slug !== slug);
   },
   
   // If a show already exists with that dirName, returns the show
@@ -354,6 +471,14 @@ export const store = reactive({
     this.movie_ids.push(movie.id);
     store.scan_results.new_movies_count++;
     return movie;
+  },
+  
+  findExtItemByUrl(url) {
+    if (!this.external_item_ids.length) return false;
+    const itemID = this.external_item_ids.find(
+      itemID => this.external_items[itemID].url === url
+    );
+    return itemID ? this.external_items[itemID] : false;
   },
   
   async pruneMissingShows(showDirNames) {
@@ -436,7 +561,7 @@ export const store = reactive({
       if (!show.alpha_name.includes(searchStr)) continue;
       this.search_results.push({
         name: show.name,
-        type_label: 'Show',
+        type: show.type,
         route_name: 'show',
         id: showID
       });
@@ -446,7 +571,7 @@ export const store = reactive({
       if (!item.alpha_name.includes(searchStr)) continue;
       this.search_results.push({
         name: item.name,
-        type_label: 'External',
+        type: item.type,
         route_name: 'externalItem',
         id: itemID
       });
@@ -456,99 +581,10 @@ export const store = reactive({
       if (!movie.alpha_name.includes(searchStr)) continue;
       this.search_results.push({
         name: movie.name,
-        type_label: 'Movie',
+        type: movie.type,
         route_name: 'movie',
         id: movieID
       });
     }
   }
 });
-
-/*
- * Items
- */
-
-export const showIdLists = computed(() => {
-  let unfinishedShowIDs = [];
-  let finishedShowIDs = [];
-  let archivedShowIDs = [];
-  for (const showID of store.show_ids) {
-    let show = store.shows[showID];
-    if (show.is_archived) archivedShowIDs.push(showID);
-    else if (show.current_episode_id) unfinishedShowIDs.push(showID);
-    else finishedShowIDs.push(showID);
-  }
-  return {
-    unfinished: unfinishedShowIDs,
-    finished: finishedShowIDs,
-    archived: archivedShowIDs,
-  }
-});
-
-export const externalItemIdLists = computed(() => {
-  let unarchived = [];
-  let archived = [];
-  for (const itemID of store.external_item_ids) {
-    if (store.external_items[itemID].is_archived) archived.push(itemID);
-    else unarchived.push(itemID);
-  }
-  return {
-    unarchived: unarchived,
-    archived: archived
-  }
-});
-
-export const movieIdLists = computed(() => {
-  let unarchived = [];
-  let archived = [];
-  for (const movieID of store.movie_ids) {
-    if (store.movies[movieID].is_archived) archived.push(movieID);
-    else unarchived.push(movieID);
-  }
-  return {
-    unarchived: unarchived,
-    archived: archived
-  }
-});
-
-export const homeItems = computed(() => {
-  let showIdVals = showIdLists.value;
-  let items = [];
-  for (const showID of showIdVals.unfinished) {
-    items.push(store.shows[showID]);
-  }
-  if (store.home.show_finished_shows) {
-    for (const showID of showIdVals.finished) {
-      items.push(store.shows[showID]);
-    }
-  }
-  for (const itemID of externalItemIdLists.value.unarchived) {
-    items.push(store.external_items[itemID]);
-  }
-  for (const movieID of movieIdLists.value.unarchived) {
-    items.push(store.movies[movieID]);
-  }
-  return items;
-});
-
-export const archivesItems = computed(() => {
-  let items = [];
-  for (const showID of showIdLists.value.archived) {
-    items.push(store.shows[showID]);
-  }
-  for (const itemID of externalItemIdLists.value.archived) {
-    items.push(store.external_items[itemID]);
-  }
-  for (const movieID of movieIdLists.value.archived) {
-    items.push(store.movies[movieID]);
-  }
-  return items;
-});
-
-export const homeSelectedItemIndex = computed(() =>
-  homeItems.value.findIndex(item => store.home.selected_item.slug === item.slug)
-);
-
-export const archivesSelectedItemIndex = computed(() =>
-  archivesItems.value.findIndex(item => store.archives_selected_item.slug === item.slug)
-);

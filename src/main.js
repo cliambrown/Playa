@@ -9,7 +9,7 @@ import '@vuepic/vue-datepicker/dist/main.css';
 import './styles.css';
 import App from './App.vue';
 
-import { createWebHistory, createRouter } from 'vue-router'
+import { createWebHistory, createRouter } from 'vue-router';
 
 import HomeView from './views/HomeView.vue';
 import ArchivesView from './views/ArchivesView.vue';
@@ -28,9 +28,11 @@ const routes = [
   { path: '/settings', name: 'settings', component: SettingsView },
   { path: '/clear-playback', name: 'clearPlayback', component: ClearPlaybackView },
   { path: '/shows/:id', name: 'show', component: ShowPageView },
-  { path: '/external-items/:id?', name: 'externalItem', component: ExternalItemPageView },
+  { path: '/external-items/create-show', name: 'createExternalItemShow', component: ExternalItemPageView },
+  { path: '/external-items/create-movie', name: 'createExternalItemMovie', component: ExternalItemPageView },
+  { path: '/external-items/:id', name: 'externalItem', component: ExternalItemPageView },
   { path: '/movies/:id', name: 'movie', component: MoviePageView },
-]
+];
 
 const router = createRouter({
   history: createWebHistory(),

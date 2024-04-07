@@ -20,10 +20,9 @@ onBeforeMount(async () => {
   const localDataDir = await appLocalDataDir();
   store.local_data_dir = localDataDir;
   // Add 'x' at the end to get the trailing dir slash
-  const bannerFilepath = await join(localDataDir, 'banners', 'x');
-  const posterFilepath = await join(localDataDir, 'posters', 'x');
-  store.banner_dir_url = convertFileSrc(bannerFilepath.slice(0,-1));
-  store.poster_dir_url = convertFileSrc(posterFilepath.slice(0,-1));
+  const artworkFilepath = await join(localDataDir, 'artworks', 'x');
+  store.artworks_dir = artworkFilepath.slice(0,-1);
+  store.artworks_dir_url = convertFileSrc(store.artworks_dir);
   store.db = await Database.load('sqlite:playa.db');
   await store.loadFromDB();
   await store.getPlaybackPositions();
@@ -35,8 +34,6 @@ onBeforeMount(async () => {
 listen('loading-event', (event) => {
   if (event.payload) store.loading_msg = event.payload.message;
 });
-
-// @keydown.esc="router.go(-1)"
 
 function handleKeydown(event) {
   if (route.name === 'home') return true;
@@ -59,7 +56,7 @@ onBeforeUnmount(() => {
 
 <template>
   
-  <div class="flex flex-col h-full max-h-full">
+  <div class="flex flex-col h-full max-h-full min-h-screen">
     
     <header class="flex flex-wrap w-full max-w-full py-2 text-sm bg-black sm:justify-start sm:flex-nowrap">
       <nav class="w-full max-w-full px-4 mx-auto sm:gap-x-3 sm:flex sm:items-center sm:justify-between" aria-label="Global">

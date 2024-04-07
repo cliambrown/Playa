@@ -32,6 +32,11 @@ body {
   --dp-font-size: 0.875rem;
   --dp-input-padding: 0.5rem 30px 0.5rem 12px;
 }
+.dp__theme_dark {
+  --dp-background-color: rgb(51 65 85);
+  --dp-border-color: rgb(75 85 99);
+  --dp-border-color-hover: rgb(75 85 99);
+}
 dp__input {
   line-height: 1.25rem;
 }

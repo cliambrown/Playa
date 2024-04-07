@@ -11,7 +11,6 @@ pub fn copy_local_image(
 	app_handle: AppHandle,
 	src_pathname: &str,
 	new_filename: &str,
-    dest_folder: &str
 ) -> Result<String, String> {
     let src_path = Path::new(&src_pathname);
     let file_exists = src_path.try_exists().unwrap();
@@ -19,7 +18,7 @@ pub fn copy_local_image(
         return Err("File does not exist!".into())
     }
     let data_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
-    let dest_dir = Path::new(&data_dir).join(dest_folder);
+    let dest_dir = Path::new(&data_dir).join("artworks");
     match fs::create_dir_all(&dest_dir) {
         Ok(_) => (),
         Err(error) => return Err(error.to_string().into())
@@ -39,10 +38,9 @@ pub fn download_image(
     app_handle: AppHandle,
     src_url: &str,
     new_filename: &str,
-    dest_folder: &str
 ) -> Result<String, String> {
     let data_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
-    let dest_dir = Path::new(&data_dir).join(dest_folder);
+    let dest_dir = Path::new(&data_dir).join("artworks");
     match fs::create_dir_all(&dest_dir) {
         Ok(_) => (),
         Err(error) => return Err(error.to_string().into())
@@ -83,7 +81,6 @@ pub fn download_image(
 pub fn delete_image(
 	app_handle: AppHandle,
 	delete_filename: Option<&str>,
-    from_folder: &str
 ) -> Result<String, String> {
     match delete_filename {
         Some(_f) => (),
@@ -91,7 +88,7 @@ pub fn delete_image(
     }
     let data_dir = app_handle.path_resolver().app_local_data_dir().unwrap();
     let delete_path = Path::new(&data_dir)
-        .join(from_folder)
+        .join("artworks")
         .join(delete_filename.unwrap());
     match trash::delete(delete_path) {
         Ok(()) => return Ok("File deleted".into()),

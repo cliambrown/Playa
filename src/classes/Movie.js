@@ -1,10 +1,12 @@
 import { open } from '@tauri-apps/api/shell';
+import { invoke } from '@tauri-apps/api/tauri';
 import { store } from '../store';
 import { useGet, useAlphaName, useSaveToDB } from '../helpers.js';
 
 export function Movie(movieData) {
   this.id = useGet(movieData, 'id');
-  this.type = 'movie';
+  this.class = 'Movie';
+  this.type = 'Movie';
   this.table_name = 'movies';
   this.setSlug(); // 'movie-' + this.id
   this.created_at = useGet(movieData, 'created_at');
@@ -18,7 +20,7 @@ export function Movie(movieData) {
   this.tvdb_slug = useGet(movieData, 'tvdb_slug');
   this.duration = useGet(movieData, 'duration');
   this.last_watched_at = useGet(movieData, 'last_watched_at');
-  this.poster_filename = useGet(movieData, 'poster_filename');
+  this.artwork_filename = useGet(movieData, 'artwork_filename');
   this.tvdb_matches = [];
 }
 
@@ -29,7 +31,7 @@ Movie.prototype.updateFromDB = function(movieData) {
   this.tvdb_slug = useGet(movieData, 'tvdb_slug');
   this.duration = useGet(movieData, 'duration');
   this.last_watched_at = useGet(movieData, 'last_watched_at');
-  this.poster_filename = useGet(movieData, 'poster_filename');
+  this.artwork_filename = useGet(movieData, 'artwork_filename');
 }
 
 Movie.prototype.setName = function(newName = null) {
@@ -62,7 +64,7 @@ Movie.prototype.setSlug = function() {
 }
 
 Movie.prototype.saveToDB = async function() {
-  const response = await useSaveToDB(store, this, ['is_archived', 'name', 'pathname', 'filename', 'tvdb_id', 'tvdb_slug', 'duration', 'last_watched_at', 'poster_filename']);
+  const response = await useSaveToDB(store, this, ['is_archived', 'name', 'pathname', 'filename', 'tvdb_id', 'tvdb_slug', 'duration', 'last_watched_at', 'artwork_filename']);
   console.log('Movie.saveToDB', response);
   return response;
 }
@@ -93,9 +95,15 @@ Movie.prototype.delete = async function() {
   // Remove from store
   store.movie_ids = store.movie_ids.filter(movieID => movieID != this.id);
   delete store.movies[this.id];
+  store.removeItemFromLists(this.slug);
   // If this movie is selected, store.selectFirst
-  if (store.home.selected_item.slug === this.slug)
+  if (store.home_selected_item.slug === this.slug)
     store.selectFirstHomeItem();
   if (store.archives_selected_item.slug === this.slug)
     store.selectFirstArchivesItem();
+  if (this.artwork_filename) {
+    invoke('delete_image', {
+      deleteFilename: this.artwork_filename,
+    });
+  }
 }

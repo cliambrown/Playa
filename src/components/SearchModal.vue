@@ -43,7 +43,7 @@ watch(searchStrInput, newVal => updateSearchStr(newVal));
 function handleKeydown(event) {
   switch (event.key) {
     case 'Escape':
-      store.home.show_search = false;
+      store.show_search = false;
       break;
   }
   return true;
@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
                     <div class="shrink-0">
                       <div class="w-20 text-right">
                         <div class="inline-block px-2 text-sm bg-gray-100 rounded-full text-slate-900">
-                          {{ itemInfo.type_label }}
+                          {{ itemInfo.type }}
                         </div>
                       </div>
                     </div>

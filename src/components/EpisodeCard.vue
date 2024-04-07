@@ -82,16 +82,15 @@ watch(
     v-if="episode"
     class="relative my-6 text-left text-gray-900 transition duration-150 ease-in-out rounded-lg shadow-md"
     :class="{
-      'ring-[6px] ring-green-400 ring-offset-[6px] ring-offset-slate-900': isSelected,
-      'opacity-90': !isSelected,
+      'ring-[6px] ring-green-400 ring-offset-[6px] ring-offset-slate-900': isSelected
     }"
     >
     
-    <div v-if="episode.is_finished" class="px-6 bg-white rounded-lg">
+    <div v-if="episode.is_finished" class="px-6 py-4 bg-white rounded-lg">
       [Finished]
     </div>
     
-    <div v-else class="overflow-hidden bg-white rounded-lg">
+    <div v-else class="bg-white rounded-lg">
       
       <div class="px-6 py-4">
         
@@ -106,9 +105,9 @@ watch(
             S{{ (episode.season_num + '').padStart(2, '0') }}E{{ (episode.episode_num + '').padStart(2, '0') }}
             {{ episode.name }}
           </div>
-          <Button :variant="showEdit ? 'gray' : 'action-secondary'" class="ml-auto" @click="showEdit = !showEdit">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 -mx-1">
-              <path d="m2.695 14.762-1.262 3.155a.5.5 0 0 0 .65.65l3.155-1.262a4 4 0 0 0 1.343-.886L17.5 5.501a2.121 2.121 0 0 0-3-3L3.58 13.419a4 4 0 0 0-.885 1.343Z" />
+          <Button variant="tertiary-light" class="ml-auto -my-1" @click.stop="showEdit = !showEdit">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 my-1">
+              <path fill-rule="evenodd" d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z" clip-rule="evenodd" />
             </svg>
           </Button>
         </div>
@@ -148,7 +147,7 @@ watch(
         
       </div>
       
-      <div v-show="showEdit" class="px-6 pt-4 pb-6 bg-gray-100">
+      <div v-show="showEdit" class="px-6 pt-4 pb-6 bg-gray-100 rounded-b-lg" @click.stop>
         
         <InputWithLabel class="w-full" :isDark="false" :id="`episode-${episode.id}-name`" v-model="episode.name" :readonly="store.loading">
           Name

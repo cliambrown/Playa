@@ -19,7 +19,7 @@ const VIDEO_MIMES: [&str; 9] = [
 	"video/x-flv",
 ];
 
-async fn get_video_duration(path: &str) -> String {
+async fn get_duration_with_sidecar(path: &str) -> String {
 	let (mut rx, mut _child) = Command::new_sidecar("ffprobe")
 		.expect("failed to create `ffprobe` binary command")
 		.args([
@@ -37,10 +37,14 @@ async fn get_video_duration(path: &str) -> String {
 }
 
 #[tauri::command]
-pub fn scan_shows(
+pub fn get_duration(path: &str) -> String {
+	return block_on(get_duration_with_sidecar(path));
+}
+
+#[tauri::command(async)]
+pub async fn scan_shows(
 	app_handle: AppHandle,
-	tv_dir: &str,
-	current_episode_pathnames: Vec<&str>
+	tv_dir: String,
 ) -> Result<HashMap<String, Vec<HashMap<String, String>>>, String> {
 	
 	let dir_exists = Path::new(&tv_dir).try_exists().unwrap();
@@ -60,7 +64,6 @@ pub fn scan_shows(
         if !show_entry.file_type().unwrap().is_dir() { continue }
 		let show_dir_name = show_entry.file_name().to_os_string()
 			.into_string().unwrap();
-		emit_global(&app_handle, "loading-event", &show_dir_name);
 		for ep_entry in WalkDir::new(show_entry.path()) {
 			let ep_entry = ep_entry.unwrap();
 			if !ep_entry.file_type().is_file() { continue }
@@ -74,16 +77,11 @@ pub fn scan_shows(
 				Err(_error) => continue
 			};
 			if !VIDEO_MIMES.contains(&kind.mime_type()) { continue }
-			let mut duration = "".to_string();
-			if !current_episode_pathnames.contains(&path.to_str().unwrap()) {
-				duration = block_on(get_video_duration(path.to_str().unwrap()));
-			}
 			let filename = ep_entry.file_name().to_os_string().into_string().unwrap();
 			episode_files.push(HashMap::from([
 				("show_dir_name".to_string(), show_dir_name.clone()),
 				("filename".to_string(), filename),
 				("pathname".to_string(), path.to_str().unwrap().to_string()),
-				("duration".to_string(), duration)
 			]));
 			found_episodes = true;
 		}
@@ -100,11 +98,10 @@ pub fn scan_shows(
 	Ok(result.into())
 }
 
-#[tauri::command]
-pub fn scan_movies(
+#[tauri::command(async)]
+pub async fn scan_movies(
 	app_handle: AppHandle,
-	movie_dir: &str,
-	current_movie_pathnames: Vec<&str>
+	movie_dir: String,
 ) -> Result<Vec<HashMap<String, String>>, String> {
 	
 	let dir_exists = Path::new(&movie_dir).try_exists().unwrap();
@@ -126,15 +123,10 @@ pub fn scan_movies(
 			Err(_error) => continue
 		};
 		if !VIDEO_MIMES.contains(&kind.mime_type()) { continue }
-		let mut duration = "".to_string();
-		if !current_movie_pathnames.contains(&path.to_str().unwrap()) {
-			duration = block_on(get_video_duration(path.to_str().unwrap()));
-		}
 		let filename = entry.file_name().to_os_string().into_string().unwrap();
 		movie_files.push(HashMap::from([
 			("filename".to_string(), filename),
 			("pathname".to_string(), path.to_str().unwrap().to_string()),
-			("duration".to_string(), duration)
 		]));
 	}
 	Ok(movie_files.into())

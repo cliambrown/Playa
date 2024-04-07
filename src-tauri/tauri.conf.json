@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "Playa",
-    "version": "0.0.0"
+    "version": "0.0.2"
   },
   "tauri": {
     "allowlist": {
@@ -37,6 +37,11 @@
       "path": {
         "all": true
       },
+      "fs": {
+        "readFile": true,
+        "writeFile": true,
+        "scope": ["$APPLOCALDATA/*"]
+      },
       "protocol": {
         "asset": true,
         "assetScope": ["**"]
@@ -50,7 +55,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
+      "csp": "default-src 'self'; img-src  https://artworks.thetvdb.com/ 'self' asset: https://asset.localhost"
     },
     "bundle": {
       "active": true,
@@ -58,7 +63,7 @@
         "binaries/ffprobe"
       ],
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "com.cliambrown.playa",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",

@@ -6,6 +6,7 @@ pub mod scanner;
 pub mod emitter;
 pub mod images;
 
+use std::fs;
 use std::process::Command;
 use std::path::Path;
 use tauri_plugin_sql::{Migration, MigrationKind};
@@ -57,6 +58,7 @@ fn main() {
         )
         .invoke_handler(tauri::generate_handler![
                 playback_positions::get_playback_positions,
+                scanner::get_duration,
                 scanner::scan_shows,
                 scanner::scan_movies,
                 images::copy_local_image,
@@ -66,6 +68,17 @@ fn main() {
                 get_home_dir,
                 show_in_folder
             ])
+        .setup(|app| {
+            // Create artworks folder if not created
+            let data_dir = app.path_resolver()
+                .app_local_data_dir().unwrap();
+            let dest_dir = Path::new(&data_dir).join("artworks");
+            match fs::create_dir_all(&dest_dir) {
+                Ok(_) => (),
+                Err(_error) => ()
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

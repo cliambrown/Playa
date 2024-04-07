@@ -4,13 +4,14 @@ import { invoke } from '@tauri-apps/api/tauri';
 
 export function useSecondsToTimeStr(seconds) {
   if (typeof seconds === 'string') {
-    // assume format 'XXXX.XXXXXX'
+    // expect format 'XXXX.XXXXXX'
+    if (/^\s\d+\.\d+\s*$/.test(seconds)) return null;
     const parts = seconds.split('.');
     seconds = parseInt(parts[0].trim());
   } else {
     seconds = parseInt(seconds);
   }
-  if (isNaN(seconds)) seconds = 0;
+  if (isNaN(seconds)) return null;
   let timeStr = '';
   const hours = Math.floor(seconds / 60 / 60);
   if (hours >= 1) timeStr = hours + ':';
@@ -117,24 +118,3 @@ export async function useSaveToDB(store, item, fields, setUpdatedAt = true) {
   }
   return response;
 }
-
-// export async function useGetCurrentBanners(store, ignoreID, ignoreIdFromTable) {
-//     if (!store.db) return [];
-//     let result = [];
-//     if (store.db) {
-//       for (const tableName of ['shows', 'external_items']) {
-//         let query = `SELECT id, banner_filename FROM ${tableName} WHERE banner_filename IS NOT NULL`;
-//         let rows;
-//         if (ignoreID && ignoreIdFromTable === tableName) {
-//           query += ' AND id!=?';
-//           rows = await store.db.select(query, [ignoreID]);
-//         } else {
-//           rows = await store.db.select(query);
-//         }
-//         for (const row of rows) {
-//           result.push(row.banner_filename)
-//         }
-//       }
-//     }
-//     return result;
-// }
