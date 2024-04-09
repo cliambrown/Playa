@@ -95,3 +95,47 @@ pub fn delete_image(
         Err(error) => return Ok(error.to_string().into())
     }
 }
+
+#[tauri::command]
+pub fn delete_unused_images(
+    app_handle: AppHandle,
+    filenames_to_keep: Vec<&str>
+) -> Result<String, String> {
+    let image_mimes: [&str; 7] = [
+        "image/apng",
+        "image/avif",
+        "image/gif",
+        "image/jpeg",
+        "image/png",
+        "image/svg+xml",
+        "image/webp",
+    ];
+    let artworks_dir = app_handle.path_resolver().app_local_data_dir().unwrap().join("artworks");
+    let entries = match fs::read_dir(artworks_dir) {
+		Ok(r) => r,
+		Err(error) => return Err(error.to_string().into())
+	};
+    let mut deleted_count = 0;
+    for entry in entries {
+		let entry = entry.unwrap();
+        if !entry.file_type().unwrap().is_file() { continue }
+        let path = entry.path();
+        let kind = match infer::get_from_path(path) {
+            Ok(opt) => match opt {
+                Some(k) => k,
+                None => continue
+            },
+            Err(_error) => continue
+        };
+        if !image_mimes.contains(&kind.mime_type()) { continue }
+        let filename = entry.file_name().to_os_string().into_string().unwrap();
+        if !filenames_to_keep.contains(&filename.as_str()) {
+            deleted_count += 1;
+            match trash::delete(entry.path()) {
+                Ok(()) => (),
+                Err(error) => return Ok(error.to_string().into())
+            }
+        }
+    }
+    Ok(format!("{deleted_count} files deleted").into())
+}

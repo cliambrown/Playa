@@ -64,6 +64,7 @@ fn main() {
                 images::copy_local_image,
                 images::download_image,
                 images::delete_image,
+                images::delete_unused_images,
                 trash_files,
                 get_home_dir,
                 show_in_folder
