@@ -128,6 +128,7 @@ async function updateEpisodesFromTvdb() {
       }
     }
   }
+  show.value.sortEpisodes();
   store.loading_msg = `${updatedCount} episode${updatedCount == 1 ? '' : 's'} updated`;
 }
 
