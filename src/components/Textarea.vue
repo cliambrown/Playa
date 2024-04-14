@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue';
 import { useTextareaAutosize } from '@vueuse/core'
 const props = defineProps(['id']);
-const { textarea, input } = useTextareaAutosize()
+const { textarea, input } = useTextareaAutosize();
+const val = defineModel();
+input.value = val.value ? val.value.toString() : '';
+watch(input, newVal => val.value = newVal);
 </script>
 
 <template>

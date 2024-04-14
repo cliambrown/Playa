@@ -166,7 +166,7 @@ async function importBackup() {
   }
   
   const items = useGet(importData, 'external_items', []);
-  fields = ['created_at','updated_at','is_archived','type','name','tvdb_id','tvdb_slug','last_watched_at','artwork_filename','url'];
+  fields = ['created_at','updated_at','is_archived','type','name','tvdb_id','tvdb_slug','last_watched_at','artwork_filename','url','duration','current_episode_id'];
   qMarks = Array(fields.length).fill('?');
   for (const itemData of items) {
     store.loading_msg = 'Processing external item: ' + itemData.url;
@@ -256,7 +256,7 @@ async function createBackup() {
   for (const itemID of store.external_item_ids) {
     const item = store.external_items[itemID];
     let itemObj = {};
-    for (const propName of ['created_at','updated_at','is_archived','type','name','tvdb_id','tvdb_slug','last_watched_at','artwork_filename','url']) {
+    for (const propName of ['created_at','updated_at','is_archived','type','name','tvdb_id','tvdb_slug','last_watched_at','artwork_filename','url','duration','current_episode_id']) {
       itemObj[propName] = item[propName];
     }
     bkpObj.external_items.push(itemObj);
@@ -343,6 +343,10 @@ async function createBackup() {
       
       <InputWithLabel class="mt-10 max-w-36" id="tvdb_pin" v-model="store.settings.tvdb_pin" :readonly="store.loading" @input="handleUpdate">
         TVDB PIN
+      </InputWithLabel>
+      
+      <InputWithLabel class="max-w-md mt-10" id="youtube_api_key" v-model="store.settings.youtube_api_key" :readonly="store.loading" @input="handleUpdate">
+        YouTube API Key
       </InputWithLabel>
       
       <InputWithLabel class="mt-10" id="mpv_watched_dir" v-model="store.settings.mpv_watched_dir" :readonly="store.loading" @input="handleUpdate">

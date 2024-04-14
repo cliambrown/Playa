@@ -4,6 +4,7 @@ import { useSecondsToTimeStr, useGet, useAlphaName } from './helpers.js';
 import { Show } from './classes/Show.js';
 import { Episode } from './classes/Episode.js';
 import { ExternalItem } from './classes/ExternalItem.js';
+import { ExternalItemEpisode } from './classes/ExternalItemEpisode.js';
 import { Movie } from './classes/Movie.js';
 
 /*
@@ -72,6 +73,7 @@ export const store = reactive({
     movie_dir: null,
     tvdb_apikey: null,
     tvdb_pin: null,
+    youtube_api_key: null,
     mpv_watched_dir: null,
   },
   
@@ -126,6 +128,19 @@ export const store = reactive({
     }
   },
   
+  addExternalItemEpisode(episodeData) {
+    const itemID = parseInt(episodeData.external_item_id);
+    if (!this.external_items.hasOwnProperty(itemID)) return false;
+    let item = this.external_items[itemID];
+    const episodeID = parseInt(episodeData.id);
+    if (this.external_items[itemID].episode_ids.includes(episodeID)) {
+      item.episodes[episodeID].updateFromDB(episodeData);
+    } else {
+      item.episodes[episodeID] = new ExternalItemEpisode(episodeData);
+      item.episode_ids.push(episodeID);
+    }
+  },
+  
   addMovie(movieData) {
     if (this.movie_ids.includes(movieData.id)) {
       this.movies[movieData.id].updateFromDB(movieData);
@@ -155,6 +170,11 @@ export const store = reactive({
     const externalItemsData = await this.db.select('SELECT * FROM external_items');
     for (const itemData of externalItemsData) {
       this.addExternalItem(itemData);
+    }
+    // Get External Item Episodes
+    const externalItemEpisodesData = await this.db.select('SELECT * FROM external_item_episodes');
+    for (const episodeData of externalItemEpisodesData) {
+      this.addExternalItemEpisode(episodeData);
     }
     // Get Movies
     const moviesData = await this.db.select('SELECT * FROM movies');
@@ -298,13 +318,14 @@ export const store = reactive({
     for (const showID of this.show_ids) {
       const show = this.shows[showID];
       if (show.is_archived) this.archives_showtype_items.push(show);
-      else if (!show.current_episode_id) this.home_finished_showtype_items.push(show);
+      else if (show.current_episode_id === null) this.home_finished_showtype_items.push(show);
       else this.home_unfinished_showtype_items.push(show);
     }
     for (const itemID of this.external_item_ids) {
       const item = this.external_items[itemID];
       if (item.type !== 'Show') continue;
       if (item.is_archived) this.archives_showtype_items.push(item);
+      else if (item.current_episode_id === null) this.home_finished_showtype_items.push(item);
       else this.home_unfinished_showtype_items.push(item);
     }
     this.home_unfinished_showtype_items.sort(compareItems);

@@ -137,7 +137,21 @@ Show.prototype.setCurrentEpToNewEp = function() {
 
 Show.prototype.episodeNav = function(destination) {
   let prevCurrentEpID = this.current_episode_id;
-  if (!this.episode_ids.length) return true;
+  if (!this.episode_ids.length) {
+    switch (destination) {
+      case 'first':
+      case 'prev':
+        this.current_episode_id = -1;
+        break;
+      case 'next':
+      case 'finished':
+        this.current_episode_id = null;
+        break;
+    }
+    if (this.current_episode_id != prevCurrentEpID)
+      this.updateCurrentEpInDB();
+    return true;
+  }
   let epIndex = this.current_episode_id
     ? this.episode_ids.indexOf(this.current_episode_id)
     : this.episode_ids.length;

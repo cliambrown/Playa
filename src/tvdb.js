@@ -136,3 +136,24 @@ export async function getArtwork(store, tvdbID, type) {
   }
   return artworks;
 }
+
+export async function getMovieRuntime(store, tvdbID) {
+  if (!tvdbID) return false;
+  let token = await getToken(store);
+  if (!token) return false;
+  const url = 'https://api4.thetvdb.com/v4/movies/' + encodeURI(tvdbID);
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: { Authorization: 'Bearer ' + token },
+    timeout: 10,
+  });
+  console.log('getMovieRuntime', response);
+  const responseData = getResponseData(response);
+  if (
+    !responseData
+    || !responseData.hasOwnProperty('runtime')
+  ) {
+    return false;
+  }
+  return responseData.runtime;
+}

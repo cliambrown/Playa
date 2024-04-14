@@ -42,10 +42,10 @@ function handleKeydown(event) {
       break;
     case 'ArrowDown':
     case 'ArrowUp':
-      if (store.home_selected_item.type !== 'Show') return true;
+      if (!store.home_selected_item.episode_ids) return true;
       event.preventDefault();
-      let show = store.home_selected_item;
-      show.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev')
+      let item = store.home_selected_item;
+      item.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev')
       break;
     case ' ':
       if (store.home_selected_item.play()) event.preventDefault();

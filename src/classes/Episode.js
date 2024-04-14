@@ -13,7 +13,6 @@ export function Episode(episodeData, fromScan = false) {
   this.overview = useGet(episodeData, 'overview');
   this.released_on = useGet(episodeData, 'released_on');
   this.duration = useGet(episodeData, 'duration');
-  this.is_new_addition = useGet(episodeData, 'is_new_addition');
   this.is_updated_from_tvdb = useGet(episodeData, 'is_updated_from_tvdb');
   if (fromScan) {
     this.parseFilename();
@@ -21,7 +20,6 @@ export function Episode(episodeData, fromScan = false) {
     this.season_num = useGet(episodeData, 'season_num');
     this.episode_num = useGet(episodeData, 'episode_num');
     this.name = useGet(episodeData, 'name');
-    this.searchable_text = useGet(episodeData, 'searchable_text');
   }
   this.setSearchableText();
 }

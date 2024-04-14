@@ -22,6 +22,20 @@ const artworkAssetUrl = computed(() => {
     : '/assets/blank_poster.jpg';
 });
 
+const domain = computed(() => {
+  if (!props.item.url) return null;
+  let url;
+  try {
+    url = new URL(props.item.url);
+  } catch (e) {
+    return null;
+  }
+  if (url && url.hostname) {
+    return url.hostname.replace('www.','');
+  }
+  return null;
+});
+
 function scrollIntoView() {
   if (props.isSelected) {
     wrapper.value.scrollIntoView({behavior: 'smooth', block: 'nearest'});
@@ -87,9 +101,12 @@ function setAsSelected() {
         </RouterLink>
       </div>
       
-      <div v-if="item.class === 'ExternalItem'" class="flex items-center">
+      <div v-if="item.class === 'ExternalItem'" class="flex items-center gap-x-4">
+        <div class="shrink-0">
+          {{ item.duration }}
+        </div>
         <div class="overflow-hidden grow whitespace-nowrap text-ellipsis">
-          {{ item.url }}
+          {{ domain ? domain : item.url }}
         </div>
         <div class="shrink-0">
           <RouterLink :to="{ name: 'externalItem', params: { id: item.id } }" @click.stop class="inline-block p-2 -mb-2 -mr-2 text-indigo-600">

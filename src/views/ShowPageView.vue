@@ -54,6 +54,15 @@ watch(
   }
 )
 
+watch(
+  () => show.value ? show.value.current_episode_id : null,
+  (newName) => {
+    if (show.value) {
+      show.value.updateCurrentEpInDB();
+    }
+  }
+)
+
 function openTvdbSlug(slug) {
   if (slug) open('https://www.thetvdb.com/series/' + slug);
 }
@@ -318,6 +327,16 @@ onBeforeUnmount(() => {
     </div>
       
     <div class="pl-12 pr-8 mt-4 overflow-y-scroll grow min-h-40">
+      
+      <EpisodeCard
+        v-if="!show.episode_ids.length"
+        :episode="{is_unfinished: true}"
+        :is-selected="show.current_episode_id === -1"
+        :playback-position="null"
+        @click="show.current_episode_id = -1"
+        :class="{ 'hidden': !!filterStrDebounced }"
+        >
+      </EpisodeCard>
       
       <EpisodeCard
         v-for="episodeID in show.episode_ids"

@@ -24,6 +24,12 @@ export function useSecondsToTimeStr(seconds) {
     + (seconds + '').padStart(2, '0');
 }
 
+export function useMinutesToTimeStr(minutes) {
+  minutes = parseInt(minutes);
+  if (isNaN(minutes)) return null;
+  return useSecondsToTimeStr(minutes * 60);
+}
+
 // export function useRawFromProxy(val) {
 //   return isProxy(val) ? toRaw(val) : val;
 // }

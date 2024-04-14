@@ -4,7 +4,7 @@ import { store } from '../store.js'
 import { useGet } from '../helpers';
 import TextareaWithLabel from '../components/TextareaWithLabel.vue';
 
-const props = defineProps(['episode', 'isSelected', 'playbackPosition']);
+const props = defineProps(['episode', 'isSelected']);
 
 let updateTimeoutId = null;
 let updateMsgTimoutId = null;
@@ -39,15 +39,6 @@ watch(
   () => props.isSelected,
   (newVal) => scrollIntoView()
 );
-
-watch(showEdit, async (newVal) => {
-  if (newVal) {
-    await nextTick();
-    window.setTimeout(() => {
-      scrollIntoView();
-    }, 200);
-  }
-});
 
 async function handleUpdate() {
   if (!store.loaded_from_db) return false;
@@ -86,7 +77,11 @@ watch(
     }"
     >
     
-    <div v-if="episode.is_finished" class="px-6 py-4 bg-white rounded-lg">
+    <div v-if="episode.is_unfinished" class="px-6 py-4 bg-white rounded-lg">
+      [Unfinished]
+    </div>
+    
+    <div v-else-if="episode.is_finished" class="px-6 py-4 bg-white rounded-lg">
       [Finished]
     </div>
     
@@ -114,7 +109,7 @@ watch(
         
         <div class="mt-1 overflow-hidden whitespace-nowrap text-ellipsis">
           <span class="mr-4 font-semibold">
-            {{ playbackPosition ? playbackPosition : '--' }} / {{ episode.duration }}
+            {{ episode.duration }}
           </span>
           <span class="text-gray-600" :title="episode.pathname">
             {{ episode.filename }}
