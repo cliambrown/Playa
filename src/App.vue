@@ -15,8 +15,8 @@ store.route = route;
 store.router = router;
 
 onBeforeMount(async () => {
-  store.loading_msg = null;
   store.loading = true;
+  store.loading_msg = null;
   const localDataDir = await appLocalDataDir();
   store.local_data_dir = localDataDir;
   // Add 'x' at the end to get the trailing dir slash

@@ -1,23 +1,20 @@
 <script setup>
-import { watch, ref } from 'vue'
+import { ref } from 'vue'
 import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
-import { open } from '@tauri-apps/api/shell';
 import { invoke } from '@tauri-apps/api/tauri';
 import { store } from '../store.js'
-import { useGet, useOpenOrHomeDir } from '../helpers.js';
+import { useGet, useGetProp, useOpenOrHomeDir } from '../helpers.js';
 import DirSelect from '../components/DirSelect.vue';
-import { Show } from '../classes/Show';
-import { Episode } from '../classes/Episode';
+// import { Show } from '../classes/Show';
+// import { Episode } from '../classes/Episode';
+// import { ExternalItemEpisode } from '../classes/ExternalItemEpisode';
 
 let updateTimeoutId = null;
-let updateMsgTimoutId = null;
 
 let backupImportSrc = ref('');
 
 async function handleUpdate() {
-  if (!store.loaded_from_db) return false;
   window.clearTimeout(updateTimeoutId);
-  window.clearTimeout(updateMsgTimoutId);
   store.loading_msg = 'Waiting...';
   updateTimeoutId = window.setTimeout(async () => {
     store.loading_msg = 'Saving...';
@@ -28,11 +25,8 @@ async function handleUpdate() {
       paramsArr.push(store.settings[property], property);
     }
     const response = await store.db.execute(query, paramsArr);
-    if (parseInt(useGet(response, 'rowsAffected'))) {
+    if (parseInt(useGetProp(response, 'rowsAffected'))) {
       store.loading_msg = 'Settings saved';
-      updateMsgTimoutId = window.setTimeout(() => {
-        store.loading_msg = ''
-      }, 5000);
     }
     console.log('settings handleUpdate', response);
   }, 500);
@@ -44,15 +38,11 @@ async function clearUnusedArtwork() {
   store.loading = true;
   store.loading_msg = 'Deleting unused artwork...';
   let filenamesToKeep = [];
-  let tablesToSearch = ['shows','movies','external_items'];
-  for (const tableName of tablesToSearch) {
-    const rows = await store.db.select(`SELECT artwork_filename FROM ${tableName}`);
-    for (const row of rows) {
-      if (row.artwork_filename)
-        filenamesToKeep.push(row.artwork_filename);
-    }
+  const rows = await store.db.select(`SELECT artwork_filename FROM items`);
+  for (const row of rows) {
+    if (row.artwork_filename)
+      filenamesToKeep.push(row.artwork_filename);
   }
-  console.log(filenamesToKeep);
   const response = await invoke('delete_unused_images', {
     filenamesToKeep: filenamesToKeep,
   });
@@ -65,7 +55,7 @@ async function importBackup() {
   if (!backupImportSrc.value) return false;
   const confirmed = await confirm('This will overwrite settings and insert items. Are you sure you want to proceed?', { title: 'Playa - Import Backup', type: 'warning' });
   store.loading = true;
-  store.loading_msg = 'Getting backup data...'
+  store.loading_msg = 'Getting backup data...';
   await store.loadFromDB();
   const filename = backupImportSrc.value.replace(/^.*[\\/]/, '');
   let contents;
@@ -80,186 +70,135 @@ async function importBackup() {
     return false;
   }
   
-  let showsAdded = 0;
-  let showsUpdated = 0;
-  let episodesAdded = 0;
-  let episodesUpdated = 0;
-  let moviesAdded = 0;
-  let moviesUpdated = 0;
+  for (const [settingKey, currentVal] of Object.entries(store.settings)) {
+    let settingVal = useGet(importData, ['settings', settingKey], false);
+    if (settingVal === false) continue;
+    if (!settingVal) settingVal = null;
+    await store.db.execute('UPDATE settings SET value=? WHERE name=?', [settingVal, settingKey]);
+  }
+  
   let itemsAdded = 0;
   let itemsUpdated = 0;
-
-  let response, query, params, itemID;
+  let episodesAdded = 0;
+  let episodesUpdated = 0;
   
-  for (const settingName of ['tv_dir','movie_dir','tvdb_apikey','tvdb_pin','mpv_watched_dir']) {
-    const settingVal = useGet(importData, `settings.${settingName}`);
-    if (!settingVal) continue;
-    response = await store.db.execute(`UPDATE settings SET value=? WHERE name="${settingName}"`, [settingVal]);
-  }
-  
-  const shows = useGet(importData, 'shows', []);
-  let fields = ['created_at','updated_at','is_archived','name','dir_name','tvdb_id','tvdb_slug','last_watched_at','artwork_filename'];
-  let qMarks = Array(fields.length).fill('?');
-  for (const showData of shows) {
-    store.loading_msg = 'Processing show: ' + showData.dir_name;
-    let show = store.findShowByDirName(showData.dir_name);
-    if (show) {
-      itemID = show.id;
-      if (parseInt(showData.updated_at) > parseInt(show.updated_at)) {
-        show.updateFromDB(showData);
-        await show.saveToDB();
-        showsUpdated++;
-      }
-    } else {
-      query = `INSERT INTO shows (${fields.join(', ')}) VALUES (${qMarks})`;
-      params = [];
-      for (const fieldName of fields) {
-        params.push(useGet(showData, fieldName));
-      }
-      response = await store.db.execute(query, params);
-      itemID = parseInt(response.lastInsertId);
-      showData.id = itemID;
-      show = new Show(showData);
-      showsAdded++;
-    }
-    for (const episodeData of showData.episodes) {
-      let episode = show.findEpisodeByPathname(episodeData.pathname);
-      if (episode) {
-        if (parseInt(episodeData.updated_at) > parseInt(episode.updated_at)) {
-          episode.updateFromDB(episodeData);
-          episodesUpdated++;
+  const itemsData = useGetProp(importData, 'items');
+  if (itemsData && Array.isArray(itemsData)) {
+    for (const itemData of itemsData) {
+      let item = null;
+      for (const attrName of ['dir_name', 'pathname', 'url']) {
+        if (useGetProp(itemData, attrName)) {
+          item = await store.getItemFromAttribute(attrName, itemData);
+          break;
         }
+      }
+      
+      let currentEpisodeID = useGetProp(itemData, 'is_finished', false) ? null : 0;
+      console.log(itemData.name, currentEpisodeID, itemData.is_finished);
+      
+      const episodesData = useGetProp(itemData, 'episodes');
+      for (const episodeData of episodesData) {
+        let episode = await item.getEpisodeFromData(episodeData, false);
+        if (useGetProp(episodeData, 'is_current_ep', false)) {
+          currentEpisodeID = episode.id;
+        }
+        if (episode.is_new) {
+          await store.db.execute('UPDATE episodes SET created_at=?, updated_at=? WHERE id=?', [episodeData.created_at, episode.updated_at, episode.id]);
+          episode.created_at = episodeData.created_at;
+          episode.updated_at = episodeData.updated_at;
+          episodesAdded++;
+        } else {
+          let isUpdated = false;
+          let createdAt = episode.created_at;
+          if (episodeData.created_at < episode.created_at) {
+            createdAt = episodeData.created_at;
+            isUpdated = true;
+          }
+          let updatedAt = episode.updated_at;
+          if (episodeData.updated_at > episode.updated_at) {
+            updatedAt = episodeData.updated_at;
+            episode.updateAttributes(episodeData);
+            episode.saveToDB();
+            isUpdated = true;
+          }
+          if (isUpdated) {
+            await store.db.execute('UPDATE episodes SET created_at=?, updated_at=? WHERE id=?', [createdAt, updatedAt, episode.id]);
+            episode.created_at = createdAt;
+            episode.updated_at = updatedAt;
+            episodesUpdated++;
+          }
+        }
+      }
+      
+      if (item.is_new) {
+        await store.db.execute('UPDATE items SET created_at=?, updated_at=?, current_episode_id=? WHERE id=?', [itemData.created_at, item.updated_at, item.id]);
+        item.created_at = itemData.created_at;
+        item.updated_at = itemData.updated_at;
+        itemsAdded++;
       } else {
-        episodeData.show_id = itemID;
-        episode = new Episode(episodeData);
-        episodesAdded++;
-      }
-      await episode.saveToDB();
-      if (episodeData.is_current_ep) {
-        await store.db.execute('UPDATE shows SET current_episode_id=? WHERE id=?', [episode.id, itemID]);
+        let isUpdated = false;
+        let createdAt = item.created_at;
+        if (itemData.created_at < item.created_at) {
+          createdAt = itemData.created_at;
+          isUpdated = true;
+        }
+        let updatedAt = item.updated_at;
+        if (itemData.updated_at > item.updated_at) {
+          updatedAt = itemData.updated_at;
+          item.updateAttributes(itemData);
+          item.saveToDB();
+          isUpdated = true;
+        }
+        let lastWatchedAt = item.last_watched_at;
+        if (itemData.last_watched_at > item.last_watched_at) {
+          lastWatchedAt = itemData.last_watched_at;
+          isUpdated = true;
+        }
+        if (isUpdated) {
+          await store.db.execute('UPDATE items SET created_at=?, updated_at=?, current_episode_id=?, last_watched_at=? WHERE id=?', [createdAt, updatedAt, currentEpisodeID, lastWatchedAt, item.id]);
+          item.created_at = createdAt;
+          item.updated_at = updatedAt;
+          item.current_episode_id = currentEpisodeID;
+          item.last_watched_at = lastWatchedAt;
+          itemsUpdated++;
+        }
       }
     }
   }
   
-  const movies = useGet(importData, 'movies', []);
-  fields = ['created_at','updated_at','is_archived','name','pathname','filename','tvdb_id','tvdb_slug','duration','last_watched_at','artwork_filename'];
-  qMarks = Array(fields.length).fill('?');
-  for (const movieData of movies) {
-    store.loading_msg = 'Processing movie: ' + movieData.pathname;
-    let movie = store.findMovieByPathname(movieData.pathname);
-    if (movie) {
-      itemID = movie.id;
-      if (parseInt(movieData.updated_at) > parseInt(movie.updated_at)) {
-        movie.updateFromDB(movieData);
-        await movie.saveToDB();
-        moviesUpdated++;
-      }
-    } else {
-      query = `INSERT INTO movies (${fields.join(', ')}) VALUES (${qMarks})`;
-      params = [];
-      for (const fieldName of fields) {
-        params.push(useGet(movieData, fieldName));
-      }
-      await store.db.execute(query, params);
-      moviesAdded++;
-    }
-  }
+  store.sortItems();
+  store.sortAllEpisodes();
+  store.selectFirstHomeItem()
+  store.selectFirstArchivesItem();
   
-  const items = useGet(importData, 'external_items', []);
-  fields = ['created_at','updated_at','is_archived','type','name','tvdb_id','tvdb_slug','last_watched_at','artwork_filename','url','duration','current_episode_id'];
-  qMarks = Array(fields.length).fill('?');
-  for (const itemData of items) {
-    store.loading_msg = 'Processing external item: ' + itemData.url;
-    let item = store.findExtItemByUrl(itemData.url);
-    if (item) {
-      itemID = item.id;
-      if (parseInt(itemData.updated_at) > parseInt(item.updated_at)) {
-        item.updateFromDB(itemData);
-        await item.saveToDB();
-        itemsUpdated++;
-      }
-    } else {
-      query = `INSERT INTO external_items (${fields.join(', ')}) VALUES (${qMarks})`;
-      params = [];
-      for (const fieldName of fields) {
-        params.push(useGet(itemData, fieldName));
-      }
-      await store.db.execute(query, params);
-      itemsAdded++;
-    }
-  }
-  
-  await store.loadFromDB();
-  
-  let resultStrs = [];
-  if (showsAdded) resultStrs.push(`${showsAdded} show${showsAdded == 1 ? '' : 's'} added`);
-  if (showsUpdated) {
-    let str = showsUpdated + ' ';
-    if (!showsAdded) str += `show${showsUpdated == 1 ? '' : 's'} `;
-    resultStrs.push(str + 'updated');
-  }
-  if (episodesAdded) resultStrs.push(`${episodesAdded} episode${episodesAdded == 1 ? '' : 's'} added`);
-  if (episodesUpdated) {
-    let str = episodesUpdated + ' ';
-    if (!episodesAdded) str += `episode${episodesUpdated == 1 ? '' : 's'} `;
-    resultStrs.push(str + 'updated');
-  }
-  if (moviesAdded) resultStrs.push(`${moviesAdded} movie${moviesAdded == 1 ? '' : 's'} added`);
-  if (moviesUpdated) {
-    let str = moviesUpdated + ' ';
-    if (!moviesAdded) str += `movie${moviesUpdated == 1 ? '' : 's'} `;
-    resultStrs.push(str + 'updated');
-  }
-  if (itemsAdded) resultStrs.push(`${itemsAdded} ext. item${itemsAdded == 1 ? '' : 's'} added`);
-  if (itemsUpdated) {
-    let str = itemsUpdated + ' ';
-    if (!itemsAdded) str += `ext. item${itemsUpdated == 1 ? '' : 's'} `;
-    resultStrs.push(str + 'updated');
-  }
-  store.loading_msg = 'Import complete: ' + resultStrs.join(', ');
-  
+  store.loading_msg = `Import complete. Items added: ${itemsAdded} — Items updated: ${itemsUpdated} — Episodes added: ${episodesAdded} — Episodes updated: ${episodesUpdated}`;
   store.loading = false;
 }
 
 async function createBackup() {
   let bkpObj = {
     settings: store.settings,
-    shows: [],
-    movies: [],
-    external_items: [],
+    items: [],
   };
-  for (const showID of store.show_ids) {
-    const show = store.shows[showID];
-    let showObj = {};
-    for (const propName of ['created_at','updated_at','is_archived','name','dir_name','tvdb_id','tvdb_slug','last_watched_at','artwork_filename']) {
-      showObj[propName] = show[propName];
+  for (const itemID of store.item_ids) {
+    const item = store.items[itemID];
+    let itemObj = { episodes: [], is_finished: (item.current_episode_id === null) };
+    for (const attribute of item.attributes) {
+      const attrName = attribute.name;
+      if (attrName === 'id' || attrName === 'current_episode_id') continue;
+      itemObj[attrName] = item[attrName];
     }
-    showObj.episodes = [];
-    for (const epID of show.episode_ids) {
-      const episode = show.episodes[epID];
-      let epObj = { is_current_ep: (epID === show.current_episode_id) };
-      for (const propName of ['created_at','updated_at','pathname','filename','season_num','episode_num','name','overview','released_on','duration']) {
-        epObj[propName] = episode[propName];
+    for (const episodeID of item.episode_ids) {
+      const episode = item.episodes[episodeID];
+      let epObj = { is_current_ep: (episodeID === item.current_episode_id) };
+      for (const attribute of episode.attributes) {
+        const attrName = attribute.name;
+        if (attrName === 'id') continue;
+        epObj[attrName] = episode[attrName];
       }
-      showObj.episodes.push(epObj);
+      itemObj.episodes.push(epObj);
     }
-    bkpObj.shows.push(showObj);
-  }
-  for (const movieID of store.movie_ids) {
-    const movie = store.movies[movieID];
-    let movieObj = {};
-    for (const propName of ['created_at','updated_at','is_archived','name','pathname','filename','tvdb_id','tvdb_slug','duration','last_watched_at','artwork_filename']) {
-      movieObj[propName] = movie[propName];
-    }
-    bkpObj.movies.push(movieObj);
-  }
-  for (const itemID of store.external_item_ids) {
-    const item = store.external_items[itemID];
-    let itemObj = {};
-    for (const propName of ['created_at','updated_at','is_archived','type','name','tvdb_id','tvdb_slug','last_watched_at','artwork_filename','url','duration','current_episode_id']) {
-      itemObj[propName] = item[propName];
-    }
-    bkpObj.external_items.push(itemObj);
+    bkpObj.items.push(itemObj);
   }
   const date = new Date();
   const dateStr = date.getUTCFullYear() + '-'
@@ -278,6 +217,7 @@ async function createBackup() {
   }
   alert(`Backup saved as ${bkpFilename}`);
 }
+
 </script>
 
 <template>
@@ -393,6 +333,7 @@ async function createBackup() {
       </InputWithLabel>
       
       <ul class="pl-6 mt-4 text-gray-300 list-disc">
+        <li>Does not check the validity of import info before processing</li>
         <li>Overwrites any settings found in import file</li>
         <li>Updates item info only if import data is newer than current data</li>
       </ul>

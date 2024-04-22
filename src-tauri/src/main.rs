@@ -47,12 +47,12 @@ fn main() {
             sql: include_str!("./create_initial_tables.sql"),
             kind: MigrationKind::Up,
         },
-        Migration {
-            version: 2,
-            description: "add_external_item_episodes",
-            sql: include_str!("./add_external_item_episodes.sql"),
-            kind: MigrationKind::Up,
-        },
+        // Migration {
+        //     version: 2,
+        //     description: "add_external_item_episodes",
+        //     sql: include_str!("./add_external_item_episodes.sql"),
+        //     kind: MigrationKind::Up,
+        // },
     ];
     
     tauri::Builder::default()

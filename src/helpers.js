@@ -1,4 +1,3 @@
-// import { isProxy, toRaw } from 'vue';
 import { open } from '@tauri-apps/api/shell';
 import { invoke } from '@tauri-apps/api/tauri';
 
@@ -19,7 +18,7 @@ export function useSecondsToTimeStr(seconds) {
   const minutes = Math.floor(seconds / 60);
   seconds = seconds - (minutes * 60);
   return timeStr
-    + (minutes + '').padStart(2, '0')
+    + ((hours >= 1) ? (minutes + '').padStart(2, '0') : minutes)
     + ':'
     + (seconds + '').padStart(2, '0');
 }
@@ -34,18 +33,21 @@ export function useMinutesToTimeStr(minutes) {
 //   return isProxy(val) ? toRaw(val) : val;
 // }
 
-// https://youmightnotneed.com/lodash
+export function useGetProp(obj, propName, defValue = null) {
+  const result = obj[propName];
+  return result === undefined ? defValue : result;
+}
+
+function getPathArrayFromPath(path) {
+  if (Array.isArray(path)) return path;
+  if (typeof path !== 'string') path = path + '';
+  return path.match(/([^[.\]])+/g);
+}
+
+// https://youmightnotneed.com/lodash#get
 export function useGet(obj, path, defValue = null) {
   if (!path) return undefined;
-  let pathArray;
-  if (Array.isArray(path)) {
-    pathArray = path;
-  } else {
-    if (typeof path !== 'string') {
-      path = path + '';
-    }
-    pathArray = path.match(/([^[.\]])+/g);
-  }
+  let pathArray = getPathArrayFromPath(path);
   const result = pathArray.reduce(
     (prevObj, key) => prevObj && prevObj[key],
     obj
@@ -89,38 +91,4 @@ export async function useOpenOrHomeDir(dir) {
 
 export function useShowInExplorer(path) {
   invoke('show_in_folder', {path});
-}
-
-export async function useSaveToDB(store, item, fields, setUpdatedAt = true) {
-  if (!store.db) return false;
-  if (!fields.length) return false;
-  let response, query;
-  let params = [];
-  const now = Math.round(Date.now() / 1000);
-  if (item.id) {
-    query = `UPDATE ${item.table_name} SET `;
-    let fieldStrs = [];
-    for (const field of fields) {
-      fieldStrs.push(`${field}=?`);
-      params.push(item[field]);
-    }
-    if (setUpdatedAt) {
-      fieldStrs.push('updated_at=?');
-      params.push(now);
-    }
-    params.push(item.id);
-    query = query + fieldStrs.join(', ') + ' WHERE id=?';
-    response = await store.db.execute(query, params);
-  } else {
-    params.push(now, now);
-    for (const field of fields) {
-      params.push(item[field]);
-    }
-    const qMarks = Array(params.length).fill('?');
-    query = `INSERT INTO ${item.table_name} (created_at, updated_at, ${fields.join(', ')}) VALUES (${qMarks})`;
-    response = await store.db.execute(query, params);
-    item.id = parseInt(response.lastInsertId);
-    item.setSlug();
-  }
-  return response;
 }

@@ -70,15 +70,20 @@ export async function searchTvdb(store, showName, type) {
   if (!showName) return false;
   let token = await getToken(store);
   if (!token) return false;
-  const typeParam = (type === 'Show' ? 'series' : 'movie');
-  const url = 'https://api4.thetvdb.com/v4/search?q=' + encodeURI(showName) + '&type=' + typeParam;
+  const typeParam = (type === 'show' ? 'series' : 'movie');
+  const url = 'https://api4.thetvdb.com/v4/search?limit=10&q=' + encodeURI(showName) + '&type=' + typeParam;
   const response = await fetch(url, {
     method: 'GET',
     headers: { Authorization: 'Bearer ' + token },
     timeout: 10,
   });
   console.log('searchTvdb', response);
-  return getResponseData(response);
+  let responseData = getResponseData(response);
+  if (!Array.isArray(responseData)) return false;
+  for (const match of responseData) {
+    match.tvdb_id = parseInt(match.tvdb_id)
+  }
+  return responseData;
 }
 
 export async function getEpisodes(store, tvdbID) {
@@ -100,14 +105,43 @@ export async function getEpisodes(store, tvdbID) {
   ) {
     return false;
   }
-  return responseData.episodes;
+  let tvdbEpisodes = [];
+  for (const tvdbEpisode of responseData.episodes) {
+    tvdbEpisodes.push(prepTvdbEpisode(tvdbEpisode));
+  }
+  return tvdbEpisodes;
+}
+
+function prepTvdbEpisode(tvdbEpisode) {
+  let preppedTvdbEpisode = {
+    name: tvdbEpisode.name,
+    overview: tvdbEpisode.overview,
+    runtime: tvdbEpisode.runtime,
+  };
+  preppedTvdbEpisode.season_num = parseInt(tvdbEpisode.seasonNumber);
+  if (isNaN(preppedTvdbEpisode.season_num)) preppedTvdbEpisode.season_num = null;
+  preppedTvdbEpisode.episode_num = parseInt(tvdbEpisode.number);
+  if (isNaN(preppedTvdbEpisode.episode_num)) preppedTvdbEpisode.episode_num = null;
+  const aired = tvdbEpisode.aired;
+  if (
+    aired
+    && typeof aired === 'string'
+    && /^[\d]{4}-[\d]{2}-[\d]{2}$/.test(aired)
+  ) {
+    const [y, m, d] = aired.split('-');
+    const date = new Date(y, (m-1), d);
+    preppedTvdbEpisode.released_on = date.getTime() / 1000;
+  } else {
+    preppedTvdbEpisode.released_on = null;
+  }
+  return preppedTvdbEpisode;
 }
 
 export async function getArtwork(store, tvdbID, type) {
   if (!tvdbID) return false;
   let token = await getToken(store);
   if (!token) return false;
-  const typeParam = (type === 'Show' ? 'series' : 'movies');
+  const typeParam = (type === 'show' ? 'series' : 'movies');
   const url = 'https://api4.thetvdb.com/v4/' + typeParam + '/' + encodeURI(tvdbID) + '/extended';
   const response = await fetch(url, {
     method: 'GET',
@@ -127,8 +161,8 @@ export async function getArtwork(store, tvdbID, type) {
   for (const artwork of responseData.artworks) {
     const artworkType = parseInt(artwork.type);
     if (
-      (type === 'Show' && artworkType === 1)
-      || (type === 'Movie' && artworkType === 14)
+      (type === 'show' && artworkType === 1)
+      || (type === 'movie' && artworkType === 14)
     ) {
       artworks.push(artwork);
     }

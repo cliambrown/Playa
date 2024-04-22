@@ -29,8 +29,8 @@ function addEntryByFilename(entry) {
 
 async function getPlaybackPositions() {
   if (!store.settings.mpv_watched_dir) return false;
-  store.loading_msg = null;
   store.loading = true;
+  store.loading_msg = null;
   let entries;
   try {
     entries = await invoke('get_playback_positions', { dir: store.settings.mpv_watched_dir });

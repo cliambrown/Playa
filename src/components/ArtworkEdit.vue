@@ -1,14 +1,14 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/tauri';
 import { store } from '../store.js';
+import { useGet } from '../helpers';
 import { getArtwork } from '../tvdb';
 import DirSelect from '../components/DirSelect.vue';
 
 const props = defineProps([
   'tvdbID',
   'type',
-  'itemClass',
   'itemID',
   'artworkFilename',
 ]);
@@ -19,19 +19,21 @@ const artworkSrc = ref('url');
 const artworkSrcUrl = ref('');
 const artworkSrcFilepath = ref('');
 const showArtworks = ref(true);
-const artworks = ref([]);
+const artworks = computed(() => useGet(store, ['items', props.itemID, 'artwork_matches']) );
 
 async function getArtworksFromTvdb() {
   if (!props.tvdbID) return false;
   const tvdbArtworks = await getArtwork(store, props.tvdbID, props.type);
   if (!tvdbArtworks) return false;
-  artworks.value = tvdbArtworks;
+  if (store.items[props.itemID]) {
+    store.items[props.itemID].artwork_matches = tvdbArtworks;
+  }
   showArtworks.value = true;
 }
 
 async function replaceArtwork() {
   const oldFilename = props.artworkFilename;
-  const newFilename = `${props.itemClass}-${props.itemID}-${Date.now()}`;
+  const newFilename = `item-${props.itemID}-${Date.now()}`;
   let response, invokeFn, params;
   if (artworkSrc.value === 'url') {
     if (!artworkSrcUrl.value) return false;
@@ -151,8 +153,17 @@ async function replaceArtwork() {
         </div>
         <TransitionExpand>
           <div v-show="showArtworks" class="flex flex-wrap gap-2 mt-2">
-            <button type="button" v-for="artwork in artworks" class="w-80" @click="artworkSrcUrl = artwork.image">
-              <img :src="artwork.image">
+            <button
+              v-for="artwork in artworks"
+              type="button"
+              :class="{
+                'w-80': type === 'show',
+                'w-40': type === 'movie',
+                'ring-[2px] ring-green-400 ring-offset-[2px] ring-offset-slate-800': artworkSrcUrl === artwork.image
+              }"
+              @click="artworkSrcUrl = artwork.image"
+              >
+                <img :src="artwork.image">
             </button>
           </div>
         </TransitionExpand>

@@ -1,12 +1,11 @@
 <script setup>
-import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
-import { invoke } from '@tauri-apps/api/tauri';
-import { TransitionExpand } from '@morev/vue-transitions';
 import { store } from '../store';
+import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
+import { TransitionExpand } from '@morev/vue-transitions';
 import { onClickOutside } from '@vueuse/core';
-import ShowtypeCard from '../components/ShowtypeCard.vue';
-import MovietypeCard from '../components/MovietypeCard.vue';
 import SearchModal from '../components/SearchModal.vue';
+import ItemCard from '../components/ItemCard.vue';
+import { useGetProp } from '../helpers';
 
 let ctrlIsDown = false;
 
@@ -16,6 +15,17 @@ function toggleShowExtItemMenu() {
   showExtItemMenu.value = !showExtItemMenu.value;
 }
 onClickOutside(extItemMenu, e => { if (showExtItemMenu.value) showExtItemMenu.value = false });
+
+function toggleShowFinished() {
+  if (
+    store.show_finished_items
+    && store.home_selected_item_id
+    && store.items[store.home_selected_item_id].current_episode_id === null
+  ) {
+    store.selectFirstHomeItem();
+  }
+  store.show_finished_items = !store.show_finished_items;
+}
 
 function scanShows() {
   store.scanShows();
@@ -42,10 +52,9 @@ function handleKeydown(event) {
       break;
     case 'ArrowDown':
     case 'ArrowUp':
-      if (!store.home_selected_item.episode_ids) return true;
       event.preventDefault();
-      let item = store.home_selected_item;
-      item.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev')
+      let item = useGetProp(store.items, store.home_selected_item_id);
+      if (item) item.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev')
       break;
     case ' ':
       if (store.home_selected_item.play()) event.preventDefault();
@@ -67,21 +76,6 @@ onBeforeUnmount(() => {
   window.removeEventListener('keyup', handleKeyup);
 });
 
-function toggleShowFinished() {
-  if (
-    store.show_finished_shows
-    && store.home_selected_item.class === 'Show'
-    && store.home_selected_item.current_episode_id === null
-  ) {
-    store.selectFirstHomeItem();
-  }
-  store.show_finished_shows = !store.show_finished_shows;
-}
-
-function addItem() {
-  store.router.push({ name: 'externalItem' });
-}
-
 </script>
 
 <template>
@@ -90,14 +84,14 @@ function addItem() {
     
     <div class="flex justify-end gap-6">
       
-      <Button variant="tertiary" @click="toggleShowFinished" :disabled="!store.home_finished_showtype_items.length">
-        <svg v-show="!store.show_finished_shows" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+      <Button variant="tertiary" @click="toggleShowFinished" :disabled="!store.home_finished_show_ids.length">
+        <svg v-show="!store.show_finished_items" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
         </svg>
-        <svg v-show="store.show_finished_shows" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+        <svg v-show="store.show_finished_items" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
           <path fill-rule="evenodd" d="M11.78 9.78a.75.75 0 0 1-1.06 0L8 7.06 5.28 9.78a.75.75 0 0 1-1.06-1.06l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
         </svg>
-        {{ store.home_finished_showtype_items.length }}
+        {{ store.home_finished_show_ids.length + store.home_finished_movie_ids.length }}
         Finished
       </Button>
       
@@ -106,7 +100,7 @@ function addItem() {
           <path d="M6 7.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
           <path fill-rule="evenodd" d="M4 2a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 4 14h8a1.5 1.5 0 0 0 1.5-1.5V6.621a1.5 1.5 0 0 0-.44-1.06L9.94 2.439A1.5 1.5 0 0 0 8.878 2H4Zm3.5 2.5a3 3 0 1 0 1.524 5.585l1.196 1.195a.75.75 0 1 0 1.06-1.06l-1.195-1.196A3 3 0 0 0 7.5 4.5Z" clip-rule="evenodd" />
         </svg>
-        Scan shows
+        Scan Shows
       </Button>
       
       <Button @click="scanMovies" :disabled="store.loading || !store.settings.movie_dir">
@@ -129,14 +123,14 @@ function addItem() {
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
           <div v-if="showExtItemMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right rounded-md shadow-lg bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
-              <RouterLink :to="{ name: 'createExternalItemShow' }" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-300 hover:text-blue-400">
+              <RouterLink :to="{ name: 'item.create.show' }" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-300 hover:text-blue-400">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                   <path d="M12 5H4v4h8V5Z" />
                   <path fill-rule="evenodd" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4v1.5h2.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5H6V12H2a1 1 0 0 1-1-1V3Zm1.5 7.5v-7h11v7h-11Z" clip-rule="evenodd" />
                 </svg>
                 Show
               </RouterLink>
-              <RouterLink :to="{ name: 'createExternalItemMovie' }" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-300 hover:text-blue-400">
+              <RouterLink :to="{ name: 'item.create.movie' }" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-300 hover:text-blue-400">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                   <path fill-rule="evenodd" d="M1 3.5A1.5 1.5 0 0 1 2.5 2h11A1.5 1.5 0 0 1 15 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 12.5v-9Zm1.5.25a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25v1a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1Zm3.75-.25a.25.25 0 0 0-.25.25v3.5c0 .138.112.25.25.25h3.5a.25.25 0 0 0 .25-.25v-3.5a.25.25 0 0 0-.25-.25h-3.5ZM6 8.75a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.5a.25.25 0 0 1-.25.25h-3.5a.25.25 0 0 1-.25-.25v-3.5Zm5.75-5.25a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25h1.5a.25.25 0 0 0 .25-.25v-1a.25.25 0 0 0-.25-.25h-1.5ZM2.5 11.25a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25v1a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1Zm9.25-.25a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25h1.5a.25.25 0 0 0 .25-.25v-1a.25.25 0 0 0-.25-.25h-1.5ZM2.5 8.75a.25.25 0 0 1 .25-.25h1.5a.25.25 0 0 1 .25.25v1a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1Zm9.25-.25a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25h1.5a.25.25 0 0 0 .25-.25v-1a.25.25 0 0 0-.25-.25h-1.5ZM2.5 6.25A.25.25 0 0 1 2.75 6h1.5a.25.25 0 0 1 .25.25v1a.25.25 0 0 1-.25.25h-1.5a.25.25 0 0 1-.25-.25v-1ZM11.75 6a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25h1.5a.25.25 0 0 0 .25-.25v-1a.25.25 0 0 0-.25-.25h-1.5Z" clip-rule="evenodd" />
                 </svg>
@@ -157,34 +151,40 @@ function addItem() {
       
     </div>
     
-    <div v-if="store.home_unfinished_showtype_items.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
-      <ShowtypeCard
-        v-for="item in store.home_unfinished_showtype_items"
-        :item="item"
-        :is-selected="store.home_selected_item.slug === item.slug"
-      ></ShowtypeCard>
+    <div v-if="store.home_unfinished_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
+      <ItemCard
+        v-for="itemID in store.home_unfinished_show_ids"
+        :itemID="itemID"
+      ></ItemCard>
     </div>
     
     <TransitionExpand>
-      <div v-show="store.show_finished_shows && store.home_finished_showtype_items.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
-        <ShowtypeCard
-          v-for="item in store.home_finished_showtype_items"
-          :item="item"
-          :is-selected="store.home_selected_item.slug === item.slug"
-        ></ShowtypeCard>
+      <div v-show="store.show_finished_items && store.home_finished_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
+        <ItemCard
+          v-for="itemID in store.home_finished_show_ids"
+          :itemID="itemID"
+        ></ItemCard>
       </div>
     </TransitionExpand>
     
-    <div class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,_360px))]">
-      <MovietypeCard
-        v-for="item in store.home_movietype_items"
-        :item="item"
-        :is-selected="store.home_selected_item.slug === item.slug"
-      ></MovietypeCard>
+    <div v-if="store.home_unfinished_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,_360px))]">
+      <ItemCard
+        v-for="itemID in store.home_unfinished_movie_ids"
+        :itemID="itemID"
+      ></ItemCard>
     </div>
     
+    <TransitionExpand>
+      <div v-show="store.show_finished_items && store.home_finished_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,_360px))]">
+        <ItemCard
+          v-for="itemID in store.home_finished_movie_ids"
+          :itemID="itemID"
+        ></ItemCard>
+      </div>
+    </TransitionExpand>
+    
   </div>
-  
+    
   <SearchModal v-model="store.show_search"></SearchModal>
   
 </template>

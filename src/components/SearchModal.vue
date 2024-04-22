@@ -96,7 +96,7 @@ onBeforeUnmount(() => {
                   {{ loadingMsg }}
                 </div>
                 <div v-for="itemInfo in store.search_results" class="overflow-x-visible">
-                  <RouterLink :to="{ name: itemInfo.route_name, params: { id: itemInfo.id } }" class="flex items-center gap-2 px-2 py-2 mt-2 transition duration-150 ease-in-out rounded hover:bg-gray-100 focus:outline-none focus:bg-blue-500 focus:text-white">
+                  <RouterLink :to="{ name: 'item', params: { id: itemInfo.id } }" class="flex items-center gap-2 px-2 py-2 mt-2 transition duration-150 ease-in-out rounded hover:bg-gray-100 focus:outline-none focus:bg-blue-500 focus:text-white">
                     <div class="overflow-hidden font-semibold grow text-ellipsis whitespace-nowrap">
                       {{ itemInfo.name }}
                     </div>

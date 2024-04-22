@@ -1,5 +1,6 @@
 ALTER TABLE external_items ADD COLUMN duration TEXT DEFAULT NULL;
 ALTER TABLE external_items ADD COLUMN current_episode_id INTEGER DEFAULT NULL;
+ALTER TABLE external_items ADD COLUMN order_is_reversed INTEGER DEFAULT NULL;
 
 INSERT INTO settings (name, value) VALUES ('youtube_api_key', NULL);
 
