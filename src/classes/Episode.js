@@ -47,8 +47,8 @@ Episode.prototype.setSearchableText = function() {
 }
   
 Episode.prototype.setSXXEXX = function() {
-  const sXX = this.season_num ? (this.season_num + '').padStart(2, '0') : '??';
-  const eXX = this.episode_num ? (this.episode_num + '').padStart(2, '0') : '??';
+  const sXX = Number.isInteger(this.season_num) ? (this.season_num + '').padStart(2, '0') : '??';
+  const eXX = Number.isInteger(this.episode_num) ? (this.episode_num + '').padStart(2, '0') : '??';
   this.sXXeXX = 'S' + sXX + 'E' + eXX;
 }
   
@@ -123,7 +123,7 @@ Episode.prototype.delete = async function() {
     let item = store.items[this.item_id];
     item.episode_ids = item.episode_ids.filter(episodeID => episodeID != this.id);
     delete item.episodes[this.id];
-    if (this.current_episode_id == this.id) 
+    if (item.current_episode_id == this.id) 
       item.episodeNav('next');
   }
 }

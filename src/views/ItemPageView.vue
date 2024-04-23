@@ -6,6 +6,7 @@ import { searchTvdb, getMovieRuntime, getEpisodes } from '../tvdb';
 import { getYtPlaylistVideos } from '../youtube';
 import { useGetProp, useMinutesToTimeStr, useAlphaName, useOpenOrHomeDir, useShowInExplorer } from '../helpers';
 import { Item } from '../classes/Item';
+import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
 import TvdbMatches from '../components/TvdbMatches.vue';
 import ArtworkEdit from '../components/ArtworkEdit.vue';
 import EpisodeCard from '../components/EpisodeCard.vue';
@@ -233,6 +234,9 @@ async function updateEpisodesFromYoutube() {
   }
   for (const videoData of videosData) {
     if (!videoData.url) continue;
+    if (item.value.order_is_reversed) {
+      videoData.order_num = videosData.length - videoData.order_num;
+    }
     let episode = await item.value.getEpisodeFromData(videoData);
     if (episode.is_new) {
       addedCount++;
@@ -420,6 +424,15 @@ onBeforeUnmount(() => {
           
           <InputWithLabel v-if="item.source === 'external' || item.source === 'ytPlaylist'" class="mt-4" id="url" v-model="item.url" :readonly="store.loading" @input="handleUpdate">
             URL
+            <template v-slot:afterInput>
+              <Button variant="link" @click="open(item.url)" :disabled="!item.url">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                  <path fill-rule="evenodd" d="M8.914 6.025a.75.75 0 0 1 1.06 0 3.5 3.5 0 0 1 0 4.95l-2 2a3.5 3.5 0 0 1-5.396-4.402.75.75 0 0 1 1.251.827 2 2 0 0 0 3.085 2.514l2-2a2 2 0 0 0 0-2.828.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd" d="M7.086 9.975a.75.75 0 0 1-1.06 0 3.5 3.5 0 0 1 0-4.95l2-2a3.5 3.5 0 0 1 5.396 4.402.75.75 0 0 1-1.251-.827 2 2 0 0 0-3.085-2.514l-2 2a2 2 0 0 0 0 2.828.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
+                </svg>
+                Open
+              </Button>
+            </template>
           </InputWithLabel>
           
           <div v-if="item.id">
@@ -464,6 +477,12 @@ onBeforeUnmount(() => {
               <InputWithLabel :datepicker="true" id="last_watched_at" v-model="item.last_watched_at" :readonly="store.loading" @input="handleUpdate">
                 Last Watched At
               </InputWithLabel>
+              
+              <div class="self-end mb-2">
+                <CheckboxWithLabel v-if="item.source === 'ytPlaylist'" input_id="order_is_reversed" v-model="item.order_is_reversed" :disabled="store.loading" @checkbox-change="handleUpdate" :trueValue="1" :falseValue="null">
+                  Reverse Order
+                </CheckboxWithLabel>
+              </div>
               
             </div>
             

@@ -54,6 +54,20 @@ const duration = computed(() => {
   return duration;
 });
 
+const domain = computed(() => {
+  if (!item.value.url) return null;
+  let url;
+  try {
+    url = new URL(item.value.url);
+  } catch (e) {
+    return null;
+  }
+  if (url && url.hostname) {
+    return url.hostname.replace('www.','');
+  }
+  return null;
+});
+
 function setAsSelected() {
   if (item.value.is_archived) {
     store.archives_selected_item_id = props.itemID;
@@ -117,12 +131,54 @@ watch(
             {{ item.name }}
           </span>
         </div>
-        
-        <div v-if="item.type === 'show'">
           
-          <div class="flex items-end justify-between mt-1">
+        <div v-if="currentEp" class="mt-1 font-semibold text-gray-700">
+          <span v-if="item.source !== 'ytPlaylist'">{{ currentEp.sXXeXX }}</span>
+          {{ currentEp.name }}
+        </div>
+        
+        <div>
+          
+          <div class="flex items-center justify-between gap-6 mt-1 text-gray-600">
             
-            <div v-if="item.episode_ids.length" class="text-gray-600">
+            <svg v-if="item.current_episode_id === null" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 text-green-600">
+              <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" />
+            </svg>
+            
+            <div v-if="!item.episode_ids.length && domain" class="text-gray-600">
+              {{ domain }}
+            </div>
+            
+            <span v-if="item.episode_ids.length" class="">
+              <span v-if="item.episode_ids.length - currentEpIndex > 0">
+                # {{ (currentEpIndex + 1) }}
+                of
+              </span>
+              {{ item.episode_ids.length }}
+              <span v-if="item.episode_ids.length - currentEpIndex <= 0">
+                episodes
+              </span>
+              <span v-show="hasNewEpisodes" class="relative inline-block px-2 text-sm text-white bg-orange-700 rounded-full bottom-0.5 ml-2 font-normal">
+                NEW
+              </span>
+            </span>
+            
+            <span v-if="currentEp || item.type === 'movie'" class="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 text-gray-400">
+                <path fill-rule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clip-rule="evenodd" />
+              </svg>
+              <span>
+                <span v-show="playbackPosition">
+                  {{ playbackPosition }} /
+                </span>
+                {{ duration }}
+              </span>
+            </span>
+            
+            <ItemRouterLink :itemID="itemID" class="ml-auto"></ItemRouterLink>
+            
+            
+            <!-- <div v-if="item.episode_ids.length" class="text-gray-600">
               {{ (item.episode_ids.length - currentEpIndex) }} unwatched
               <span v-show="hasNewEpisodes" class="relative inline-block px-2 text-sm text-white bg-orange-700 rounded-full bottom-0.5 mr-2">
                 NEW
@@ -131,22 +187,23 @@ watch(
               {{ item.episode_ids.length }} total
             </div>
             
-            <div v-else class="text-gray-600">
-              [{{ item.current_episode_id === null ? 'Finished' : 'Unfinished' }}]
+            <div v-else-if="item.current_episode_id === null" class="flex items-center gap-2 text-gray-600">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 text-green-600">
+                <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" />
+              </svg>
+              Finished
             </div>
             
-            <ItemRouterLink v-show="!currentEp" :itemID="itemID"></ItemRouterLink>
+            <div v-else="" class="text-gray-600">
+              Unfinished
+            </div> -->
             
-          </div>
-          
-          <div v-if="currentEp" class="mt-1 font-semibold text-gray-700">
-            {{ item.source === 'ytPlaylist' ? currentEp.order_num + '.' : currentEp.sXXeXX }}
-            {{ currentEp.name }}
+            
           </div>
           
         </div>
         
-        <div v-if="!(item.type === 'show' && !currentEp)" class="flex items-center justify-between gap-x-6">
+        <!-- <div v-if="!(item.type === 'show' && !currentEp)" class="flex items-center justify-between gap-x-6">
           
           <div>
             
@@ -163,7 +220,7 @@ watch(
             
             <span v-else>
               [Unfinished]
-            </span>
+            </span> -->
             
             <!-- <span v-if="!currentEp && item.current_episode_id === null" class="mr-2">
               [Finished]
@@ -178,11 +235,11 @@ watch(
             <span v-else-if="item.current_episode_id === null">
             </span> -->
               
-          </div>
+          <!-- </div> -->
           
-          <ItemRouterLink :itemID="itemID"></ItemRouterLink>
+          <!-- <ItemRouterLink :itemID="itemID"></ItemRouterLink> -->
           
-        </div>
+        <!-- </div> -->
         
       </div>
       

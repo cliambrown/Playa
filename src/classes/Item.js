@@ -22,6 +22,7 @@ export function Item(itemData) {
     { name: 'pathname', def: null, updatable: false },
     { name: 'filename', def: null, updatable: false },
     { name: 'url', def: null, updatable: true },
+    { name: 'order_is_reversed', def: null, updatable: true },
     { name: 'duration', def: null, updatable: true },
     { name: 'current_episode_id', def: 0, updatable: true },
   ]);
@@ -266,12 +267,21 @@ Item.prototype.play = function() {
       if (!this.current_episode_id) return false;
       open(this.episodes[this.current_episode_id].pathname);
     }
-  } else if (this.source === 'external') {
-    if (!this.url) return false;
-    open(this.url);
+  } else {
+    if (
+      this.current_episode_id
+      && this.episodes[this.current_episode_id]
+      && this.episodes[this.current_episode_id].url
+    ) {
+      open(this.episodes[this.current_episode_id].url);
+    } else {
+      if (!this.url) return false;
+      open(this.url);
+    }
   }
   this.last_watched_at = Math.round(Date.now() / 1000);
   this.updateLastWatchedAtInDB();
+  return true;
 }
   
 Item.prototype.delete = async function() {

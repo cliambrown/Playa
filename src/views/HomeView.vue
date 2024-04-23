@@ -37,6 +37,7 @@ function scanMovies() {
 
 function handleKeydown(event) {
   if (store.show_search) return false;
+  let item;
   switch (event.key) {
     case 'Control':
       ctrlIsDown = true;
@@ -53,11 +54,13 @@ function handleKeydown(event) {
     case 'ArrowDown':
     case 'ArrowUp':
       event.preventDefault();
-      let item = useGetProp(store.items, store.home_selected_item_id);
+      item = useGetProp(store.items, store.home_selected_item_id);
       if (item) item.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev')
       break;
     case ' ':
-      if (store.home_selected_item.play()) event.preventDefault();
+      event.preventDefault();
+      item = useGetProp(store.items, store.home_selected_item_id);
+      if (item) item.play();
       break;
   }
   return true;

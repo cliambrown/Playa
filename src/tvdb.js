@@ -107,7 +107,8 @@ export async function getEpisodes(store, tvdbID) {
   }
   let tvdbEpisodes = [];
   for (const tvdbEpisode of responseData.episodes) {
-    tvdbEpisodes.push(prepTvdbEpisode(tvdbEpisode));
+    if (tvdbEpisode.aired)
+      tvdbEpisodes.push(prepTvdbEpisode(tvdbEpisode));
   }
   return tvdbEpisodes;
 }

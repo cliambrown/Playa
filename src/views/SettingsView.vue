@@ -94,7 +94,6 @@ async function importBackup() {
       }
       
       let currentEpisodeID = useGetProp(itemData, 'is_finished', false) ? null : 0;
-      console.log(item.name, itemData.is_finished, currentEpisodeID);
       
       const episodesData = useGetProp(itemData, 'episodes', []);
       for (const episodeData of episodesData) {

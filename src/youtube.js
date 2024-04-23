@@ -107,7 +107,7 @@ export async function getYtPlaylistVideos(playlistID, apiKey) {
     if (!playlistItems || !Array.isArray(playlistItems)) break;
     for (const playlistItem of playlistItems) {
       const videoData = videoDataFromSnippet(useGetProp(playlistItem, 'snippet'), playlistID);
-      if (videoData) videos.push(videoData);
+      if (videoData && videoData.name !== 'Private video') videos.push(videoData);
     }
     nextPageToken = useGetProp(responseData, 'nextPageToken');
   } while (nextPageToken !== null);

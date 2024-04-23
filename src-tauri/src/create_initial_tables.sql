@@ -27,6 +27,7 @@ CREATE TABLE items (
     pathname TEXT DEFAULT NULL,
     filename TEXT DEFAULT NULL,
     url TEXT DEFAULT NULL,
+    order_is_reversed INTEGER DEFAULT NULL,
     duration TEXT DEFAULT NULL,
     current_episode_id INTEGER DEFAULT 0
 );
