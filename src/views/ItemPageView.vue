@@ -3,6 +3,7 @@ import { store } from '../store.js';
 import { open } from '@tauri-apps/api/shell';
 import { computed, ref, watch, onBeforeMount, onBeforeUnmount } from 'vue';
 import { searchTvdb, getMovieRuntime, getEpisodes } from '../tvdb';
+import { getYtPlaylistVideos } from '../youtube';
 import { useGetProp, useMinutesToTimeStr, useAlphaName, useOpenOrHomeDir, useShowInExplorer } from '../helpers';
 import { Item } from '../classes/Item';
 import TvdbMatches from '../components/TvdbMatches.vue';
@@ -14,6 +15,8 @@ if (store.route.name === 'item.create.show') {
   store.new_item = new Item({ is_new: true, type: 'show', source: 'external' });
 } else if (store.route.name === 'item.create.movie') {
   store.new_item = new Item({ is_new: true, type: 'movie', source: 'external' });
+} else if (store.route.name === 'item.create.ytPlaylist') {
+  store.new_item = new Item({ is_new: true, type: 'show', source: 'ytPlaylist' });
 } else {
   itemID = store.route.params.id;
 }
@@ -32,6 +35,14 @@ const artworkAssetUrl = computed(() => {
   return (store.artworks_dir_url && item.value.artwork_filename)
     ? store.artworks_dir_url + item.value.artwork_filename
     : (item.value.type === 'show' ? '/assets/blank_banner.jpg' : '/assets/blank_poster.jpg');
+});
+
+const displayName = computed(() => {
+  if (!item.value) return null;
+  if (item.value.id) return item.value.name;
+  if (item.value.type === 'movie') return 'New External Movie';
+  if (item.value.source === 'ytPlaylist') return 'New YT Playlist';
+  return 'New External Show';
 });
 
 async function handleUpdate() {
@@ -114,7 +125,8 @@ async function updateEpisodesFromTvdb() {
   if (!item.value || !item.value.tvdb_id) return false;
   const tvdbEpisodes = await getEpisodes(store, item.value.tvdb_id);
   if (!tvdbEpisodes) return false;
-  store.loading_msg = '';
+  store.loading = true;
+  store.loading_msg = 'Loading episodes...';
   let addedCount = 0;
   let updatedCount = 0;
   
@@ -141,7 +153,7 @@ async function updateEpisodesFromTvdb() {
             episode.setSearchableText();
             episode.saveToDB();
             updatedCount++;
-            episode.is_updated_from_tvdb = true;
+            episode.is_updated = true;
           }
           break;
         }
@@ -160,7 +172,6 @@ async function updateEpisodesFromTvdb() {
       tvdbEpisode.duration = useMinutesToTimeStr(tvdbEpisode.runtime);
       let episode = await item.value.getEpisodeFromData(tvdbEpisode);
       if (episode.is_new) {
-        episode.saveToDB();
         addedCount++;
       } else {
         const origName = episode.name;
@@ -180,7 +191,7 @@ async function updateEpisodesFromTvdb() {
           episode.setSearchableText();
           episode.saveToDB();
           updatedCount++;
-          episode.is_updated_from_tvdb = true;
+          episode.is_updated = true;
         }
       }
       foundEpisodeIDs.push(episode.id);
@@ -195,6 +206,71 @@ async function updateEpisodesFromTvdb() {
     store.loading_msg = `${addedCount} episode${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
     
   }
+  store.loading = false;
+}
+
+async function updateEpisodesFromYoutube() {
+  if (!store.settings.youtube_api_key) return false;
+  let playlistID = null;
+  try {
+    const params = new URL(item.value.url).searchParams;
+    playlistID = params.get('list');
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+  if (!playlistID) return false;
+  store.loading = true;
+  store.loading_msg = 'Loading videos...';
+  let addedCount = 0;
+  let updatedCount = 0;
+  let foundEpisodeIDs = [];
+  const videosData = await getYtPlaylistVideos(playlistID, store.settings.youtube_api_key);
+  if (!videosData || !Array.isArray(videosData)) {
+    store.loading_msg = 'Invalid response';
+    store.loading = false;
+    return false;
+  }
+  for (const videoData of videosData) {
+    if (!videoData.url) continue;
+    let episode = await item.value.getEpisodeFromData(videoData);
+    if (episode.is_new) {
+      addedCount++;
+    } else {
+      const origName = episode.name;
+      const origOverview = episode.overview;
+      const origOrderNum = episode.order_num;
+      const origReleasedOn = episode.released_on;
+      const origDuration = episode.duration;
+      episode.name = videoData.name;
+      episode.overview = videoData.overview;
+      episode.order_num = videoData.order_num;
+      episode.released_on = videoData.released_on;
+      episode.duration = videoData.duration;
+      if (
+        origName !== episode.name
+        || origOverview !== episode.overview
+        || origOrderNum !== episode.order_num
+        || origReleasedOn !== episode.released_on
+        || origDuration !== episode.duration
+      ) {
+        episode.setSearchableText();
+        episode.saveToDB();
+        updatedCount++;
+        episode.is_updated = true;
+      }
+    }
+    foundEpisodeIDs.push(episode.id);
+  }
+  for (const episodeID of item.value.episode_ids) {
+    if (!foundEpisodeIDs.includes(episodeID)) {
+      item.value.episodes[episodeID].delete();
+    }
+  }
+  item.value.sortEpisodes();
+  item.value.setCurrentEpToNewEp();
+  store.loading_msg = `${addedCount} video${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
+  store.loading = false;
 }
 
 async function deleteItem() {
@@ -274,7 +350,7 @@ onBeforeUnmount(() => {
       <div class="flex items-center mt-4 gap-x-4">
         
         <h2 class="text-2xl text-slate-200 grow">
-          {{ item.id ? item.name : 'New Item' }}
+          {{ displayName }}
         </h2>
         
         <Button variant="link" @click="openTvdbSlug(item.tvdb_slug)" :disabled="!item.tvdb_slug">
@@ -342,7 +418,7 @@ onBeforeUnmount(() => {
       <TransitionExpand>
         <form v-show="showEdit || !item.episode_ids.length" action="" method="get" @submit.prevent class="pt-1 pb-4" autocapitalize="false" autocomplete="off">
           
-          <InputWithLabel v-if="item.source === 'external'" class="mt-4" id="url" v-model="item.url" :readonly="store.loading" @input="handleUpdate">
+          <InputWithLabel v-if="item.source === 'external' || item.source === 'ytPlaylist'" class="mt-4" id="url" v-model="item.url" :readonly="store.loading" @input="handleUpdate">
             URL
           </InputWithLabel>
           
@@ -413,7 +489,7 @@ onBeforeUnmount(() => {
           Episodes
         </h3>
         
-        <Button v-if="item.type === 'show'" @click="updateEpisodesFromTvdb" :disabled="!item.tvdb_id || store.loading" class="mr-auto">
+        <Button v-if="item.type === 'show' && item.source !== 'ytPlaylist'" @click="updateEpisodesFromTvdb" :disabled="!item.tvdb_id || store.loading" class="mr-auto">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
             <path d="M12 5H4v4h8V5Z" />
             <path fill-rule="evenodd" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4v1.5h2.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5H6V12H2a1 1 0 0 1-1-1V3Zm1.5 7.5v-7h11v7h-11Z" clip-rule="evenodd" />
@@ -421,11 +497,18 @@ onBeforeUnmount(() => {
           Update from TVDB
         </Button>
         
+        <Button v-if="item.source === 'ytPlaylist'" @click="updateEpisodesFromYoutube" :disabled="!item.url || store.loading || !store.settings.youtube_api_key" class="mr-auto">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+            <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2ZM2 9.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 9.25ZM2.75 12.5a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75Z" />
+          </svg>
+          Update from YouTube
+        </Button>
+        
         <Button variant="tertiary" @click="item.episodeNav('first')" class="ml-auto">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
             <path fill-rule="evenodd" d="M8 14a.75.75 0 0 1-.75-.75V4.56L4.03 7.78a.75.75 0 0 1-1.06-1.06l4.5-4.5a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.75 4.56v8.69A.75.75 0 0 1 8 14Z" clip-rule="evenodd" />
           </svg>
-          First
+          {{ item.episode_ids.length ? 'First' : 'Unfinished' }}
         </Button>
         
         <Button v-if="item.episode_ids.length" variant="tertiary" @click="item.episodeNav('random')">

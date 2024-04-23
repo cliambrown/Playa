@@ -32,7 +32,7 @@
       },
       "http": {
         "request": true,
-        "scope": ["https://api4.thetvdb.com/v4/*"]
+        "scope": ["https://api4.thetvdb.com/v4/*", "https://www.googleapis.com/youtube/v3/*"]
       },
       "path": {
         "all": true

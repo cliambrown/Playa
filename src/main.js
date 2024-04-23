@@ -28,6 +28,7 @@ const routes = [
   { path: '/items/:id', name: 'item', component: ItemPageView },
   { path: '/items/create-show', name: 'item.create.show', component: ItemPageView },
   { path: '/items/create-movie', name: 'item.create.movie', component: ItemPageView },
+  { path: '/items/create-yt-playlist', name: 'item.create.ytPlaylist', component: ItemPageView },
 ];
 
 const router = createRouter({

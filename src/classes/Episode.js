@@ -27,7 +27,7 @@ export function Episode(episodeData) {
   this.searchable_text = null;
   this.sXXeXX = null;
   this.is_new = useGetProp(episodeData, 'is_new');
-  this.is_updated_from_tvdb = useGetProp(episodeData, 'is_updated_from_tvdb');
+  this.is_updated = useGetProp(episodeData, 'is_updated');
   
   this.parseFilename();
   this.setSXXEXX();
@@ -88,7 +88,6 @@ Episode.prototype.saveToDB = async function() {
   if (!store.db) return false;
   const now = Math.round(Date.now() / 1000);
   const isUpdate = !!this.id;
-  console.log(this.id)
   let fieldStrs = [];
   let params = [];
   for (const attribute of this.attributes) {
@@ -107,7 +106,6 @@ Episode.prototype.saveToDB = async function() {
     const qMarks = Array(params.length).fill('?').join(', ');
     query = `INSERT INTO episodes (${fieldStrs.join(', ')}, created_at, updated_at) VALUES (${qMarks})`;
   }
-  console.log(query, params)
   const response = await store.db.execute(query, params);
   if (!isUpdate) this.id = parseInt(response.lastInsertId);
   console.log('Episode.saveToDB', response);

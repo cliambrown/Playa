@@ -34,7 +34,7 @@ const releasedOnStr = computed(() => {
 });
 
 function scrollIntoView() {
-  if (isSelected.value && item.value && item.value.episode_ids.length) {
+  if (isSelected.value && item.value && item.value.episode_ids.length && wrapper.value) {
     wrapper.value.scrollIntoView({behavior: 'smooth', block: 'nearest'});
   }
 }
@@ -112,10 +112,15 @@ watch(
             <span v-if="episode.is_new" class="relative inline-block px-2 text-sm text-white bg-orange-700 rounded-full bottom-0.5 mr-2">
               NEW
             </span>
-            <span v-if="episode.is_updated_from_tvdb" class="relative inline-block px-2 text-sm text-white bg-teal-700 rounded-full bottom-0.5 mr-2">
+            <span v-if="episode.is_updated" class="relative inline-block px-2 text-sm text-white bg-teal-700 rounded-full bottom-0.5 mr-2">
               UPDATED
             </span>
-            {{ episode.sXXeXX }}
+            <span v-if="item.source === 'ytPlaylist'">
+              {{ episode.order_num }}.
+            </span>
+            <span v-else>
+              {{ episode.sXXeXX }}
+            </span>
             {{ episode.name }}
           </div>
           <Button variant="tertiary-light" class="ml-auto -my-1" @click.stop="showEdit = !showEdit">

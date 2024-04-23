@@ -140,7 +140,7 @@ watch(
           </div>
           
           <div v-if="currentEp" class="mt-1 font-semibold text-gray-700">
-            {{ currentEp.sXXeXX }}
+            {{ item.source === 'ytPlaylist' ? currentEp.order_num + '.' : currentEp.sXXeXX }}
             {{ currentEp.name }}
           </div>
           

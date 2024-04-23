@@ -161,6 +161,10 @@ Item.prototype.findEpisode = function(episodeData) {
       return (episode.season_num == episodeData.season_num
         && episode.episode_num == episodeData.episode_num);
     });
+  } else if (this.source === 'ytPlaylist') {
+    episodeID = this.episode_ids.find(
+      episodeID => this.episodes[episodeID].url === episodeData.url 
+    );
   }
   return episodeID ? this.episodes[episodeID] : false;
 }
