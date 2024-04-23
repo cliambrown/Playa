@@ -150,14 +150,34 @@ watch(
           
           <div>
             
-            <span v-if="item.type === 'movie' && item.current_episode_id === null" class="mr-2">
+            <span v-if="currentEp || item.type === 'movie'">
+              <span v-show="playbackPosition">
+                {{ playbackPosition }} /
+              </span>
+              {{ duration }}
+            </span>
+            
+            <span v-else-if="item.current_episode_id === null">
+              [Finished]
+            </span>
+            
+            <span v-else>
+              [Unfinished]
+            </span>
+            
+            <!-- <span v-if="!currentEp && item.current_episode_id === null" class="mr-2">
               [Finished]
             </span>
             
             <span v-if="playbackPosition">
               {{ playbackPosition }} /
             </span>
-            {{ duration }}
+            <span v-if="currentEp || item.type === 'movie'">
+              {{ duration }}
+            </span>
+            <span v-else-if="item.current_episode_id === null">
+            </span> -->
+              
           </div>
           
           <ItemRouterLink :itemID="itemID"></ItemRouterLink>

@@ -94,9 +94,9 @@ async function importBackup() {
       }
       
       let currentEpisodeID = useGetProp(itemData, 'is_finished', false) ? null : 0;
-      console.log(itemData.name, currentEpisodeID, itemData.is_finished);
+      console.log(item.name, itemData.is_finished, currentEpisodeID);
       
-      const episodesData = useGetProp(itemData, 'episodes');
+      const episodesData = useGetProp(itemData, 'episodes', []);
       for (const episodeData of episodesData) {
         let episode = await item.getEpisodeFromData(episodeData, false);
         if (useGetProp(episodeData, 'is_current_ep', false)) {
@@ -131,9 +131,10 @@ async function importBackup() {
       }
       
       if (item.is_new) {
-        await store.db.execute('UPDATE items SET created_at=?, updated_at=?, current_episode_id=? WHERE id=?', [itemData.created_at, item.updated_at, item.id]);
+        await store.db.execute('UPDATE items SET created_at=?, updated_at=?, current_episode_id=? WHERE id=?', [itemData.created_at, item.updated_at, currentEpisodeID, item.id]);
         item.created_at = itemData.created_at;
         item.updated_at = itemData.updated_at;
+        item.current_episode_id = currentEpisodeID;
         itemsAdded++;
       } else {
         let isUpdated = false;
