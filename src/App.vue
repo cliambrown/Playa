@@ -26,6 +26,7 @@ onBeforeMount(async () => {
   store.db = await Database.load('sqlite:playa.db');
   await store.loadFromDB();
   await store.getPlaybackPositions();
+  await store.updateAllYtPlaylistsFromSource();
   store.selectFirstHomeItem();
   store.selectFirstArchivesItem();
   store.loading = false;

@@ -173,7 +173,7 @@ watch(
               {{ releasedOnStr }}
             </span>
             <span v-if="episode.overview" class="ml-4">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 inline-block relative bottom-0.5 text-gray-400 mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 inline-block relative bottom-0.5 text-gray-400 mr-1">
                 <path fill-rule="evenodd" d="M15 8A7 7 0 1 1 1 8a7 7 0 0 1 14 0ZM9 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM6.75 8a.75.75 0 0 0 0 1.5h.75v1.75a.75.75 0 0 0 1.5 0v-2.5A.75.75 0 0 0 8.25 8h-1.5Z" clip-rule="evenodd" />
               </svg>
               {{ episode.overview }}
@@ -204,11 +204,11 @@ watch(
         
         <div class="flex flex-wrap gap-8 mt-4">
           
-          <InputWithLabel class="max-w-24" :isDark="false" :id="`episode-${episode.id}-season_num`" v-model="episode.season_num" :readonly="store.loading" @input="handleUpdate">
+          <InputWithLabel v-if="item.source !== 'ytPlaylist'" class="max-w-24" :isDark="false" :id="`episode-${episode.id}-season_num`" v-model="episode.season_num" :readonly="store.loading" @input="handleUpdate">
             Season
           </InputWithLabel>
         
-          <InputWithLabel class="max-w-24" :isDark="false" :id="`episode-${episode.id}-episode_num`" v-model="episode.episode_num" :readonly="store.loading" @input="handleUpdate">
+          <InputWithLabel v-if="item.source !== 'ytPlaylist'" class="max-w-24" :isDark="false" :id="`episode-${episode.id}-episode_num`" v-model="episode.episode_num" :readonly="store.loading" @input="handleUpdate">
             Episode
           </InputWithLabel>
         

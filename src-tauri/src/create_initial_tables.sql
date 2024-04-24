@@ -18,6 +18,7 @@ CREATE TABLE items (
     is_archived INTEGER DEFAULT NULL,
     type TEXT DEFAULT NULL,
     source TEXT DEFAULT NULL,
+    updated_from_source_at INTEGER DEFAULT NULL,
     name TEXT DEFAULT NULL,
     tvdb_id INTEGER DEFAULT NULL,
     tvdb_slug TEXT DEFAULT NULL,

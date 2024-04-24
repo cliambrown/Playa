@@ -470,6 +470,34 @@ export const store = reactive({
         id: itemID
       });
     }
-  }
+  },
+  
+  // If !forced, only items not updated in over 1 week will be updated
+  async updateAllYtPlaylistsFromSource(forced = false) {
+    if (!this.settings.youtube_api_key) return false;
+    const now = Math.round(Date.now() / 1000);
+    let updatedItems = 0;
+    let itemsWithNewVideos = 0;
+    let addedVideos = 0;
+    for (const itemID of this.item_ids) {
+      let item = this.items[itemID];
+      if (item.source !== 'ytPlaylist') continue;
+      if (!forced) {
+        let updatedFromSourceAt = parseInt(item.updated_from_source_at);
+        if (!updatedFromSourceAt || isNaN(updatedFromSourceAt))
+          updatedFromSourceAt = 0;
+        if (now - updatedFromSourceAt < 604800) continue;
+      }
+      let results = await item.updateEpisodesFromYoutube();
+      if (results.added_count) itemsWithNewVideos++;
+      addedVideos += results.added_count;
+      updatedItems++;
+    }
+    if (updatedItems) {
+      store.loading_msg = `${updatedItems} playlist${updatedItems === 1 ? '' : 's'} updated from YouTube — ${itemsWithNewVideos} item${itemsWithNewVideos == 1 ? '' : 's'} with new videos — ${addedVideos} total video${addedVideos === 1 ? '' : 's'} added`;
+    } else {
+      store.loading_msg = '';
+    }
+  },
   
 });

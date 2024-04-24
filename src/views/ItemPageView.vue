@@ -2,8 +2,7 @@
 import { store } from '../store.js';
 import { open } from '@tauri-apps/api/shell';
 import { computed, ref, watch, onBeforeMount, onBeforeUnmount } from 'vue';
-import { searchTvdb, getMovieRuntime, getEpisodes } from '../tvdb';
-import { getYtPlaylistVideos } from '../youtube';
+import { searchTvdb, getMovieRuntime } from '../tvdb';
 import { useGetProp, useMinutesToTimeStr, useAlphaName, useOpenOrHomeDir, useShowInExplorer } from '../helpers';
 import { Item } from '../classes/Item';
 import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
@@ -44,6 +43,18 @@ const displayName = computed(() => {
   if (item.value.type === 'movie') return 'New External Movie';
   if (item.value.source === 'ytPlaylist') return 'New YT Playlist';
   return 'New External Show';
+});
+
+const updatedFromSourceAt = computed(() => {
+  if (!item.value) return null;
+  let r = parseInt(item.value.updated_from_source_at);
+  if (!r || isNaN(r)) return 'Never';
+  const date = new Date(r * 1000);
+  return date.getUTCFullYear() + '-'
+    + ((date.getUTCMonth() + 1) + '').padStart(2, '0') + '-'
+    + (date.getUTCDate() + '').padStart(2, '0') + ' '
+    + date.getHours() + ':'
+    + (date.getMinutes() + '').padStart(2, '0') + ' '
 });
 
 async function handleUpdate() {
@@ -123,157 +134,17 @@ function toggleArchived() {
 }
 
 async function updateEpisodesFromTvdb() {
-  if (!item.value || !item.value.tvdb_id) return false;
-  const tvdbEpisodes = await getEpisodes(store, item.value.tvdb_id);
-  if (!tvdbEpisodes) return false;
+  if (!item.value) return false;
   store.loading = true;
-  store.loading_msg = 'Loading episodes...';
-  let addedCount = 0;
-  let updatedCount = 0;
-  
-  if (item.value.source === 'local') {
-    
-    for (const episodeID of item.value.episode_ids) {
-      let episode = item.value.episodes[episodeID];
-      for (const tvdbEpisode of tvdbEpisodes) {
-        if (
-          tvdbEpisode.season_num === episode.season_num
-          && tvdbEpisode.episode_num === episode.episode_num
-        ) {
-          const origName = episode.name;
-          const origOverview = episode.overview;
-          const origReleasedOn = episode.released_on;
-          episode.name = tvdbEpisode.name;
-          episode.overview = tvdbEpisode.overview;
-          episode.released_on = tvdbEpisode.released_on;
-          if (
-            origName !== episode.name
-            || origOverview !== episode.overview
-            || origReleasedOn !== episode.released_on
-          ) {
-            episode.setSearchableText();
-            episode.saveToDB();
-            updatedCount++;
-            episode.is_updated = true;
-          }
-          break;
-        }
-      }
-    }
-    item.value.sortEpisodes();
-    store.loading_msg = `${updatedCount} episode${updatedCount == 1 ? '' : 's'} updated`;
-    
-  } else {
-    
-    let foundEpisodeIDs = [];
-    for (const tvdbEpisode of tvdbEpisodes) {
-      if (!tvdbEpisode.season_num || tvdbEpisode.episode_num === null) {
-        continue;
-      }
-      tvdbEpisode.duration = useMinutesToTimeStr(tvdbEpisode.runtime);
-      let episode = await item.value.getEpisodeFromData(tvdbEpisode);
-      if (episode.is_new) {
-        addedCount++;
-      } else {
-        const origName = episode.name;
-        const origOverview = episode.overview;
-        const origReleasedOn = episode.released_on;
-        const origDuration = episode.duration;
-        episode.name = tvdbEpisode.name;
-        episode.overview = tvdbEpisode.overview;
-        episode.released_on = tvdbEpisode.released_on;
-        episode.duration = tvdbEpisode.duration;
-        if (
-          origName !== episode.name
-          || origOverview !== episode.overview
-          || origReleasedOn !== episode.released_on
-          || origDuration !== episode.duration
-        ) {
-          episode.setSearchableText();
-          episode.saveToDB();
-          updatedCount++;
-          episode.is_updated = true;
-        }
-      }
-      foundEpisodeIDs.push(episode.id);
-    }
-    for (const episodeID of item.value.episode_ids) {
-      if (!foundEpisodeIDs.includes(episodeID)) {
-        item.value.episodes[episodeID].delete();
-      }
-    }
-    item.value.sortEpisodes();
-    item.value.setCurrentEpToNewEp();
-    store.loading_msg = `${addedCount} episode${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
-    
-  }
+  await item.value.updateEpisodesFromTvdb();
   store.loading = false;
 }
 
 async function updateEpisodesFromYoutube() {
-  if (!store.settings.youtube_api_key) return false;
-  let playlistID = null;
-  try {
-    const params = new URL(item.value.url).searchParams;
-    playlistID = params.get('list');
-  } catch (e) {
-    console.log(e);
-    return false;
-  }
-  if (!playlistID) return false;
+  if (!item.value) return false;
   store.loading = true;
-  store.loading_msg = 'Loading videos...';
-  let addedCount = 0;
-  let updatedCount = 0;
-  let foundEpisodeIDs = [];
-  const videosData = await getYtPlaylistVideos(playlistID, store.settings.youtube_api_key);
-  if (!videosData || !Array.isArray(videosData)) {
-    store.loading_msg = 'Invalid response';
-    store.loading = false;
-    return false;
-  }
-  for (const videoData of videosData) {
-    if (!videoData.url) continue;
-    if (item.value.order_is_reversed) {
-      videoData.order_num = videosData.length - videoData.order_num;
-    }
-    let episode = await item.value.getEpisodeFromData(videoData);
-    if (episode.is_new) {
-      addedCount++;
-    } else {
-      const origName = episode.name;
-      const origOverview = episode.overview;
-      const origOrderNum = episode.order_num;
-      const origReleasedOn = episode.released_on;
-      const origDuration = episode.duration;
-      episode.name = videoData.name;
-      episode.overview = videoData.overview;
-      episode.order_num = videoData.order_num;
-      episode.released_on = videoData.released_on;
-      episode.duration = videoData.duration;
-      if (
-        origName !== episode.name
-        || origOverview !== episode.overview
-        || origOrderNum !== episode.order_num
-        || origReleasedOn !== episode.released_on
-        || origDuration !== episode.duration
-      ) {
-        episode.setSearchableText();
-        episode.saveToDB();
-        updatedCount++;
-        episode.is_updated = true;
-      }
-    }
-    foundEpisodeIDs.push(episode.id);
-  }
-  for (const episodeID of item.value.episode_ids) {
-    if (!foundEpisodeIDs.includes(episodeID)) {
-      item.value.episodes[episodeID].delete();
-    }
-  }
-  item.value.sortEpisodes();
-  item.value.setCurrentEpToNewEp();
-  store.loading_msg = `${addedCount} video${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
+  const results = await item.value.updateEpisodesFromYoutube();
+  store.loading_msg = `${results.added_count} video${results.added_count == 1 ? '' : 's'} added, ${results.updated_count} updated`;
   store.loading = false;
 }
 
@@ -326,18 +197,18 @@ onBeforeUnmount(() => {
   
   <div
     v-if="!!item"
-    class="w-full px-4 pt-8 grow"
+    class="w-full pt-8 grow"
     :class="{
-      'flex flex-col max-w-5xl max-h-full mx-auto': item.episode_ids.length,
-      'overflow-y-auto pb-20': !item.episode_ids.length
+      'flex flex-col max-h-full mx-auto': item.episode_ids.length,
+      'overflow-y-auto': !item.episode_ids.length
     }"
     >
     
     <div
-      class="px-12"
+      class="w-full max-w-4xl px-4 mx-auto"
       :class="{
-        'px-12 shrink-0': item.episode_ids.length,
-        'w-full max-w-5xl mx-auto': !item.episode_ids.length
+        'shrink-0': item.episode_ids.length,
+        'w-full': !item.episode_ids.length
       }"
       >
       
@@ -501,50 +372,55 @@ onBeforeUnmount(() => {
         </form>
       </TransitionExpand>
       
-      <div v-if="item.id" class="flex items-center mt-12 gap-x-4">
+      <div v-if="item.id" class="mt-12">
         
-        <h3 v-if="item.type === 'show'" class="text-xl text-slate-200">
-          {{ item.episode_ids.length }}
-          Episodes
-        </h3>
+        <div v-if="item.id && item.source === 'ytPlaylist'" class="mb-3 text-xs text-right text-gray-300">
+          Last updated: {{ updatedFromSourceAt }}
+        </div>
         
-        <Button v-if="item.type === 'show' && item.source !== 'ytPlaylist'" @click="updateEpisodesFromTvdb" :disabled="!item.tvdb_id || store.loading" class="mr-auto">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path d="M12 5H4v4h8V5Z" />
-            <path fill-rule="evenodd" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4v1.5h2.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5H6V12H2a1 1 0 0 1-1-1V3Zm1.5 7.5v-7h11v7h-11Z" clip-rule="evenodd" />
-          </svg>
-          Update from TVDB
-        </Button>
-        
-        <Button v-if="item.source === 'ytPlaylist'" @click="updateEpisodesFromYoutube" :disabled="!item.url || store.loading || !store.settings.youtube_api_key" class="mr-auto">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2ZM2 9.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 9.25ZM2.75 12.5a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75Z" />
-          </svg>
-          Update from YouTube
-        </Button>
-        
-        <Button variant="tertiary" @click="item.episodeNav('first')" class="ml-auto">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path fill-rule="evenodd" d="M8 14a.75.75 0 0 1-.75-.75V4.56L4.03 7.78a.75.75 0 0 1-1.06-1.06l4.5-4.5a.75.75 0 0 1 1.06 0l4.5 4.5a.75.75 0 0 1-1.06 1.06L8.75 4.56v8.69A.75.75 0 0 1 8 14Z" clip-rule="evenodd" />
-          </svg>
-          {{ item.episode_ids.length ? 'First' : 'Unfinished' }}
-        </Button>
-        
-        <Button v-if="item.episode_ids.length" variant="tertiary" @click="item.episodeNav('random')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path fill-rule="evenodd" d="M15 8A7 7 0 1 1 1 8a7 7 0 0 1 14 0Zm-6 3.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM7.293 5.293a1 1 0 1 1 .99 1.667c-.459.134-1.033.566-1.033 1.29v.25a.75.75 0 1 0 1.5 0v-.115a2.5 2.5 0 1 0-2.518-4.153.75.75 0 1 0 1.061 1.06Z" clip-rule="evenodd" />
-          </svg>
-          Random
-        </Button>
-        
-        <Button variant="tertiary" @click="item.episodeNav('finished')">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path fill-rule="evenodd" d="M8 2a.75.75 0 0 1 .75.75v8.69l3.22-3.22a.75.75 0 1 1 1.06 1.06l-4.5 4.5a.75.75 0 0 1-1.06 0l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.22 3.22V2.75A.75.75 0 0 1 8 2Z" clip-rule="evenodd" />
-          </svg>
-          Finished
-        </Button>
-        
-        <InputWithLabel v-if="item.episode_ids.length" :with-label="false" :is-search="true" v-model="filterStr"></InputWithLabel>
+        <div v-if="item.id" class="flex items-center gap-x-4">
+          
+          <h3 v-if="item.type === 'show'" class="mr-auto text-xl text-slate-200">
+            {{ item.episode_ids.length }}
+            Episodes
+          </h3>
+          
+          <Button variant="secondary" @click="item.episodeNav('first')" class="ml-auto" :title="item.episode_ids.length ? 'First' : 'Unfinished'">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+            </svg>
+          </Button>
+          
+          <Button v-if="item.episode_ids.length" variant="secondary" @click="item.episodeNav('random')" title="Random">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
+            </svg>
+          </Button>
+          
+          <Button variant="secondary" @click="item.episodeNav('finished')" title="Finished">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
+            </svg>
+          </Button>
+          
+          <InputWithLabel v-if="item.episode_ids.length" :with-label="false" :is-search="true" v-model="filterStr"></InputWithLabel>
+          
+          <Button v-if="item.type === 'show' && item.source !== 'ytPlaylist'" @click="updateEpisodesFromTvdb" :disabled="!item.tvdb_id || store.loading">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+              <path d="M12 5H4v4h8V5Z" />
+              <path fill-rule="evenodd" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4v1.5h2.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5H6V12H2a1 1 0 0 1-1-1V3Zm1.5 7.5v-7h11v7h-11Z" clip-rule="evenodd" />
+            </svg>
+            Update from TVDB
+          </Button>
+          
+          <Button v-if="item.source === 'ytPlaylist'" @click="updateEpisodesFromYoutube" :disabled="!item.url || store.loading || !store.settings.youtube_api_key">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+              <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2ZM2 9.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 9.25ZM2.75 12.5a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75Z" />
+            </svg>
+            Update from YouTube
+          </Button>
+          
+        </div>
         
       </div>
       
@@ -552,39 +428,43 @@ onBeforeUnmount(() => {
     
     <div
       v-if="item.id"
-      class="pb-12 pl-12 pr-8 mt-4 overflow-y-scroll grow"
+      class="pb-12 mt-4 overflow-y-scroll grow"
       :class="{
         'min-h-40': item.episode_ids.length,
-        'min-h-24 max-w-5xl mx-auto': !item.episode_ids.length
+        'min-h-24': !item.episode_ids.length
       }"
       >
       
-      <EpisodeCard
-        v-if="!item.episode_ids.length"
-        :itemID="item.id"
-        :episodeID="0"
-        @click="setCurrentEpisode(0)"
-        >
-      </EpisodeCard>
-      
-      <EpisodeCard
-        v-for="episodeID in item.episode_ids"
-        :itemID="item.id"
-        :episodeID="episodeID"
-        @click="setCurrentEpisode(episodeID)"
-        :class="{
-          'hidden': !item.episodes[episodeID].searchable_text.includes(filterStrDebounced)
-        }"
-        >
-      </EpisodeCard>
-      
-      <EpisodeCard
-        :itemID="item.id"
-        :episodeID="null"
-        @click="setCurrentEpisode(null)"
-        :class="{ 'hidden': item.episode_ids.length && !!filterStrDebounced }"
-        >
-      </EpisodeCard>
+      <div class="max-w-4xl pl-6 pr-2 mx-auto">
+        
+        <EpisodeCard
+          v-if="!item.episode_ids.length"
+          :itemID="item.id"
+          :episodeID="0"
+          @click="setCurrentEpisode(0)"
+          >
+        </EpisodeCard>
+        
+        <EpisodeCard
+          v-for="episodeID in item.episode_ids"
+          :itemID="item.id"
+          :episodeID="episodeID"
+          @click="setCurrentEpisode(episodeID)"
+          :class="{
+            'hidden': !item.episodes[episodeID].searchable_text.includes(filterStrDebounced)
+          }"
+          >
+        </EpisodeCard>
+        
+        <EpisodeCard
+          :itemID="item.id"
+          :episodeID="null"
+          @click="setCurrentEpisode(null)"
+          :class="{ 'hidden': item.episode_ids.length && !!filterStrDebounced }"
+          >
+        </EpisodeCard>
+        
+      </div>
       
     </div>
     

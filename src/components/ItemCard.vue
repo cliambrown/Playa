@@ -151,7 +151,7 @@ watch(
             
             <span v-if="item.episode_ids.length" class="">
               <span v-if="item.episode_ids.length - currentEpIndex > 0">
-                # {{ (currentEpIndex + 1) }}
+                {{ (currentEpIndex + 1) }}
                 of
               </span>
               {{ item.episode_ids.length }}

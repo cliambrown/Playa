@@ -1,7 +1,9 @@
 import { open } from '@tauri-apps/api/shell';
 import { invoke } from '@tauri-apps/api/tauri';
 import { store } from '../store';
-import { useGetProp, useAlphaName } from '../helpers.js';
+import { useGetProp, useAlphaName, useMinutesToTimeStr } from '../helpers.js';
+import { getEpisodes } from '../tvdb.js';
+import { getYtPlaylistVideos } from '../youtube';
 import { Episode } from './Episode.js';
 
 export function Item(itemData) {
@@ -13,6 +15,7 @@ export function Item(itemData) {
     { name: 'is_archived', def: null, updatable: true },
     { name: 'type', def: null, updatable: false },
     { name: 'source', def: null, updatable: false },
+    { name: 'updated_from_source_at', def: null, updatable: false },
     { name: 'name', def: null, updatable: true },
     { name: 'tvdb_id', def: null, updatable: true },
     { name: 'tvdb_slug', def: null, updatable: true },
@@ -128,6 +131,16 @@ Item.prototype.updateLastWatchedAtInDB = async function() {
   let response = await store.db.execute(
     "UPDATE items SET last_watched_at=? WHERE id=?",
     [this.last_watched_at, this.id]
+  );
+  console.log('Item.updateLastWatchedAtInDB', response);
+}
+  
+Item.prototype.updateUpdatedFromSourceAt = async function() {
+  if (!store.db || !this.id) return false;
+  this.updated_from_source_at = Math.round(Date.now() / 1000);
+  let response = await store.db.execute(
+    "UPDATE items SET updated_from_source_at=? WHERE id=?",
+    [this.updated_from_source_at, this.id]
   );
   console.log('Item.updateLastWatchedAtInDB', response);
 }
@@ -282,6 +295,165 @@ Item.prototype.play = function() {
   this.last_watched_at = Math.round(Date.now() / 1000);
   this.updateLastWatchedAtInDB();
   return true;
+}
+
+Item.prototype.updateEpisodesFromTvdb = async function() {
+  if (!this.tvdb_id) return false;
+  
+  store.loading_msg = 'Loading episodes...';
+  
+  const tvdbEpisodes = await getEpisodes(store, this.tvdb_id);
+  if (!tvdbEpisodes) {
+    store.loading_msg = 'No episodes retrieved';
+    return false;
+  }
+  
+  let addedCount = 0;
+  let updatedCount = 0;
+  
+  if (this.source === 'local') {
+    
+    for (const episodeID of this.episode_ids) {
+      let episode = this.episodes[episodeID];
+      for (const tvdbEpisode of tvdbEpisodes) {
+        if (
+          tvdbEpisode.season_num === episode.season_num
+          && tvdbEpisode.episode_num === episode.episode_num
+        ) {
+          const origName = episode.name;
+          const origOverview = episode.overview;
+          const origReleasedOn = episode.released_on;
+          episode.name = tvdbEpisode.name;
+          episode.overview = tvdbEpisode.overview;
+          episode.released_on = tvdbEpisode.released_on;
+          if (
+            origName !== episode.name
+            || origOverview !== episode.overview
+            || origReleasedOn !== episode.released_on
+          ) {
+            episode.setSearchableText();
+            episode.saveToDB();
+            updatedCount++;
+            episode.is_updated = true;
+          }
+          break;
+        }
+      }
+    }
+    this.sortEpisodes();
+    store.loading_msg = `${updatedCount} episode${updatedCount == 1 ? '' : 's'} updated`;
+    
+  } else {
+    
+    let foundEpisodeIDs = [];
+    for (const tvdbEpisode of tvdbEpisodes) {
+      if (!tvdbEpisode.season_num || tvdbEpisode.episode_num === null) {
+        continue;
+      }
+      tvdbEpisode.duration = useMinutesToTimeStr(tvdbEpisode.runtime);
+      let episode = await this.getEpisodeFromData(tvdbEpisode);
+      if (episode.is_new) {
+        addedCount++;
+      } else {
+        const origName = episode.name;
+        const origOverview = episode.overview;
+        const origReleasedOn = episode.released_on;
+        const origDuration = episode.duration;
+        episode.name = tvdbEpisode.name;
+        episode.overview = tvdbEpisode.overview;
+        episode.released_on = tvdbEpisode.released_on;
+        episode.duration = tvdbEpisode.duration;
+        if (
+          origName !== episode.name
+          || origOverview !== episode.overview
+          || origReleasedOn !== episode.released_on
+          || origDuration !== episode.duration
+        ) {
+          episode.setSearchableText();
+          episode.saveToDB();
+          updatedCount++;
+          episode.is_updated = true;
+        }
+      }
+      foundEpisodeIDs.push(episode.id);
+    }
+    for (const episodeID of this.episode_ids) {
+      if (!foundEpisodeIDs.includes(episodeID)) {
+        this.episodes[episodeID].delete();
+      }
+    }
+    this.sortEpisodes();
+    this.setCurrentEpToNewEp();
+    this.updateUpdatedFromSourceAt();
+    store.loading_msg = `${addedCount} episode${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
+    
+  }
+}
+
+Item.prototype.updateEpisodesFromYoutube = async function() {
+  if (!store.settings.youtube_api_key) return false;
+  let playlistID = null;
+  try {
+    const params = new URL(this.url).searchParams;
+    playlistID = params.get('list');
+  } catch (e) {
+    console.log(e);
+    return false;
+  }
+  if (!playlistID) return false;
+  store.loading_msg = 'Loading videos for ' + this.name + '...';
+  let addedCount = 0;
+  let updatedCount = 0;
+  let foundEpisodeIDs = [];
+  const videosData = await getYtPlaylistVideos(playlistID, store.settings.youtube_api_key);
+  if (!videosData || !Array.isArray(videosData)) {
+    store.loading_msg = 'Invalid response';
+    return false;
+  }
+  for (const videoData of videosData) {
+    if (!videoData.url) continue;
+    if (this.order_is_reversed) {
+      videoData.order_num = videosData.length - videoData.order_num;
+    }
+    let episode = await this.getEpisodeFromData(videoData);
+    if (episode.is_new) {
+      addedCount++;
+    } else {
+      const origName = episode.name;
+      const origOverview = episode.overview;
+      const origOrderNum = episode.order_num;
+      const origReleasedOn = episode.released_on;
+      const origDuration = episode.duration;
+      episode.name = videoData.name;
+      episode.overview = videoData.overview;
+      episode.order_num = videoData.order_num;
+      episode.released_on = videoData.released_on;
+      episode.duration = videoData.duration;
+      if (
+        origName !== episode.name
+        || origOverview !== episode.overview
+        || origOrderNum !== episode.order_num
+        || origReleasedOn !== episode.released_on
+        || origDuration !== episode.duration
+      ) {
+        episode.setSearchableText();
+        episode.saveToDB();
+        updatedCount++;
+        episode.is_updated = true;
+      }
+    }
+    foundEpisodeIDs.push(episode.id);
+  }
+  for (const episodeID of this.episode_ids) {
+    if (!foundEpisodeIDs.includes(episodeID)) {
+      this.episodes[episodeID].delete();
+    }
+  }
+  this.sortEpisodes();
+  this.setCurrentEpToNewEp();
+  this.updateUpdatedFromSourceAt();
+  // store.loading_msg = `${addedCount} video${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
+  return { added_count: addedCount, updated_count: updatedCount };
 }
   
 Item.prototype.delete = async function() {
