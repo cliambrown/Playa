@@ -7,7 +7,7 @@
   },
   "package": {
     "productName": "Playa",
-    "version": "0.0.4"
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -63,7 +63,7 @@
         "binaries/ffprobe"
       ],
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "com.cliambrown.playa",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
