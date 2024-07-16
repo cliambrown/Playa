@@ -346,8 +346,14 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
   } else {
     
     let foundEpisodeIDs = [];
+    let today = new Date();
+    today.setHours(0,0,0,0);
     for (const tvdbEpisode of tvdbEpisodes) {
-      if (!tvdbEpisode.season_num || tvdbEpisode.episode_num === null) {
+      if (
+        !tvdbEpisode.season_num
+        || tvdbEpisode.episode_num === null
+        || (tvdbEpisode.released_on_date_obj && tvdbEpisode.released_on_date_obj > today)
+      ) {
         continue;
       }
       tvdbEpisode.duration = useMinutesToTimeStr(tvdbEpisode.runtime);

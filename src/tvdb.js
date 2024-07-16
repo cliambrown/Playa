@@ -124,6 +124,8 @@ function prepTvdbEpisode(tvdbEpisode) {
   preppedTvdbEpisode.episode_num = parseInt(tvdbEpisode.number);
   if (isNaN(preppedTvdbEpisode.episode_num)) preppedTvdbEpisode.episode_num = null;
   const aired = tvdbEpisode.aired;
+  preppedTvdbEpisode.released_on = null;
+  preppedTvdbEpisode.released_on_date_obj = null;
   if (
     aired
     && typeof aired === 'string'
@@ -132,8 +134,8 @@ function prepTvdbEpisode(tvdbEpisode) {
     const [y, m, d] = aired.split('-');
     const date = new Date(y, (m-1), d);
     preppedTvdbEpisode.released_on = date.getTime() / 1000;
-  } else {
-    preppedTvdbEpisode.released_on = null;
+    date.setHours(0,0,0,0);
+    preppedTvdbEpisode.released_on_date_obj = date;
   }
   return preppedTvdbEpisode;
 }
