@@ -7,11 +7,14 @@
   },
   "package": {
     "productName": "Playa",
-    "version": "0.1.1"
+    "version": "0.1.4"
   },
   "tauri": {
     "allowlist": {
       "all": false,
+      "app": {
+        "all": true
+      },
       "shell": {
         "all": false,
         "open": "^((mailto:)|(tel:)|(https?://)|(C:)|(D:)).+",

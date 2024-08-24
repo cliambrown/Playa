@@ -302,7 +302,7 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
   
   store.loading_msg = 'Loading episodes...';
   
-  const tvdbEpisodes = await getEpisodes(store, this.tvdb_id);
+  const tvdbEpisodes = await getEpisodes(store, this.tvdb_id, this.source);
   if (!tvdbEpisodes) {
     store.loading_msg = 'No episodes retrieved';
     return false;

@@ -86,7 +86,7 @@ export async function searchTvdb(store, showName, type) {
   return responseData;
 }
 
-export async function getEpisodes(store, tvdbID) {
+export async function getEpisodes(store, tvdbID, source) {
   if (!tvdbID) return false;
   let token = await getToken(store);
   if (!token) return false;
@@ -107,7 +107,7 @@ export async function getEpisodes(store, tvdbID) {
   }
   let tvdbEpisodes = [];
   for (const tvdbEpisode of responseData.episodes) {
-    if (tvdbEpisode.aired)
+    if (tvdbEpisode.aired || source === 'local')
       tvdbEpisodes.push(prepTvdbEpisode(tvdbEpisode));
   }
   return tvdbEpisodes;

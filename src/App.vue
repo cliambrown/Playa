@@ -1,10 +1,11 @@
 <script setup>
-import { onBeforeMount, onBeforeUnmount } from 'vue';
+import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { join } from '@tauri-apps/api/path';
 import { listen } from '@tauri-apps/api/event'
 import { appLocalDataDir } from '@tauri-apps/api/path';
+import { getVersion } from '@tauri-apps/api/app';
 import Database from 'tauri-plugin-sql-api';
 import NavLink from './components/NavLink.vue';
 import { store } from './store.js';
@@ -13,6 +14,8 @@ const router = useRouter();
 const route = useRoute();
 store.route = route;
 store.router = router;
+
+const appVersion = ref(null);
 
 onBeforeMount(async () => {
   store.loading = true;
@@ -30,6 +33,7 @@ onBeforeMount(async () => {
   store.selectFirstHomeItem();
   store.selectFirstArchivesItem();
   store.loading = false;
+  appVersion.value = await getVersion();
 });
 
 listen('loading-event', (event) => {
@@ -65,6 +69,10 @@ onBeforeUnmount(() => {
         <RouterLink :to="{ name: 'home' }" class="flex-none py-2 text-xl font-semibold text-white">
           Playa
         </RouterLink>
+        
+        <div v-if="appVersion" class="mt-1.5 text-xs text-gray-300">
+          v{{ appVersion }}
+        </div>
         
         <div class="mt-1.5 text-gray-200 w-4">
           <Transition name="fade">

@@ -2819,7 +2819,7 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
 name = "playa"
-version = "0.1.1"
+version = "0.1.4"
 dependencies = [
  "image 0.25.1",
  "infer 0.3.7",
