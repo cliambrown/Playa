@@ -403,10 +403,8 @@ export const store = reactive({
   
   async pruneMissingEpisodes(foundEpisodePathnames) {
     if (!this.db) return false;
-    let query = 'SELECT id, item_id FROM episodes WHERE pathname IS NOT NULL AND pathname != ""';
-    for (const pathname of foundEpisodePathnames) {
-      query = query + ' AND pathname != ?';
-    }
+    const questionMarks = new Array(foundEpisodePathnames.length).fill('?').join(', ');
+    let query = 'SELECT id, item_id FROM episodes WHERE pathname IS NOT NULL AND pathname NOT IN (' + questionMarks + ')';
     const response = await this.db.select(query, foundEpisodePathnames);
     if (response && Array.isArray(response) && response.length) {
       for (const row of response) {1

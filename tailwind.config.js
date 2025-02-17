@@ -1,4 +1,7 @@
 /** @type {import('tailwindcss').Config} */
+
+import formsPlugin from '@tailwindcss/forms'
+
 export default {
   content: [
     "./src/**/*.{vue,js,ts,jsx,tsx}",
@@ -6,8 +9,6 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-  ]
+  plugins: [formsPlugin]
 }
 

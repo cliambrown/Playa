@@ -197,7 +197,7 @@ Item.prototype.getEpisodeFromData = async function(episodeData, fromScan = true)
   this.episode_ids.push(episode.id);
   this.new_episode_ids.add(episode.id);
   if (fromScan) {
-    if (this.is_archived && unarchiveIfNew) {
+    if (this.is_archived && this.source === 'local') {
       this.is_archived = null;
       await this.saveToDB();
     }
