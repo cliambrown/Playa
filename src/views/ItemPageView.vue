@@ -222,7 +222,7 @@ onBeforeUnmount(() => {
         <img :src="artworkAssetUrl" :class="{'max-w-80': item.type === 'movie'}">
       </div>
       
-      <div class="flex items-center mt-4 gap-x-4">
+      <div class="flex items-start mt-4 gap-x-4">
         
         <h2 class="text-2xl text-slate-200 grow">
           {{ displayName }}
@@ -278,101 +278,104 @@ onBeforeUnmount(() => {
           Delete
         </Button>
         
-        <Button v-if="item.episode_ids.length" variant="secondary" @click="showEdit = !showEdit">
-          <svg v-show="!showEdit" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path fill-rule="evenodd" d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z" clip-rule="evenodd" />
-          </svg>
-          <svg v-show="showEdit" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path d="M5.28 4.22a.75.75 0 0 0-1.06 1.06L6.94 8l-2.72 2.72a.75.75 0 1 0 1.06 1.06L8 9.06l2.72 2.72a.75.75 0 1 0 1.06-1.06L9.06 8l2.72-2.72a.75.75 0 0 0-1.06-1.06L8 6.94 5.28 4.22Z" />
-          </svg>
-          Edit
+        <Button v-if="item.episode_ids.length" variant="secondary" @click="showEdit = !showEdit" class="justify-center w-28">
+          <template v-if="!showEdit">
+            <svg v-show="!showEdit" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+              <path fill-rule="evenodd" d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z" clip-rule="evenodd" />
+            </svg>
+            Edit
+          </template>
+          <template v-if="showEdit">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+              <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2ZM2 9.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 9.25ZM2.75 12.5a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75Z" />
+            </svg>
+            Episodes
+          </template>
         </Button>
         
       </div>
       
-      <TransitionExpand>
-        <form v-show="showEdit || !item.episode_ids.length" action="" method="get" @submit.prevent class="pt-1 pb-4" autocapitalize="false" autocomplete="off">
-          
-          <InputWithLabel v-if="item.source === 'external' || item.source === 'ytPlaylist'" class="mt-4" id="url" v-model="item.url" :readonly="store.loading" @input="handleUpdate">
-            URL
+      <form v-show="showEdit || !item.episode_ids.length" action="" method="get" @submit.prevent class="pt-1 pb-4" autocapitalize="false" autocomplete="off">
+        
+        <InputWithLabel v-if="item.source === 'external' || item.source === 'ytPlaylist'" class="mt-4" id="url" v-model="item.url" :readonly="store.loading" @input="handleUpdate">
+          URL
+          <template v-slot:afterInput>
+            <Button variant="link" @click="open(item.url)" :disabled="!item.url">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+                <path fill-rule="evenodd" d="M8.914 6.025a.75.75 0 0 1 1.06 0 3.5 3.5 0 0 1 0 4.95l-2 2a3.5 3.5 0 0 1-5.396-4.402.75.75 0 0 1 1.251.827 2 2 0 0 0 3.085 2.514l2-2a2 2 0 0 0 0-2.828.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                <path fill-rule="evenodd" d="M7.086 9.975a.75.75 0 0 1-1.06 0 3.5 3.5 0 0 1 0-4.95l2-2a3.5 3.5 0 0 1 5.396 4.402.75.75 0 0 1-1.251-.827 2 2 0 0 0-3.085-2.514l-2 2a2 2 0 0 0 0 2.828.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
+              </svg>
+              Open
+            </Button>
+          </template>
+        </InputWithLabel>
+        
+        <div v-if="item.id">
+            
+          <InputWithLabel class="mt-4" id="name" v-model="item.name" :readonly="store.loading" @input="handleUpdate">
+            Name
             <template v-slot:afterInput>
-              <Button variant="link" @click="open(item.url)" :disabled="!item.url">
+              <Button variant="secondary" @click="searchItemInTvdb">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                  <path fill-rule="evenodd" d="M8.914 6.025a.75.75 0 0 1 1.06 0 3.5 3.5 0 0 1 0 4.95l-2 2a3.5 3.5 0 0 1-5.396-4.402.75.75 0 0 1 1.251.827 2 2 0 0 0 3.085 2.514l2-2a2 2 0 0 0 0-2.828.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-                  <path fill-rule="evenodd" d="M7.086 9.975a.75.75 0 0 1-1.06 0 3.5 3.5 0 0 1 0-4.95l2-2a3.5 3.5 0 0 1 5.396 4.402.75.75 0 0 1-1.251-.827 2 2 0 0 0-3.085-2.514l-2 2a2 2 0 0 0 0 2.828.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
+                  <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
                 </svg>
-                Open
+                Search TVDB
               </Button>
             </template>
           </InputWithLabel>
           
-          <div v-if="item.id">
-              
-            <InputWithLabel class="mt-4" id="name" v-model="item.name" :readonly="store.loading" @input="handleUpdate">
-              Name
-              <template v-slot:afterInput>
-                <Button variant="secondary" @click="searchItemInTvdb">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                    <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
-                  </svg>
-                  Search TVDB
-                </Button>
-              </template>
+          <TvdbMatches
+            :matches="item.tvdb_matches"
+            class="mt-4"
+            :showMatches="showMatches"
+            :itemTvdbId="item.tvdb_id"
+            @toggle-show-matches="showMatches = !showMatches"
+            @match-select="(match) => selectTvdbMatch(match)"
+            @tvdb-link-click="(matchSlug) => openTvdbSlug(matchSlug)"
+            >
+          </TvdbMatches>
+          
+          <div class="flex flex-wrap gap-8 mt-4">
+            
+            <InputWithLabel class="max-w-40" id="tvdb_id" v-model="item.tvdb_id" :readonly="store.loading" @input="handleUpdate">
+              TVDB ID
+            </InputWithLabel>
+          
+            <InputWithLabel class="max-w-72" id="tvdb_slug" v-model="item.tvdb_slug" :readonly="store.loading" @input="handleUpdate">
+              TVDB Slug
             </InputWithLabel>
             
-            <TvdbMatches
-              :matches="item.tvdb_matches"
-              class="mt-4"
-              :showMatches="showMatches"
-              :itemTvdbId="item.tvdb_id"
-              @toggle-show-matches="showMatches = !showMatches"
-              @match-select="(match) => selectTvdbMatch(match)"
-              @tvdb-link-click="(matchSlug) => openTvdbSlug(matchSlug)"
-              >
-            </TvdbMatches>
-            
-            <div class="flex flex-wrap gap-8 mt-4">
-              
-              <InputWithLabel class="max-w-40" id="tvdb_id" v-model="item.tvdb_id" :readonly="store.loading" @input="handleUpdate">
-                TVDB ID
-              </InputWithLabel>
-            
-              <InputWithLabel class="max-w-72" id="tvdb_slug" v-model="item.tvdb_slug" :readonly="store.loading" @input="handleUpdate">
-                TVDB Slug
-              </InputWithLabel>
-              
-              <InputWithLabel v-if="item.type === 'movie'" class="max-w-72" id="duration" v-model="item.duration" :readonly="store.loading" @input="handleUpdate">
-                Duration
-              </InputWithLabel>
-            
-              <InputWithLabel :datepicker="true" id="last_watched_at" v-model="item.last_watched_at" :readonly="store.loading" @input="handleUpdate">
-                Last Watched At
-              </InputWithLabel>
-              
-              <div class="self-end mb-2">
-                <CheckboxWithLabel v-if="item.source === 'ytPlaylist'" input_id="order_is_reversed" v-model="item.order_is_reversed" :disabled="store.loading" @checkbox-change="handleUpdate" :trueValue="1" :falseValue="null">
-                  Reverse Order
-                </CheckboxWithLabel>
-              </div>
-              
-            </div>
-            
-            <ArtworkEdit
-              class="mt-4"
-              :tvdbID="item.tvdb_id"
-              :type="item.type"
-              :itemID="item.id"
-              :artworkFilename="item.artwork_filename"
-              @replace-artwork="(newFilename) => replaceArtwork(newFilename)"
-              >
-            </ArtworkEdit>
-            
-            </div>
+            <InputWithLabel v-if="item.type === 'movie'" class="max-w-72" id="duration" v-model="item.duration" :readonly="store.loading" @input="handleUpdate">
+              Duration
+            </InputWithLabel>
           
-        </form>
-      </TransitionExpand>
+            <InputWithLabel :datepicker="true" id="last_watched_at" v-model="item.last_watched_at" :readonly="store.loading" @input="handleUpdate">
+              Last Watched At
+            </InputWithLabel>
+            
+            <div class="self-end mb-2">
+              <CheckboxWithLabel v-if="item.source === 'ytPlaylist'" input_id="order_is_reversed" v-model="item.order_is_reversed" :disabled="store.loading" @checkbox-change="handleUpdate" :trueValue="1" :falseValue="null">
+                Reverse Order
+              </CheckboxWithLabel>
+            </div>
+            
+          </div>
+          
+          <ArtworkEdit
+            class="mt-4"
+            :tvdbID="item.tvdb_id"
+            :type="item.type"
+            :itemID="item.id"
+            :artworkFilename="item.artwork_filename"
+            @replace-artwork="(newFilename) => replaceArtwork(newFilename)"
+            >
+          </ArtworkEdit>
+          
+          </div>
+        
+      </form>
       
-      <div v-if="item.id" class="mt-12">
+      <div v-if="item.id && (!showEdit || !item.episode_ids.length)" class="mt-12">
         
         <div v-if="item.id && item.source === 'ytPlaylist'" class="mb-3 text-xs text-right text-gray-300">
           Last updated: {{ updatedFromSourceAt }}
@@ -427,7 +430,7 @@ onBeforeUnmount(() => {
     </div>
     
     <div
-      v-if="item.id"
+      v-if="item.id && (!showEdit || !item.episode_ids.length)"
       class="pb-12 mt-4 overflow-y-scroll grow"
       :class="{
         'min-h-40': item.episode_ids.length,

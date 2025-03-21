@@ -92,16 +92,9 @@ async function replaceArtwork() {
         </div>
         <div class="flex items-center">
           <input id="artwork-src-upload" name="artwork-src" type="radio" value="upload" v-model="artworkSrc" class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500">
-          <label for="artwork-src-upload" class="block pl-2 text-sm font-medium leading-6 cursor-pointer">Upload</label>
+          <label for="artwork-src-upload" class="block pl-2 text-sm font-medium leading-6 cursor-pointer">Local file</label>
         </div>
       </fieldset>
-      
-      <Button :disabled="store.loading || (artworkSrc === 'url' && !artworkSrcUrl) || (artworkSrc === 'upload' && !artworkSrcFilepath)" @click="replaceArtwork">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-          <path fill-rule="evenodd" d="M13.836 2.477a.75.75 0 0 1 .75.75v3.182a.75.75 0 0 1-.75.75h-3.182a.75.75 0 0 1 0-1.5h1.37l-.84-.841a4.5 4.5 0 0 0-7.08.932.75.75 0 0 1-1.3-.75 6 6 0 0 1 9.44-1.242l.842.84V3.227a.75.75 0 0 1 .75-.75Zm-.911 7.5A.75.75 0 0 1 13.199 11a6 6 0 0 1-9.44 1.241l-.84-.84v1.371a.75.75 0 0 1-1.5 0V9.591a.75.75 0 0 1 .75-.75H5.35a.75.75 0 0 1 0 1.5H3.98l.841.841a4.5 4.5 0 0 0 7.08-.932.75.75 0 0 1 1.025-.273Z" clip-rule="evenodd" />
-        </svg>
-        Replace Artwork
-      </Button>
       
     </div>
     
@@ -110,6 +103,12 @@ async function replaceArtwork() {
         Artwork File Location
         <template v-slot:afterInput>
           <div class="flex items-center gap-x-2">
+            <Button :disabled="store.loading || !artworkSrcFilepath" @click="replaceArtwork">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+                <path d="M8.75 6h-1.5V3.56L6.03 4.78a.75.75 0 0 1-1.06-1.06l2.5-2.5a.75.75 0 0 1 1.06 0l2.5 2.5a.75.75 0 1 1-1.06 1.06L8.75 3.56V6H11a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2.25v5.25a.75.75 0 0 0 1.5 0V6Z" />
+              </svg>
+              Replace
+            </Button>
             <DirSelect v-model="artworkSrcFilepath" :directory="false" defaultPath="%HomeDrive%"/>
           </div>
         </template>
@@ -121,14 +120,20 @@ async function replaceArtwork() {
       <InputWithLabel id="artwork-url" class="" v-model="artworkSrcUrl">
         Artwork URL
         <template v-slot:afterInput>
-        <Button variant="secondary" @click="getArtworksFromTvdb" :disabled="!tvdbID || store.loading">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path d="M12 5H4v4h8V5Z" />
-            <path fill-rule="evenodd" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4v1.5h2.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5H6V12H2a1 1 0 0 1-1-1V3Zm1.5 7.5v-7h11v7h-11Z" clip-rule="evenodd" />
-          </svg>
-          Load TVDB Artworks
-        </Button>
-      </template>
+          <Button :disabled="store.loading || !artworkSrcUrl" @click="replaceArtwork">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
+              <path d="M8.75 6h-1.5V3.56L6.03 4.78a.75.75 0 0 1-1.06-1.06l2.5-2.5a.75.75 0 0 1 1.06 0l2.5 2.5a.75.75 0 1 1-1.06 1.06L8.75 3.56V6H11a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2.25v5.25a.75.75 0 0 0 1.5 0V6Z" />
+            </svg>
+            Replace
+          </Button>
+          <Button variant="secondary" @click="getArtworksFromTvdb" :disabled="!tvdbID || store.loading">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
+              <path d="M12 5H4v4h8V5Z" />
+              <path fill-rule="evenodd" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4v1.5h2.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5H6V12H2a1 1 0 0 1-1-1V3Zm1.5 7.5v-7h11v7h-11Z" clip-rule="evenodd" />
+            </svg>
+            Load TVDB Artworks
+          </Button>
+        </template>
       </InputWithLabel>
       
       <div v-if="artworks.length" class="mt-4">
