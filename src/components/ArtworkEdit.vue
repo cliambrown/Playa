@@ -161,7 +161,7 @@ async function replaceArtwork() {
                 'w-40': type === 'movie',
                 'ring-[2px] ring-green-400 ring-offset-[2px] ring-offset-slate-800': artworkSrcUrl === artwork.image
               }"
-              @click="artworkSrcUrl = artwork.image"
+              @click="artworkSrcUrl = artwork.image; replaceArtwork()"
               >
                 <img :src="artwork.image">
             </button>
