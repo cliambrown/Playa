@@ -43,10 +43,10 @@ I made Playa for my own personal use and **cannot guarantee its safety, security
 - TV Folder
   - Show Name
     - [Any Folder Structure]
-      - Show.Name.YEAR.S02E12.Episode.12.Title.1080p.Whatever.mkv
-      - Show.Name.YEAR.S02E13.Episode.13.Title.1080p.Whatever.avi
+      - Show.Name.YEAR.S02E12.Episode.Title.1080p.Whatever.mkv
+      - Show.Name.YEAR.S02E13.Episode.Title.1080p.Whatever.avi
   - Show Name
-    - Show.Name.YEAR.S01E08.Episode.8.Title.1080p.Whatever.mp4
+    - Show.Name.YEAR.S01E08.Episode.Title.1080p.Whatever.mp4
 
 - Movies Folder
   - Movie.Name.Year.1080p.Whatever.mkv
