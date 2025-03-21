@@ -126,6 +126,8 @@ function prepTvdbEpisode(tvdbEpisode) {
   const aired = tvdbEpisode.aired;
   preppedTvdbEpisode.released_on = null;
   preppedTvdbEpisode.released_on_date_obj = null;
+  preppedTvdbEpisode.is_season_finale = tvdbEpisode.finaleType === 'season' ? 1 : 0;
+  preppedTvdbEpisode.is_series_finale = tvdbEpisode.finaleType === 'series' ? 1 : 0;
   if (
     aired
     && typeof aired === 'string'

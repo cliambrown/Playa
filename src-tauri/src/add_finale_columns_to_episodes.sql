@@ -1,0 +1,2 @@
+ALTER TABLE episodes ADD COLUMN is_season_finale INTEGER DEFAULT 0;
+ALTER TABLE episodes ADD COLUMN is_series_finale INTEGER DEFAULT 0;

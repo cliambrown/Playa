@@ -3,6 +3,8 @@ import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { store } from '../store.js'
 import { useGetProp } from '../helpers';
 import TextareaWithLabel from '../components/TextareaWithLabel.vue';
+import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
+import Badge from '../components/Badge.vue';
 
 const props = defineProps(['itemID', 'episodeID']);
 
@@ -117,16 +119,22 @@ watch(
         
         <div class="flex items-center gap-4">
           <div class="text-xl font-semibold">
-            <span v-if="episode.is_new" class="relative inline-block px-2 text-sm text-white bg-orange-700 rounded-full bottom-0.5 mr-2">
-              NEW
-            </span>
-            <span v-if="episode.is_updated" class="relative inline-block px-2 text-sm text-white bg-teal-700 rounded-full bottom-0.5 mr-2">
-              UPDATED
-            </span>
-            <span v-if="item.source !== 'ytPlaylist'">
+            <Badge v-if="episode.is_new" class="relative bottom-0.5 mr-2" variant="new">
+              New
+            </Badge>
+            <Badge v-if="episode.is_updated" class="relative bottom-0.5 mr-2" variant="updated">
+              Updated
+            </Badge>
+            <Badge v-if="episode.is_season_finale && !episode.is_series_finale" class="relative bottom-0.5 mr-2" variant="seasonfinale">
+              Season Finale
+            </Badge>
+            <Badge v-if="episode.is_series_finale" class="relative bottom-0.5 mr-2" variant="seriesfinale">
+              Series Finale
+            </Badge>
+            <span v-if="item.source !== 'ytPlaylist'" class="mr-2">
               {{ episode.sXXeXX }}
             </span>
-            {{ episode.name }}
+            <span>{{ episode.name }}</span>
           </div>
           <Button variant="tertiary-light" class="ml-auto -my-1" @click.stop="showEdit = !showEdit">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 my-1">
@@ -219,6 +227,14 @@ watch(
           <InputWithLabel class="max-w-24" :isDark="false" :id="`episode-${episode.id}-duration`" v-model="episode.duration" :readonly="store.loading" @input="handleUpdate">
             Duration
           </InputWithLabel>
+          
+        </div>
+        
+        <div class="flex flex-wrap gap-8 mt-4">
+          
+          <CheckboxWithLabel :input_id="`episode-${episode.id}-is_season_finale`" @checkbox-change="handleUpdate" v-model="episode.is_season_finale" :readonly="store.loading" @input="handleUpdate" :trueValue="1" :falseValue="0">Season Finale</CheckboxWithLabel>
+          
+          <CheckboxWithLabel :input_id="`episode-${episode.id}-is_series_finale`" @checkbox-change="handleUpdate" v-model="episode.is_series_finale" :readonly="store.loading" @input="handleUpdate" :trueValue="1" :falseValue="0">Series Finale</CheckboxWithLabel>
           
         </div>
         

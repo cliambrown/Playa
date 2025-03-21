@@ -18,6 +18,8 @@ export function Episode(episodeData) {
     { name: 'overview', def: null, updatable: true },
     { name: 'released_on', def: null, updatable: true },
     { name: 'duration', def: null, updatable: true },
+    { name: 'is_season_finale', def: 0, updatable: true },
+    { name: 'is_series_finale', def: 0, updatable: true },
   ]);
   
   for (const attribute of this.attributes) {

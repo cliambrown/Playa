@@ -323,13 +323,19 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
           const origName = episode.name;
           const origOverview = episode.overview;
           const origReleasedOn = episode.released_on;
+          const origIsSeasonFinale = episode.is_season_finale;
+          const origIsSeriesFinale = episode.is_series_finale;
           episode.name = tvdbEpisode.name;
           episode.overview = tvdbEpisode.overview;
           episode.released_on = tvdbEpisode.released_on;
+          episode.is_season_finale = tvdbEpisode.is_season_finale;
+          episode.is_series_finale = tvdbEpisode.is_series_finale;
           if (
             origName !== episode.name
             || origOverview !== episode.overview
             || origReleasedOn !== episode.released_on
+            || origIsSeasonFinale != episode.is_season_finale
+            || origIsSeriesFinale != episode.is_series_finale
           ) {
             episode.setSearchableText();
             episode.saveToDB();
@@ -365,15 +371,21 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
         const origOverview = episode.overview;
         const origReleasedOn = episode.released_on;
         const origDuration = episode.duration;
+        const origIsSeasonFinale = episode.is_season_finale;
+        const origIsSeriesFinale = episode.is_series_finale;
         episode.name = tvdbEpisode.name;
         episode.overview = tvdbEpisode.overview;
         episode.released_on = tvdbEpisode.released_on;
         episode.duration = tvdbEpisode.duration;
+        episode.is_season_finale = tvdbEpisode.is_season_finale;
+        episode.is_series_finale = tvdbEpisode.is_series_finale;
         if (
           origName !== episode.name
           || origOverview !== episode.overview
           || origReleasedOn !== episode.released_on
           || origDuration !== episode.duration
+          || origIsSeasonFinale != episode.is_season_finale
+          || origIsSeriesFinale != episode.is_series_finale
         ) {
           episode.setSearchableText();
           episode.saveToDB();

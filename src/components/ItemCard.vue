@@ -3,6 +3,7 @@ import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { store } from '../store';
 import { useGetProp } from '../helpers.js';
 import ItemRouterLink from './ItemRouterLink.vue';
+import Badge from './Badge.vue';
 
 const props = defineProps(['itemID']);
 const wrapper = ref(null);
@@ -129,17 +130,21 @@ watch(
       <div class="px-6 pt-3 pb-4 bg-white">
         
         <div>
-          <span v-if="item.is_new" class="relative inline-block px-2 mr-2 text-sm text-white bg-orange-700 rounded-full bottom-1">
-            NEW
-          </span>
+          <Badge v-if="item.is_new" class="relative mr-2 bottom-1" variant="new">New</Badge>
           <span class="text-2xl font-semibold">
             {{ item.name }}
           </span>
         </div>
           
         <div v-if="currentEp" class="mt-1 font-semibold text-gray-700">
-          <span v-if="item.source !== 'ytPlaylist'">{{ currentEp.sXXeXX }}</span>
-          {{ currentEp.name }}
+          <Badge v-if="currentEp.is_season_finale && !currentEp.is_series_finale" class="relative bottom-0.5 mr-2" variant="seasonfinale">
+            Season Finale
+          </Badge>
+          <Badge v-if="currentEp.is_series_finale" class="relative bottom-0.5 mr-2" variant="seriesfinale">
+            Series Finale
+          </Badge>
+          <span v-if="item.source !== 'ytPlaylist'" class="mr-2">{{ currentEp.sXXeXX }}</span>
+          <span>{{ currentEp.name }}</span>
         </div>
         
         <div>
@@ -168,9 +173,7 @@ watch(
               <span v-if="remainingEps <= 0">
                 {{ item.episode_ids.length }} episodes
               </span>
-              <span v-show="hasNewEpisodes" class="relative inline-block px-2 text-sm text-white bg-orange-700 rounded-full bottom-0.5 ml-2 font-normal">
-                NEW
-              </span>
+              <Badge v-if="hasNewEpisodes" class="relative ml-2 bottom-px" variant="new">New Episodes</Badge>
             </span>
             
             <div v-if="!item.episode_ids.length && domain" class="text-gray-600">

@@ -30,14 +30,14 @@ defineEmits(['buttonClick']);
       'rounded-md': !circular,
       'rounded-full h-10': circular,
       
-      'bg-indigo-500 hover:bg-indigo-400': variant === 'primary',
+      'text-white bg-indigo-600 hover:bg-indigo-500': variant === 'primary',
       'text-white bg-sky-900 hover:bg-sky-800': variant === 'secondary',
       'text-white hover:text-gray-100 ': variant === 'tertiary',
       'text-indigo-800 hover:text-gray-700': variant === 'tertiary-light',
       'text-blue-300 hover:text-blue-400': variant === 'link',
       'text-blue-200 bg-sky-900 hover:bg-sky-800': variant === 'link-bg',
-      'text-amber-400 bg-sky-900 hover:bg-sky-800': variant === 'archive',
-      'text-red-400 bg-sky-900 hover:bg-sky-800': variant === 'delete',
+      'text-amber-900 bg-amber-100 hover:bg-sky-800': variant === 'archive',
+      'text-white-400 bg-red-900 hover:bg-sky-800': variant === 'delete',
       
       'whitespace-nowrap': whitespace === 'nowrap',
     }"
