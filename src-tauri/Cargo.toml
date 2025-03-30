@@ -1,6 +1,6 @@
 [package]
 name = "playa"
-version = "0.2.0"
+version = "0.2.1"
 description = "Playa"
 authors = ["C. Liam Brown"]
 edition = "2021"
@@ -20,6 +20,8 @@ trash = "3"
 infer = "0.3"
 reqwest = { version = "0.12", features = ["blocking"] }
 image = "0.25.1"
+fix-path-env = { git = "https://github.com/tauri-apps/fix-path-env-rs" }
+showfile = "0.1.1"
 
 [dependencies.tauri-plugin-sql]
 git = "https://github.com/tauri-apps/plugins-workspace"

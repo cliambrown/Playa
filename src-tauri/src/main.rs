@@ -31,14 +31,17 @@ fn get_home_dir() -> String {
 // https://github.com/tauri-apps/plugins-workspace/issues/999#issuecomment-1965624567
 #[tauri::command]
 fn show_in_folder(path: String) -> Result<(), String> {
-    Command::new("explorer")
-        .args(["/select,", &path]) // The comma after select is not a typo
-        .spawn()
-        .map_err(|e| e.to_string())?;
+    // Command::new("explorer")
+    //     .args(["/select,", &path]) // The comma after select is not a typo
+    //     .spawn()
+    //     .map_err(|e| e.to_string())?;
+    showfile::show_path_in_file_manager(path);
   Ok(())
 }
 
 fn main() {
+
+    let _ = fix_path_env::fix();
     
     let migrations = vec![
         Migration {
