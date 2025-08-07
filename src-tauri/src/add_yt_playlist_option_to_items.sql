@@ -1,0 +1,1 @@
+ALTER TABLE items ADD COLUMN open_list_not_ep INTEGER DEFAULT null;

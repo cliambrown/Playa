@@ -2,78 +2,49 @@
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
-    "devPath": "http://localhost:1420",
-    "distDir": "../dist"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420"
   },
-  "package": {
-    "productName": "Playa",
-    "version": "0.2.1"
+  "bundle": {
+    "active": true,
+    "externalBin": [
+      "binaries/ffprobe"
+    ],
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "app": {
-        "all": true
+  "productName": "Playa",
+  "mainBinaryName": "Playa",
+  "version": "0.3.0",
+  "identifier": "com.cliambrown.playa",
+  "plugins": {},
+  "app": {
+    "security": {
+      "assetProtocol": {
+        "scope": {
+          "allow": [
+            "**"
+          ],
+          "deny": [],
+          "requireLiteralLeadingDot": false
+        },
+        "enable": true
       },
-      "shell": {
-        "all": false,
-        "open": "^((mailto:)|(tel:)|(https?://)|(C:)|(D:)).+",
-        "sidecar": true,
-        "scope": [
-          {
-            "name": "ffprobe",
-            "sidecar": true,
-            "args": true
-          }
-        ]
-      },
-      "dialog": {
-        "open": true,
-        "message": true,
-        "confirm": true,
-        "save": true
-      },
-      "http": {
-        "request": true,
-        "scope": ["https://api4.thetvdb.com/v4/*", "https://www.googleapis.com/youtube/v3/*"]
-      },
-      "path": {
-        "all": true
-      },
-      "fs": {
-        "readFile": true,
-        "writeFile": true,
-        "scope": ["$APPLOCALDATA/*"]
-      },
-      "protocol": {
-        "asset": true,
-        "assetScope": ["**"]
-      }
+      "csp": "default-src 'self'; img-src  https://artworks.thetvdb.com/ 'self' asset: https://asset.localhost; connect-src ipc: http://ipc.localhost"
     },
     "windows": [
       {
         "title": "Playa",
         "width": 800,
-        "height": 600
+        "height": 600,
+        "useHttpsScheme": true
       }
-    ],
-    "security": {
-      "csp": "default-src 'self'; img-src  https://artworks.thetvdb.com/ 'self' asset: https://asset.localhost"
-    },
-    "bundle": {
-      "active": true,
-      "externalBin": [
-        "binaries/ffprobe"
-      ],
-      "targets": "all",
-      "identifier": "com.cliambrown.playa",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ]
-    }
+    ]
   }
 }

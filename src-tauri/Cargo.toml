@@ -1,6 +1,6 @@
 [package]
 name = "playa"
-version = "0.2.1"
+version = "0.3.0"
 description = "Playa"
 authors = ["C. Liam Brown"]
 edition = "2021"
@@ -8,13 +8,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = [ "app-all", "fs-write-file", "fs-read-file", "dialog-confirm", "protocol-asset", "path-all", "dialog-save", "http-request", "shell-sidecar", "dialog-message", "dialog-open", "shell-open", "process-command-api"] }
+tauri = { version = "2", features = [ "protocol-asset"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 walkdir = "2"
 trash = "3"
 infer = "0.3"
@@ -22,12 +21,20 @@ reqwest = { version = "0.12", features = ["blocking"] }
 image = "0.25.1"
 fix-path-env = { git = "https://github.com/tauri-apps/fix-path-env-rs" }
 showfile = "0.1.1"
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-http = "2"
+tauri-plugin-fs = "2"
+regex = "1.11.1"
+tauri-plugin-opener = "2"
 
 [dependencies.tauri-plugin-sql]
-git = "https://github.com/tauri-apps/plugins-workspace"
-branch = "v1"
 features = ["sqlite"]
+version = "2"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-window-state = "2"
