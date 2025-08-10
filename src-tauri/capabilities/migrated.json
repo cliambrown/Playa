@@ -62,16 +62,6 @@
           "cmd": "",
           "name": "ffprobe",
           "sidecar": true
-        },
-        {
-          "name": "celluloid",
-          "cmd": "celluloid",
-          "args": true
-        },
-        {
-          "name": "mpv",
-          "cmd": "mpv",
-          "args": true
         }
       ]
     },

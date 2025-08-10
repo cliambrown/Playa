@@ -39,15 +39,6 @@ fn parse_playback_entry_contents(contents: String) -> HashMap<String, String> {
     let media_pathname = get_re_match(caps.name("media_pathname"));
     let mut media_path = "".to_string();
     let mut media_filename = "".to_string();
-    let mut yt_video_id = "".to_string();
-    // Check if youtube video
-    let yt_re: Regex =
-        Regex::new(r"^https:\/\/www\.youtube\.com\/watch\?v\=(?P<yt_video_id>.*)(\r\n|\r|\n|$)")
-            .unwrap();
-    if yt_re.is_match(&media_pathname) {
-        let yt_caps = yt_re.captures(&media_pathname).unwrap();
-        yt_video_id = get_re_match(yt_caps.name("yt_video_id"));
-    }
     if media_pathname != "".to_string() {
         let path = Path::new(&media_pathname);
         media_path = match path.parent() {
@@ -64,7 +55,6 @@ fn parse_playback_entry_contents(contents: String) -> HashMap<String, String> {
         ("media_path".to_string(), media_path),
         ("media_filename".to_string(), media_filename),
         ("media_pathname".to_string(), media_pathname),
-        ("yt_video_id".to_string(), yt_video_id),
         ("position".to_string(), get_re_match(caps.name("position"))),
     ]);
 }
