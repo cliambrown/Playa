@@ -12,7 +12,7 @@ defineProps(['to', 'isActive'])
     }"
     >
     <div
-      class="p-2 border-b-2"
+      class="flex items-center gap-2 p-2 border-b-2"
       :class="{
         'border-transparent': !isActive,
         'border-current': isActive

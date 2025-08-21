@@ -1,5 +1,5 @@
-import { open } from '@tauri-apps/api/shell';
-import { invoke } from '@tauri-apps/api/tauri';
+import { openPath } from '@tauri-apps/plugin-opener';
+import { invoke } from '@tauri-apps/api/core';
 
 export function useSecondsToTimeStr(seconds) {
   if (typeof seconds === 'string') {
@@ -78,11 +78,11 @@ export function useAlphaName(name) {
 
 export async function useOpenOrHomeDir(dir) {
   try {
-    await open(dir);
+    await openPath(dir);
   } catch (e1) {
     try {
       let homeDir = await invoke('get_home_dir');
-      await open(homeDir);
+      await openPath(homeDir);
     } catch (e2) {
       window.alert(`Failed to open "${dir}": ${e1}${"\n"}Failed to open "/": ${e2}`);
     }

@@ -1,10 +1,15 @@
 <script setup>
 import { ref } from 'vue'
-import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/api/fs';
-import { invoke } from '@tauri-apps/api/tauri';
+import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { invoke } from '@tauri-apps/api/core';
 import { store } from '../store.js'
 import { useGet, useGetProp, useOpenOrHomeDir } from '../helpers.js';
 import DirSelect from '../components/DirSelect.vue';
+import TrashIcon from '../icons/TrashIcon.vue';
+import FolderIcon from '../icons/FolderIcon.vue';
+import FileDownIcon from '../icons/FileDownIcon.vue';
+import FileAddIcon from '../icons/FileAddIcon.vue';
+import HistoryIcon from '../icons/HistoryIcon.vue';
 // import { Show } from '../classes/Show';
 // import { Episode } from '../classes/Episode';
 // import { ExternalItemEpisode } from '../classes/ExternalItemEpisode';
@@ -209,7 +214,7 @@ async function createBackup() {
     + (date.getSeconds() + '').padStart(2, '0');
   const bkpFilename = `playa-backup-${dateStr}.json`;
   try {
-    await writeTextFile(bkpFilename, JSON.stringify(bkpObj, null, "\t"), { dir: BaseDirectory.AppLocalData });
+    await writeTextFile(bkpFilename, JSON.stringify(bkpObj, null, "\t"), { baseDir: BaseDirectory.AppLocalData });
   } catch (e) {
     alert(e);
     console.log(e);
@@ -232,20 +237,17 @@ async function createBackup() {
         </h2>
         
         <Button variant="link" @click="useOpenOrHomeDir(store.artworks_dir)" :disabled="!store.artworks_dir">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 shrink-0">
-            <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
-          </svg>
+          <FolderIcon />
           Artwork
         </Button>
         
         <Button variant="secondary" @click="clearUnusedArtwork" :disabled="!store.artworks_dir || store.loading">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path fill-rule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z" clip-rule="evenodd" />
-          </svg>
+          <TrashIcon />
           Clear unused artwork
         </Button>
         
         <RouterLink :to="{ name: 'clearPlayback' }" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-6 text-blue-200 transition duration-150 ease-in-out rounded-md shadow-sm disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 bg-sky-900 hover:bg-sky-800">
+          <HistoryIcon />
           Clear Playback Positions
         </RouterLink>
         
@@ -256,9 +258,7 @@ async function createBackup() {
         <template v-slot:afterInput>
           <DirSelect v-model="store.settings.tv_dir" defaultPath="%HomeDrive%" :disabled="store.loading" @select="handleUpdate" />
           <Button variant="link" @click="useOpenOrHomeDir(store.settings.tv_dir)" :disabled="!store.settings.tv_dir">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-              <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
-            </svg>
+            <FolderIcon />
             Open
           </Button>
         </template>
@@ -269,9 +269,7 @@ async function createBackup() {
         <template v-slot:afterInput>
           <DirSelect v-model="store.settings.movie_dir" defaultPath="%HomeDrive%" :disabled="store.loading" @select="handleUpdate" />
           <Button variant="link" @click="useOpenOrHomeDir(store.settings.movie_dir)" :disabled="!store.settings.movie_dir">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-              <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
-            </svg>
+            <FolderIcon />
             Open
           </Button>
         </template>
@@ -294,9 +292,7 @@ async function createBackup() {
         <template v-slot:afterInput>
           <DirSelect v-model="store.settings.mpv_watched_dir" defaultPath="%AppData%\mpv" :disabled="store.loading" @select="handleUpdate" />
           <Button variant="link" @click="useOpenOrHomeDir(store.settings.mpv_watched_dir)" :disabled="!store.settings.mpv_watched_dir">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-              <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
-            </svg>
+            <FolderIcon />
             Open
           </Button>
         </template>
@@ -309,16 +305,12 @@ async function createBackup() {
         </h3>
         
         <Button variant="link" @click="useOpenOrHomeDir(store.local_data_dir)">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 shrink-0">
-            <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
-          </svg>
+          <FolderIcon />
           Backup Save Location
         </Button>
         
         <Button @click="createBackup">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path fill-rule="evenodd" d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 12.5 4H9.621a1.5 1.5 0 0 1-1.06-.44L7.439 2.44A1.5 1.5 0 0 0 6.38 2H3.5Zm5.25 4.75a.75.75 0 0 0-1.5 0v2.69l-.72-.72a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l2-2a.75.75 0 1 0-1.06-1.06l-.72.72V6.75Z" clip-rule="evenodd" />
-          </svg>
+          <FileAddIcon />
           Save New Backup
         </Button>
         
@@ -328,7 +320,10 @@ async function createBackup() {
         Import Source
         <template v-slot:afterInput>
           <DirSelect v-model="backupImportSrc" :directory="false" :defaultPath="store.local_data_dir" :disabled="store.loading" />
-          <Button @click="importBackup" :disabled="store.loading || !backupImportSrc">Import</Button>
+          <Button @click="importBackup" :disabled="store.loading || !backupImportSrc">
+            <FileDownIcon />
+            Import
+          </Button>
         </template>
       </InputWithLabel>
       

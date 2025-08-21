@@ -3,6 +3,10 @@ import { ref, watch, onBeforeMount, onMounted, onBeforeUnmount } from 'vue';
 import { onClickOutside } from '@vueuse/core';
 import { store } from '../store';
 import InputWithLabel from './InputWithLabel.vue';
+import CloseIcon from '../icons/CloseIcon.vue';
+import TvIcon from '../icons/TvIcon.vue';
+import MovieIcon from '../icons/MovieIcon.vue';
+import YoutubeIcon from '../icons/YoutubeIcon.vue';
 
 const show = defineModel();
 
@@ -77,10 +81,8 @@ onBeforeUnmount(() => {
                   <h3 class="text-lg font-semibold">
                     Search Titles
                   </h3>
-                  <Button variant="close" @click="show = false" class="-mt-3 -mr-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 -mx-1">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
+                  <Button variant="close" :circular="true" @click="show = false" class="-mt-3 -mr-3">
+                    <CloseIcon />
                   </Button>
                 </div>
                 <div class="mt-2">
@@ -96,20 +98,21 @@ onBeforeUnmount(() => {
                   {{ loadingMsg }}
                 </div>
                 <div v-for="itemInfo in store.search_results" class="overflow-x-visible">
-                  <RouterLink :to="{ name: 'item', params: { id: itemInfo.id } }" class="flex items-center gap-2 px-2 py-2 mt-2 transition duration-150 ease-in-out rounded hover:bg-gray-100 focus:outline-none focus:bg-blue-500 focus:text-white">
-                    <div class="overflow-hidden font-semibold grow text-ellipsis whitespace-nowrap">
+                  <RouterLink :to="{ name: 'item', params: { id: itemInfo.id } }" class="flex items-center justify-start gap-2 px-2 py-2 mt-2 transition duration-150 ease-in-out rounded hover:bg-gray-100 focus:outline-none focus:bg-blue-500 focus:text-white group">
+                    <span class="text-slate-600 group-focus:text-white shrink">
+                      <template v-if="itemInfo.type === 'movie'">
+                        <MovieIcon />
+                      </template>
+                      <template v-else-if="itemInfo.source === 'ytPlaylist'">
+                        <YoutubeIcon />
+                      </template>
+                      <template v-else>
+                        <TvIcon />
+                      </template>
+                    </span>
+                    <div class="overflow-hidden grow text-ellipsis whitespace-nowrap">
                       {{ itemInfo.name }}
                     </div>
-                    <div class="shrink-0">
-                      <div class="w-20 text-right">
-                        <div class="inline-block px-2 text-sm bg-gray-100 rounded-full text-slate-900">
-                          {{ itemInfo.type }}
-                        </div>
-                      </div>
-                    </div>
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 shrink-0">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-                    </svg>
                   </RouterLink>
                 </div>
               </div>

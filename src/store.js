@@ -1,5 +1,5 @@
 import { reactive } from 'vue';
-import { invoke } from '@tauri-apps/api/tauri';
+import { invoke } from '@tauri-apps/api/core';
 import { useSecondsToTimeStr, useGetProp, useAlphaName } from './helpers.js';
 import { Item } from './classes/Item.js';
 import { Episode } from './classes/Episode.js';

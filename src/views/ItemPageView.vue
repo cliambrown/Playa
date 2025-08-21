@@ -1,6 +1,6 @@
 <script setup>
 import { store } from '../store.js';
-import { open } from '@tauri-apps/api/shell';
+import { open } from '@tauri-apps/plugin-shell';
 import { computed, ref, watch, onBeforeMount, onBeforeUnmount } from 'vue';
 import { searchTvdb, getMovieRuntime } from '../tvdb';
 import { useGetProp, useMinutesToTimeStr, useAlphaName, useOpenOrHomeDir, useShowInExplorer } from '../helpers';
@@ -9,6 +9,19 @@ import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
 import TvdbMatches from '../components/TvdbMatches.vue';
 import ArtworkEdit from '../components/ArtworkEdit.vue';
 import EpisodeCard from '../components/EpisodeCard.vue';
+import TvIcon from '../icons/TvIcon.vue';
+import TopIcon from '../icons/TopIcon.vue';
+import RandIcon from '../icons/RandIcon.vue';
+import BottomIcon from '../icons/BottomIcon.vue';
+import FolderIcon from '../icons/FolderIcon.vue';
+import ArchiveIcon from '../icons/ArchiveIcon.vue';
+import UnarchiveIcon from '../icons/UnarchiveIcon.vue';
+import TrashIcon from '../icons/TrashIcon.vue';
+import EditIcon from '../icons/EditIcon.vue';
+import EpisodesIcon from '../icons/EpisodesIcon.vue';
+import SearchIcon from '../icons/SearchIcon.vue';
+import ExternalLinkIcon from '../icons/ExternalLinkIcon.vue';
+import ScanIcon from '../icons/ScanIcon.vue';
 
 let itemID = null;
 if (store.route.name === 'item.create.show') {
@@ -89,9 +102,7 @@ watch(
   () => item.value ? item.value.name : item.value,
   (newVal, oldVal) => {
     if (oldVal === undefined) return false;
-    if (item.value) {
-      item.value.setAlphaName(newVal);
-    }
+    if (item.value) item.value.setAlphaName(newVal);
   }
 )
 
@@ -229,66 +240,51 @@ onBeforeUnmount(() => {
         </h2>
         
         <Button variant="link" @click="openTvdbSlug(item.tvdb_slug)" :disabled="!item.tvdb_slug">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path d="M12 5H4v4h8V5Z" />
-            <path fill-rule="evenodd" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4v1.5h2.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5H6V12H2a1 1 0 0 1-1-1V3Zm1.5 7.5v-7h11v7h-11Z" clip-rule="evenodd" />
-          </svg>
+          <TvIcon />
           TVDB
         </Button>
         
         <Button v-if="item.dir_name" variant="link" @click="useOpenOrHomeDir(store.settings.tv_dir + '/' + item.dir_name)"  class="max-w-64">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
-          </svg>
+          <FolderIcon />
           <span class="overflow-hidden whitespace-nowrap text-ellipsis">
             Folder
           </span>
         </Button>
         
         <Button v-if="item.pathname" variant="link" @click="useShowInExplorer(item.pathname)" class="max-w-64">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 shrink-0">
-            <path d="M3 3.5A1.5 1.5 0 0 1 4.5 2h1.879a1.5 1.5 0 0 1 1.06.44l1.122 1.12A1.5 1.5 0 0 0 9.62 4H11.5A1.5 1.5 0 0 1 13 5.5v1H3v-3ZM3.081 8a1.5 1.5 0 0 0-1.423 1.974l1 3A1.5 1.5 0 0 0 4.081 14h7.838a1.5 1.5 0 0 0 1.423-1.026l1-3A1.5 1.5 0 0 0 12.919 8H3.081Z" />
-          </svg>
+          <FolderIcon />
           <span class="overflow-hidden whitespace-nowrap text-ellipsis">
             Show File
           </span>
         </Button>
         
-        <Button variant="archive" @click="toggleArchived" :disabled="store.loading">
-          <svg v-if="item.is_archived" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3Z" />
-            <path fill-rule="evenodd" d="M13 6H3v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V6ZM5.72 7.47a.75.75 0 0 1 1.06 0L8 8.69l1.22-1.22a.75.75 0 1 1 1.06 1.06L9.06 9.75l1.22 1.22a.75.75 0 1 1-1.06 1.06L8 10.81l-1.22 1.22a.75.75 0 0 1-1.06-1.06l1.22-1.22-1.22-1.22a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-          </svg>
-          <span v-if="item.is_archived">
-            Unarchive
-          </span>
-          <svg v-if="!item.is_archived" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path d="M3 2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H3Z" />
-            <path fill-rule="evenodd" d="M3 6h10v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Zm3 2.75A.75.75 0 0 1 6.75 8h2.5a.75.75 0 0 1 0 1.5h-2.5A.75.75 0 0 1 6 8.75Z" clip-rule="evenodd" />
-          </svg>
-          <span v-if="!item.is_archived">
-            Archive
-          </span>
+        <Button variant="archive" @click="toggleArchived" :disabled="store.loading || !item.id">
+          <template v-if="item.is_archived">
+            <UnarchiveIcon />
+            <span>
+              Unarchive
+            </span>
+          </template>
+          <template v-else>
+            <ArchiveIcon />
+            <span>
+              Archive
+            </span>
+          </template>
         </Button>
         
         <Button v-if="item.source !== 'local'" variant="delete" :disabled="store.loading || !item.id" @click="deleteItem">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-            <path fill-rule="evenodd" d="M5 3.25V4H2.75a.75.75 0 0 0 0 1.5h.3l.815 8.15A1.5 1.5 0 0 0 5.357 15h5.285a1.5 1.5 0 0 0 1.493-1.35l.815-8.15h.3a.75.75 0 0 0 0-1.5H11v-.75A2.25 2.25 0 0 0 8.75 1h-1.5A2.25 2.25 0 0 0 5 3.25Zm2.25-.75a.75.75 0 0 0-.75.75V4h3v-.75a.75.75 0 0 0-.75-.75h-1.5ZM6.05 6a.75.75 0 0 1 .787.713l.275 5.5a.75.75 0 0 1-1.498.075l-.275-5.5A.75.75 0 0 1 6.05 6Zm3.9 0a.75.75 0 0 1 .712.787l-.275 5.5a.75.75 0 0 1-1.498-.075l.275-5.5a.75.75 0 0 1 .786-.711Z" clip-rule="evenodd" />
-          </svg>
+          <TrashIcon />
           Delete
         </Button>
         
         <Button v-if="item.episode_ids.length" variant="secondary" @click="showEdit = !showEdit" class="justify-center w-28">
           <template v-if="!showEdit">
-            <svg v-show="!showEdit" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-              <path fill-rule="evenodd" d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z" clip-rule="evenodd" />
-            </svg>
+            <EditIcon />
             Edit
           </template>
           <template v-if="showEdit">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="size-4">
-              <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2ZM2 9.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 9.25ZM2.75 12.5a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75Z" />
-            </svg>
+            <EpisodesIcon />
             Episodes
           </template>
         </Button>
@@ -301,10 +297,7 @@ onBeforeUnmount(() => {
           URL
           <template v-slot:afterInput>
             <Button variant="link" @click="open(item.url)" :disabled="!item.url">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                <path fill-rule="evenodd" d="M8.914 6.025a.75.75 0 0 1 1.06 0 3.5 3.5 0 0 1 0 4.95l-2 2a3.5 3.5 0 0 1-5.396-4.402.75.75 0 0 1 1.251.827 2 2 0 0 0 3.085 2.514l2-2a2 2 0 0 0 0-2.828.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-                <path fill-rule="evenodd" d="M7.086 9.975a.75.75 0 0 1-1.06 0 3.5 3.5 0 0 1 0-4.95l2-2a3.5 3.5 0 0 1 5.396 4.402.75.75 0 0 1-1.251-.827 2 2 0 0 0-3.085-2.514l-2 2a2 2 0 0 0 0 2.828.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
-              </svg>
+              <ExternalLinkIcon />
               Open
             </Button>
           </template>
@@ -316,9 +309,7 @@ onBeforeUnmount(() => {
             Name
             <template v-slot:afterInput>
               <Button variant="secondary" @click="searchItemInTvdb">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-                  <path fill-rule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clip-rule="evenodd" />
-                </svg>
+                <SearchIcon />
                 Search TVDB
               </Button>
             </template>
@@ -353,9 +344,19 @@ onBeforeUnmount(() => {
               Last Watched At
             </InputWithLabel>
             
+          </div>
+          
+          <div class="flex flex-wrap gap-8 mt-4" v-if="item.source === 'ytPlaylist'">
+            
             <div class="self-end mb-2">
-              <CheckboxWithLabel v-if="item.source === 'ytPlaylist'" input_id="order_is_reversed" v-model="item.order_is_reversed" :disabled="store.loading" @checkbox-change="handleUpdate" :trueValue="1" :falseValue="null">
+              <CheckboxWithLabel input_id="order_is_reversed" v-model="item.order_is_reversed" :disabled="store.loading" @checkbox-change="handleUpdate" :trueValue="1" :falseValue="null">
                 Reverse Order
+              </CheckboxWithLabel>
+            </div>
+            
+            <div class="self-end mb-2">
+              <CheckboxWithLabel input_id="open_list_not_ep" v-model="item.open_list_not_ep" :disabled="store.loading" @checkbox-change="handleUpdate" :trueValue="1" :falseValue="null">
+                Open Playlist URL Instead of Episode
               </CheckboxWithLabel>
             </div>
             
@@ -388,38 +389,27 @@ onBeforeUnmount(() => {
             Episodes
           </h3>
           
-          <Button variant="secondary" @click="item.episodeNav('first')" class="ml-auto" :title="item.episode_ids.length ? 'First' : 'Unfinished'">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
-            </svg>
+          <Button variant="secondary" :square="true" @click="item.episodeNav('first')" class="ml-auto" :title="item.episode_ids.length ? 'First' : 'Unfinished'">
+            <TopIcon />
           </Button>
           
-          <Button v-if="item.episode_ids.length" variant="secondary" @click="item.episodeNav('random')" title="Random">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z" />
-            </svg>
+          <Button v-if="item.episode_ids.length" variant="secondary" :square="true" @click="item.episodeNav('random')" title="Random">
+             <RandIcon />
           </Button>
           
-          <Button variant="secondary" @click="item.episodeNav('finished')" title="Finished">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3" />
-            </svg>
+          <Button variant="secondary" :square="true" @click="item.episodeNav('finished')" title="Finished">
+            <BottomIcon />
           </Button>
           
           <InputWithLabel v-if="item.episode_ids.length" :with-label="false" :is-search="true" v-model="filterStr"></InputWithLabel>
           
           <Button v-if="item.type === 'show' && item.source !== 'ytPlaylist'" @click="updateEpisodesFromTvdb" :disabled="!item.tvdb_id || store.loading">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-              <path d="M12 5H4v4h8V5Z" />
-              <path fill-rule="evenodd" d="M1 3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-4v1.5h2.25a.75.75 0 0 1 0 1.5h-8.5a.75.75 0 0 1 0-1.5H6V12H2a1 1 0 0 1-1-1V3Zm1.5 7.5v-7h11v7h-11Z" clip-rule="evenodd" />
-            </svg>
+            <ScanIcon />
             Update from TVDB
           </Button>
           
           <Button v-if="item.source === 'ytPlaylist'" @click="updateEpisodesFromYoutube" :disabled="!item.url || store.loading || !store.settings.youtube_api_key">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-              <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2ZM2 9.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 9.25ZM2.75 12.5a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75Z" />
-            </svg>
+            <ScanIcon />
             Update from YouTube
           </Button>
           

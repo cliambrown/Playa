@@ -1,4 +1,4 @@
-import { fetch, Body } from '@tauri-apps/api/http';
+import { fetch } from '@tauri-apps/plugin-http';
 
 async function useGetExistingTvdbToken(store) {
   if (!store.db) return false;
@@ -17,32 +17,26 @@ async function useGetExistingTvdbToken(store) {
   return tokenObj ? tokenObj.token : null;
 }
 
-function getResponseData(response) {
-  if (
-    !response
-    || typeof response !== 'object'
-    || !response.hasOwnProperty('status')
-    || parseInt(response.status) != 200
-    || !response.hasOwnProperty('data')
-    || !response.data.hasOwnProperty('data')
-  ) {
+async function getResponseData(response) {
+  if (!response || parseInt(response.status) != 200) {
     return null;
   }
-  return response.data.data;
+  const responseJson = await response.json();
+  return responseJson.data;
 }
 
 async function fetchNewTvdbToken(store) {
-  const body = Body.json({
-    apikey: store.settings.tvdb_apikey,
-    pin: store.settings.tvdb_pin,
-  });
   const response = await fetch('https://api4.thetvdb.com/v4/login', {
     method: 'POST',
-    body: body,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      apikey: store.settings.tvdb_apikey,
+      pin: store.settings.tvdb_pin,
+    }),
     timeout: 10,
   });
   console.log('fetchNewTvdbToken http', response);
-  const responseData = getResponseData(response);
+  const responseData = await getResponseData(response);
   if (!responseData) return null;
   const responseToken = responseData.token;
   const now = Math.round(Date.now() / 1000);
@@ -78,7 +72,7 @@ export async function searchTvdb(store, showName, type) {
     timeout: 10,
   });
   console.log('searchTvdb', response);
-  let responseData = getResponseData(response);
+  let responseData = await getResponseData(response);
   if (!Array.isArray(responseData)) return false;
   for (const match of responseData) {
     match.tvdb_id = parseInt(match.tvdb_id)
@@ -97,7 +91,7 @@ export async function getEpisodes(store, tvdbID, source) {
     timeout: 10,
   });
   console.log('getEpisodes', response);
-  const responseData = getResponseData(response);
+  const responseData = await getResponseData(response);
   if (
     !responseData
     || !responseData.hasOwnProperty('episodes')
@@ -154,7 +148,7 @@ export async function getArtwork(store, tvdbID, type) {
     timeout: 10,
   });
   console.log('getArtwork', response);
-  const responseData = getResponseData(response);
+  const responseData = await getResponseData(response);
   if (
     !responseData
     || !responseData.hasOwnProperty('artworks')
@@ -187,7 +181,7 @@ export async function getMovieRuntime(store, tvdbID) {
     timeout: 10,
   });
   console.log('getMovieRuntime', response);
-  const responseData = getResponseData(response);
+  const responseData = await getResponseData(response);
   if (
     !responseData
     || !responseData.hasOwnProperty('runtime')

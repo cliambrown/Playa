@@ -1,17 +1,12 @@
-import { fetch, Body } from '@tauri-apps/api/http';
+import { fetch } from '@tauri-apps/plugin-http';
 import { useGetProp, useSecondsToTimeStr } from './helpers';
 
-function getResponseData(response) {
-  if (
-    !response
-    || typeof response !== 'object'
-    || !response.hasOwnProperty('status')
-    || parseInt(response.status) != 200
-    || !response.hasOwnProperty('data')
-  ) {
+async function getResponseData(response) {
+  if (!response || parseInt(response.status) != 200) {
     return null;
   }
-  return response.data;
+  const responseJson = await response.json();
+  return responseJson;
 }
 
 async function playlistItemsList(playlistID, apiKey, pageToken = null) {
@@ -21,7 +16,7 @@ async function playlistItemsList(playlistID, apiKey, pageToken = null) {
     timeout: 20,
   });
   console.log('playlistItemsList', response);
-  return getResponseData(response);
+  return await getResponseData(response);
 }
 
 function videoDataFromSnippet(snippet, playlistID) {
@@ -51,7 +46,7 @@ async function videosList(videoIDs, apiKey) {
     timeout: 20,
   });
   console.log('getVideoDurations', response);
-  return getResponseData(response);
+  return await getResponseData(response);
 }
 
 function parseFloatSafe(val) {

@@ -12,6 +12,10 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  square: {
+    type: Boolean,
+    default: false
+  },
   whitespace: {
     type: String,
     default: 'nowrap'
@@ -24,11 +28,14 @@ defineEmits(['buttonClick']);
 <template>
   <button 
     type="button"
-    class="inline-flex items-center px-3 py-2 text-sm font-medium leading-6 transition duration-150 ease-in-out disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500"
+    class="inline-flex items-center justify-center text-sm font-medium leading-6 transition duration-150 ease-in-out disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500"
     :class="{
-      'shadow-sm': variant !== 'tertiary' && variant !== 'tertiary-light',
+      'shadow-sm': variant !== 'tertiary' && variant !== 'tertiary-light' && variant !== 'close',
+      
+      'px-3 py-2': !circular && !square,
+      'w-10 h-10': circular || square,
       'rounded-md': !circular,
-      'rounded-full h-10': circular,
+      'rounded-full': circular,
       
       'text-white bg-indigo-600 hover:bg-indigo-500': variant === 'primary',
       'text-white bg-sky-900 hover:bg-sky-800': variant === 'secondary',

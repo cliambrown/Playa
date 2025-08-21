@@ -1,14 +1,17 @@
 <script setup>
 import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { convertFileSrc } from '@tauri-apps/api/tauri';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import { join } from '@tauri-apps/api/path';
 import { listen } from '@tauri-apps/api/event'
 import { appLocalDataDir } from '@tauri-apps/api/path';
 import { getVersion } from '@tauri-apps/api/app';
-import Database from 'tauri-plugin-sql-api';
+import Database from '@tauri-apps/plugin-sql';
 import NavLink from './components/NavLink.vue';
+import ArchiveIcon from './icons/ArchiveIcon.vue';
 import { store } from './store.js';
+import HomeIcon from './icons/HomeIcon.vue';
+import SetttingsIcon from './icons/SetttingsIcon.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -89,9 +92,18 @@ onBeforeUnmount(() => {
         </div>
         
         <div class="flex flex-row items-center gap-5 mt-5 ml-auto sm:justify-end sm:mt-0 sm:ps-5">
-          <NavLink :to="{ name: 'home' }" :isActive="$route.name === 'home'">Home</NavLink>
-          <NavLink :to="{ name: 'archives' }" :isActive="$route.name === 'archives'">Archives</NavLink>
-          <NavLink :to="{ name: 'settings' }" :isActive="$route.name === 'settings'">Settings</NavLink>
+          <NavLink :to="{ name: 'home' }" :isActive="$route.name === 'home'">
+            <HomeIcon />
+            Home
+          </NavLink>
+          <NavLink :to="{ name: 'archives' }" :isActive="$route.name === 'archives'">
+            <ArchiveIcon />
+            Archives
+          </NavLink>
+          <NavLink :to="{ name: 'settings' }" :isActive="$route.name === 'settings'">
+            <SetttingsIcon />
+            Settings
+          </NavLink>
         </div>
         
       </nav>

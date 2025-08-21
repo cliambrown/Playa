@@ -2,8 +2,10 @@
 import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { store } from '../store';
 import { useGetProp } from '../helpers.js';
-import ItemRouterLink from './ItemRouterLink.vue';
 import Badge from './Badge.vue';
+import PlayedIcon from '../icons/PlayedIcon.vue';
+import EpisodesIcon from '../icons/EpisodesIcon.vue';
+import EditIcon from '../icons/EditIcon.vue';
 
 const props = defineProps(['itemID']);
 const wrapper = ref(null);
@@ -50,7 +52,7 @@ const playbackPosition = computed(() => {
   let filename = null;
   if (item.value.filename) filename = item.value.filename;
   else if (currentEp.value && currentEp.value.filename) filename = currentEp.value.filename;
-  return useGetProp(store.playback_positions, filename, '--');
+  return filename ? useGetProp(store.playback_positions, filename, '--') : null;
 });
 
 const duration = computed(() => {
@@ -151,9 +153,7 @@ watch(
           
           <div class="flex items-center justify-between gap-8 mt-1 text-gray-600">
             
-            <svg v-if="item.current_episode_id === null" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 -mr-4 text-green-600">
-              <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" />
-            </svg>
+            <PlayedIcon v-if="item.current_episode_id === null" class="-mr-4 text-green-600" />
             
             <span v-if="duration && (currentEp || item.type === 'movie')" class="">
               <span v-show="playbackPosition">
@@ -162,25 +162,26 @@ watch(
               {{ duration }} 
             </span>
             
-            <span v-if="item.episode_ids.length">
-              <span v-if="remainingEps > 0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="inline-block size-4 relative bottom-0.5 text-gray-400 mr-1">
-                  <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 1 1 0 4H4a2 2 0 0 1-2-2ZM2 9.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 9.25ZM2.75 12.5a.75.75 0 0 0 0 1.5h10.5a.75.75 0 0 0 0-1.5H2.75Z" />
-                </svg>
-                {{ remainingEps }} remaining
-                ({{ item.episode_ids.length }} total)
-              </span>
-              <span v-if="remainingEps <= 0">
-                {{ item.episode_ids.length }} episodes
-              </span>
-              <Badge v-if="hasNewEpisodes" class="relative ml-2 bottom-px" variant="new">New Episodes</Badge>
-            </span>
-            
-            <div v-if="!item.episode_ids.length && domain" class="text-gray-600">
-              {{ domain }}
-            </div>
-            
-            <ItemRouterLink :itemID="itemID" class="ml-auto"></ItemRouterLink>
+            <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="inline-flex items-center p-2 -my-2 -mr-2 text-indigo-600">
+              
+              <template v-if="item.episode_ids.length">
+                <EpisodesIcon class="mr-2" />
+                <span v-if="remainingEps > 0">
+                  episode {{ currentEpIndex + 1 }}
+                  of
+                  {{ item.episode_ids.length }}
+                </span>
+                <span v-else>
+                  {{ item.episode_ids.length }} episodes
+                </span>
+                <Badge v-if="hasNewEpisodes" class="relative ml-2 bottom-px" variant="new">New</Badge>
+              </template>
+              
+              <template v-else>
+                <EditIcon />
+              </template>
+              
+            </RouterLink>
             
           </div>
           

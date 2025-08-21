@@ -1,5 +1,7 @@
-import { open } from '@tauri-apps/api/shell';
-import { invoke } from '@tauri-apps/api/tauri';
+import { openPath, openUrl } from '@tauri-apps/plugin-opener';
+import { Command } from '@tauri-apps/plugin-shell';
+
+import { invoke } from '@tauri-apps/api/core';
 import { store } from '../store';
 import { useGetProp, useAlphaName, useMinutesToTimeStr } from '../helpers.js';
 import { getEpisodes } from '../tvdb.js';
@@ -26,6 +28,7 @@ export function Item(itemData) {
     { name: 'filename', def: null, updatable: false },
     { name: 'url', def: null, updatable: true },
     { name: 'order_is_reversed', def: null, updatable: true },
+    { name: 'open_list_not_ep', def: null, updatable: true },
     { name: 'duration', def: null, updatable: true },
     { name: 'current_episode_id', def: 0, updatable: true },
   ]);
@@ -275,22 +278,25 @@ Item.prototype.episodeNav = function(destination) {
 Item.prototype.play = function() {
   if (this.source === 'local') {
     if (this.type === 'movie' ) {
-      open(this.pathname);
+      openPath(this.pathname);
     } else {
       if (!this.current_episode_id) return false;
-      open(this.episodes[this.current_episode_id].pathname);
+      openPath(this.episodes[this.current_episode_id].pathname);
     }
   } else {
+    let url = null;
     if (
-      this.current_episode_id
-      && this.episodes[this.current_episode_id]
-      && this.episodes[this.current_episode_id].url
+      this.open_list_not_ep
+      || !this.current_episode_id
+      || !this.episodes[this.current_episode_id]
+      || !this.episodes[this.current_episode_id].url
     ) {
-      open(this.episodes[this.current_episode_id].url);
+      url = this.url;
     } else {
-      if (!this.url) return false;
-      open(this.url);
+      url = this.episodes[this.current_episode_id].url;
     }
+    if (!url) return false;
+    openUrl(url);
   }
   this.last_watched_at = Math.round(Date.now() / 1000);
   this.updateLastWatchedAtInDB();

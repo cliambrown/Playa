@@ -5,6 +5,13 @@ import { useGetProp } from '../helpers';
 import TextareaWithLabel from '../components/TextareaWithLabel.vue';
 import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
 import Badge from '../components/Badge.vue';
+import UnplayedIcon from '../icons/UnplayedIcon.vue';
+import PlayedIcon from '../icons/PlayedIcon.vue';
+import EditIcon from '../icons/EditIcon.vue';
+import ExpandIcon from '../icons/ExpandIcon.vue';
+import CollapseIcon from '../icons/CollapseIcon.vue';
+import FileIcon from '../icons/FileIcon.vue';
+import GlobeIcon from '../icons/GlobeIcon.vue';
 
 const props = defineProps(['itemID', 'episodeID']);
 
@@ -24,7 +31,7 @@ const playbackPosition = computed(() => {
 let updateTimeoutId = null;
 
 const wrapper = ref(null);
-const showOverview = ref(false);
+const expanded = ref(false);
 const showEdit = ref(false);
 
 const releasedOnStr = computed(() => {
@@ -98,16 +105,12 @@ watch(
     >
     
     <div v-if="episodeID === 0" class="flex items-center gap-2 px-6 py-4 bg-white rounded-lg">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
-        <path d="M2 8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM6.5 8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM12.5 6.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z" />
-      </svg>
+      <UnplayedIcon />
       Unfinished
     </div>
     
     <div v-else-if="episodeID === null" class="flex items-center gap-2 px-6 py-4 bg-white rounded-lg">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 text-green-600">
-        <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14Zm3.844-8.791a.75.75 0 0 0-1.188-.918l-3.7 4.79-1.649-1.833a.75.75 0 1 0-1.114 1.004l2.25 2.5a.75.75 0 0 0 1.15-.043l4.25-5.5Z" clip-rule="evenodd" />
-      </svg>
+      <PlayedIcon class="text-green-700" />
       <span>
         Finished
       </span>
@@ -117,7 +120,8 @@ watch(
       
       <div class="px-6 py-4">
         
-        <div class="flex items-center gap-4">
+        <div class="flex items-start gap-4">
+          
           <div class="text-xl font-semibold">
             <Badge v-if="episode.is_new" class="relative bottom-0.5 mr-2" variant="new">
               New
@@ -136,70 +140,55 @@ watch(
             </span>
             <span>{{ episode.name }}</span>
           </div>
-          <Button variant="tertiary-light" class="ml-auto -my-1" @click.stop="showEdit = !showEdit">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 my-1">
-              <path fill-rule="evenodd" d="M11.013 2.513a1.75 1.75 0 0 1 2.475 2.474L6.226 12.25a2.751 2.751 0 0 1-.892.596l-2.047.848a.75.75 0 0 1-.98-.98l.848-2.047a2.75 2.75 0 0 1 .596-.892l7.262-7.261Z" clip-rule="evenodd" />
-            </svg>
+          
+          <Button variant="tertiary-light" :square="true" class="ml-auto -mx-2 -mt-2" @click.stop="showEdit = !showEdit">
+            <EditIcon />
           </Button>
+          
+          <Button variant="tertiary-light" :square="true" class="-mx-2 -mt-2" @click.stop="expanded = !expanded">
+            <CollapseIcon v-if="expanded" />
+            <ExpandIcon v-else />
+          </Button>
+          
         </div>
         
-        <div class="mt-1 overflow-hidden whitespace-nowrap">
-          <span class="inline-flex items-center gap-2 mr-4 text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 text-gray-400">
-              <path fill-rule="evenodd" d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z" clip-rule="evenodd" />
-            </svg>
-            <span>
-              <span v-if="playbackPosition">
+        <div class="mt-1" :class="{ 'whitespace-nowrap text-ellipsis overflow-hidden': !expanded }">
+          
+          <span>
+            <template v-if="playbackPosition">
                 {{ playbackPosition }} /
-              </span>
-              {{ episode.duration ? episode.duration : '?' }}
-            </span>
+            </template>
+            {{ episode.duration ? episode.duration : '?' }}
           </span>
-          <span v-if="episode.filename" class="inline-flex items-center gap-2 text-gray-600" :title="episode.pathname">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 text-gray-400">
-              <path d="M2.5 3.5A1.5 1.5 0 0 1 4 2h4.879a1.5 1.5 0 0 1 1.06.44l3.122 3.12a1.5 1.5 0 0 1 .439 1.061V12.5A1.5 1.5 0 0 1 12 14H4a1.5 1.5 0 0 1-1.5-1.5v-9Z" />
-            </svg>
-            <span>
-              {{ episode.filename }}
-            </span>
-          </span>
-          <span v-else-if="episode.url" class="inline-flex items-center gap-2 text-gray-600" :title="episode.url">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 text-gray-400">
-              <path fill-rule="evenodd" d="M8.914 6.025a.75.75 0 0 1 1.06 0 3.5 3.5 0 0 1 0 4.95l-2 2a3.5 3.5 0 0 1-5.396-4.402.75.75 0 0 1 1.251.827 2 2 0 0 0 3.085 2.514l2-2a2 2 0 0 0 0-2.828.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-              <path fill-rule="evenodd" d="M7.086 9.975a.75.75 0 0 1-1.06 0 3.5 3.5 0 0 1 0-4.95l2-2a3.5 3.5 0 0 1 5.396 4.402.75.75 0 0 1-1.251-.827 2 2 0 0 0-3.085-2.514l-2 2a2 2 0 0 0 0 2.828.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
-            </svg>
-            {{ episode.url }}
-          </span>
-        </div>
-        
-        <div class="flex items-baseline max-w-full mt-1 gap-x-2">
-          <div :class="{ 'whitespace-nowrap text-ellipsis overflow-hidden': !showOverview }">
-            <span class="inline-flex items-baseline gap-2 text-gray-600">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="relative w-4 h-4 top-0.5 text-gray-400">
-                <path fill-rule="evenodd" d="M4 1.75a.75.75 0 0 1 1.5 0V3h5V1.75a.75.75 0 0 1 1.5 0V3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2V1.75ZM4.5 6a1 1 0 0 0-1 1v4.5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-7Z" clip-rule="evenodd" />
-              </svg>
-              {{ releasedOnStr }}
-            </span>
-            <span v-if="episode.overview" class="ml-4">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 inline-block relative bottom-0.5 text-gray-400 mr-1">
-                <path fill-rule="evenodd" d="M15 8A7 7 0 1 1 1 8a7 7 0 0 1 14 0ZM9 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0ZM6.75 8a.75.75 0 0 0 0 1.5h.75v1.75a.75.75 0 0 0 1.5 0v-2.5A.75.75 0 0 0 8.25 8h-1.5Z" clip-rule="evenodd" />
-              </svg>
+          
+          <template v-if="episode.overview || episode.filename || episode.url">
+            <span class="mx-2">—</span>
+            
+            <template v-if="episode.overview">
               {{ episode.overview }}
-            </span>
+              <span v-if="releasedOnStr" class="whitespace-nowrap">
+                (Aired {{ releasedOnStr }})
+              </span>
+            </template>
+            <template v-else-if="episode.filename">
+              {{ episode.filename }}
+            </template>
+            <template v-else>
+              {{ episode.url }}
+            </template>
+          </template>
+          
+          <div v-show="expanded && episode.overview && (episode.filename || episode.url)" class="mt-1 text-slate-600">
+            <template v-if="episode.filename">
+              <FileIcon class="relative inline-block mr-1 text-slate-600 bottom-0.5" />
+              {{ episode.filename }}
+            </template>
+            <template v-else>
+              <GlobeIcon class="relative inline-block mr-1 text-slate-600 bottom-0.5" />
+              {{ episode.url }}
+            </template>
           </div>
-          <button v-show="episode.overview" type="button" class="flex items-center py-1 ml-auto -my-1 text-gray-600" @click.stop="showOverview = !showOverview">
-            <span v-if="showOverview">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="relative inline-block w-4 h-4 bottom-0.5">
-                <path fill-rule="evenodd" d="M11.78 9.78a.75.75 0 0 1-1.06 0L8 7.06 5.28 9.78a.75.75 0 0 1-1.06-1.06l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06Z" clip-rule="evenodd" />
-              </svg>
-            </span>
-            <span v-if="!showOverview">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="relative inline-block w-4 h-4 bottom-0.5">
-                <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-              </svg>
-            </span>
-            <span>overview</span>
-          </button>
+          
         </div>
         
       </div>

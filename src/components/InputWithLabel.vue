@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
+import SearchIcon from '../icons/SearchIcon.vue';
 
 const props = defineProps({
   type: {
@@ -103,19 +104,16 @@ while (counter < 8) {
         @keydown.right.stop
         @keydown.space.stop
         />
-        
-      <svg
-        v-if="isSearch"
-        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-        fill="currentColor"
-        class="absolute w-6 h-6 text-gray-900 right-2"
+      
+      <div v-if="isSearch"
+        class="absolute w-6 h-6 right-1 top-2.5"
         :class="{
           'text-slate-100': isDark,
           'text-gray-900': !isDark
         }"
         >
-        <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 0 13.5 6.75 6.75 0 0 0 0-13.5ZM2.25 10.5a8.25 8.25 0 1 1 14.59 5.28l4.69 4.69a.75.75 0 1 1-1.06 1.06l-4.69-4.69A8.25 8.25 0 0 1 2.25 10.5Z" clip-rule="evenodd" />
-      </svg>
+        <SearchIcon />
+      </div>
 
       <VueDatePicker
         v-if="datepicker"

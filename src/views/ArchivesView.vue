@@ -8,6 +8,7 @@ import ItemCard from '../components/ItemCard.vue';
 import { useGetProp } from '../helpers';
 
 function handleKeydown(event) {
+  let item;
   switch (event.key) {
     case 'ArrowLeft':
       store.archivesItemNav(false)
@@ -18,11 +19,13 @@ function handleKeydown(event) {
     case 'ArrowDown':
     case 'ArrowUp':
       event.preventDefault();
-      let item = useGetProp(store.items, store.archives_selected_item_id);
+      item = useGetProp(store.items, store.archives_selected_item_id);
       if (item) item.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev')
       break;
     case ' ':
-      if (store.archives_selected_item.play()) event.preventDefault();
+      event.preventDefault();
+      item = useGetProp(store.items, store.archives_selected_item_id);
+      if (item) item.play();
       break;
   }
   return true;
