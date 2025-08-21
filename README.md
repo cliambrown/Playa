@@ -1,6 +1,6 @@
 # Playa
 
-A Windows desktop application for tracking and playing shows and movies.
+A desktop application for tracking and playing shows and movies.
 
 - Scan local folders for tv shows and movies
 - Add links to external shows and movies

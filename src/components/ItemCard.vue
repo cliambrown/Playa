@@ -165,7 +165,6 @@ watch(
             <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="inline-flex items-center p-2 -my-2 -mr-2 text-indigo-600">
               
               <template v-if="item.episode_ids.length">
-                <EpisodesIcon class="mr-2" />
                 <span v-if="remainingEps > 0">
                   episode {{ currentEpIndex + 1 }}
                   of
@@ -175,6 +174,7 @@ watch(
                   {{ item.episode_ids.length }} episodes
                 </span>
                 <Badge v-if="hasNewEpisodes" class="relative ml-2 bottom-px" variant="new">New</Badge>
+                <EpisodesIcon class="ml-2" />
               </template>
               
               <template v-else>
