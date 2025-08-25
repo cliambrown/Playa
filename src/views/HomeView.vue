@@ -6,6 +6,7 @@ import { onClickOutside } from '@vueuse/core';
 import SearchModal from '../components/SearchModal.vue';
 import ItemCard from '../components/ItemCard.vue';
 import { useGetProp } from '../helpers';
+import RefreshIcon from '../icons/RefreshIcon.vue';
 import ScanIcon from '../icons/ScanIcon.vue';
 import ShowIcon from '../icons/ShowIcon.vue';
 import HideIcon from '../icons/HideIcon.vue';
@@ -40,6 +41,17 @@ function toggleShowFinished() {
     store.selectFirstHomeItem();
   }
   store.show_finished_items = !store.show_finished_items;
+}
+
+async function refresh() {
+  if (store.loading) return false;
+  store.loading = true;
+  store.loading_msg = null;
+  await store.loadFromDB();
+  await store.getPlaybackPositions();
+  store.selectFirstHomeItem();
+  store.selectFirstArchivesItem();
+  store.loading = false;
 }
 
 function scanShows() {
@@ -111,6 +123,11 @@ onBeforeUnmount(() => {
         <ShowIcon v-else />
         {{ store.home_finished_show_ids.length + store.home_finished_movie_ids.length }}
         Finished
+      </Button>
+      
+      <Button variant="primary" @click="refresh" :disabled="store.loading">
+        <RefreshIcon />
+        Refresh
       </Button>
       
       <div class="relative" ref="scanMenu">

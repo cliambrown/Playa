@@ -151,7 +151,7 @@ watch(
         
         <div>
           
-          <div class="flex items-center justify-between gap-8 mt-1 text-gray-600">
+          <div class="flex items-center justify-between gap-8 mt-1 text-gray-900">
             
             <PlayedIcon v-if="item.current_episode_id === null" class="-mr-4 text-green-600" />
             
@@ -165,12 +165,13 @@ watch(
             <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="inline-flex items-center p-2 -my-2 -mr-2 text-indigo-600">
               
               <template v-if="item.episode_ids.length">
-                <span v-if="remainingEps > 0">
-                  episode {{ currentEpIndex + 1 }}
-                  of
+                <span v-if="remainingEps > 0" class="text-black">
+                  {{ remainingEps }} remaining
+                  /
                   {{ item.episode_ids.length }}
+                  total
                 </span>
-                <span v-else>
+                <span v-else class="text-black">
                   {{ item.episode_ids.length }} episodes
                 </span>
                 <Badge v-if="hasNewEpisodes" class="relative ml-2 bottom-px" variant="new">New</Badge>

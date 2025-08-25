@@ -7,7 +7,7 @@ import { useSlugify, useOpenOrHomeDir } from '../helpers.js';
 import { Level } from '../classes/Level.js';
 import PlaybackPosnLevel from '../components/PlaybackPosnLevel.vue';
 import FolderIcon from '../icons/FolderIcon.vue';
-import ScanIcon from '../icons/ScanIcon.vue';
+import RefreshIcon from '../icons/RefreshIcon.vue';
 import TrashIcon from '../icons/TrashIcon.vue';
 
 const levels = ref(new Level());
@@ -114,7 +114,7 @@ async function deleteSelectedEntries() {
         </Button>
         
         <Button variant="secondary" @click="getPlaybackPositions" :disabled="store.loading || !store.settings.mpv_watched_dir">
-          <ScanIcon />
+          <RefreshIcon />
           Refresh
         </Button>
         
