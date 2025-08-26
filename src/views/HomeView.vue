@@ -6,6 +6,7 @@ import { onClickOutside } from '@vueuse/core';
 import SearchModal from '../components/SearchModal.vue';
 import ItemCard from '../components/ItemCard.vue';
 import { useGetProp } from '../helpers';
+import KeyboardIcon from '../icons/KeyboardIcon.vue';
 import RefreshIcon from '../icons/RefreshIcon.vue';
 import ScanIcon from '../icons/ScanIcon.vue';
 import ShowIcon from '../icons/ShowIcon.vue';
@@ -17,6 +18,13 @@ import SearchIcon from '../icons/SearchIcon.vue';
 import AddIcon from '../icons/AddIcon.vue';
 
 let ctrlIsDown = false;
+
+const keyboardMenu = ref(null);
+const showKeyboardMenu = ref(false);
+function toggleShowKeyboardMenu() {
+  showKeyboardMenu.value = !showKeyboardMenu.value;
+}
+onClickOutside(keyboardMenu, e => { if (showKeyboardMenu.value) showKeyboardMenu.value = false } );
 
 const scanMenu = ref(null);
 const showScanMenu = ref(false);
@@ -69,29 +77,62 @@ function updateAllYtPlaylistsFromSource() {
 function handleKeydown(event) {
   if (store.show_search) return false;
   let item;
+  console.log(event.key);
   switch (event.key) {
     case 'Control':
       ctrlIsDown = true;
       break;
     case 'k':
-      if (ctrlIsDown) store.show_search = !store.show_search;
+      if (ctrlIsDown) {
+        event.preventDefault();
+        store.show_search = !store.show_search;
+      }
       break;
     case 'ArrowLeft':
+      event.preventDefault();
       store.homeItemNav(false)
       break;
     case 'ArrowRight':
+      event.preventDefault();
       store.homeItemNav(true);
       break;
     case 'ArrowDown':
     case 'ArrowUp':
       event.preventDefault();
       item = useGetProp(store.items, store.home_selected_item_id);
-      if (item) item.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev')
+      if (item) item.episodeNav(event.key === 'ArrowDown' ? 'next' : 'prev');
       break;
     case ' ':
       event.preventDefault();
       item = useGetProp(store.items, store.home_selected_item_id);
       if (item) item.play();
+      break;
+    case 'r':
+      if (ctrlIsDown) {
+        event.preventDefault();
+        refresh();
+      }
+      break;
+    case 'Enter':
+      item = useGetProp(store.items, store.home_selected_item_id);
+      if (item) {
+        event.preventDefault();
+        store.router.push({ name: 'item', params: { id: item.id } });
+      }
+      break;
+    case 't':
+      item = useGetProp(store.items, store.home_selected_item_id);
+      if (item) {
+        event.preventDefault();
+        item.openTvdbSlug();
+      }
+      break;
+    case 'f':
+      item = useGetProp(store.items, store.home_selected_item_id);
+      if (item) {
+        event.preventDefault();
+        item.openFileOrFolder();
+      }
       break;
   }
   return true;
@@ -117,6 +158,48 @@ onBeforeUnmount(() => {
   <div class="px-12 pt-8 pb-20 overflow-y-scroll grow">
     
     <div class="flex justify-end gap-6">
+      
+      <div class="relative" ref="keyboardMenu">
+        
+        <Button variant="link" :square="true" @click="toggleShowKeyboardMenu">
+          <KeyboardIcon />
+        </Button>
+        
+        <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+          <div v-if="showKeyboardMenu" class="absolute left-0 z-10 w-auto mt-2 origin-top-right rounded-md shadow-lg bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+            <div class="py-1">
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                ← / → <span class="text-gray-400">=</span> Next/prev item
+              </div>
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                ↓ / ↑ <span class="text-gray-400">=</span> Next/prev episode
+              </div>
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                Space <span class="text-gray-400">=</span> Play item
+              </div>
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                Enter <span class="text-gray-400">=</span> Open item
+              </div>
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                T <span class="text-gray-400">=</span> Open TVDB
+              </div>
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                F <span class="text-gray-400">=</span> Show File/Folder
+              </div>
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                Ctrl + K <span class="text-gray-400">=</span> Search items
+              </div>
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                Ctrl + R <span class="text-gray-400">=</span> Refresh items
+              </div>
+              <div class="px-2 py-1.5 whitespace-nowrap">
+                Backspace <span class="text-gray-400">=</span> Go back
+              </div>
+            </div>
+          </div>
+        </transition>
+        
+      </div>
       
       <Button variant="secondary" @click="toggleShowFinished" :disabled="!store.home_finished_show_ids.length">
         <HideIcon v-if="store.show_finished_items" />

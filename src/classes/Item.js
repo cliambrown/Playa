@@ -1,9 +1,9 @@
 import { openPath, openUrl } from '@tauri-apps/plugin-opener';
-import { Command } from '@tauri-apps/plugin-shell';
+import { Command, open } from '@tauri-apps/plugin-shell';
 
 import { invoke } from '@tauri-apps/api/core';
 import { store } from '../store';
-import { useGetProp, useAlphaName, useMinutesToTimeStr } from '../helpers.js';
+import { useGetProp, useAlphaName, useMinutesToTimeStr, useOpenOrHomeDir, useShowInExplorer } from '../helpers.js';
 import { getEpisodes } from '../tvdb.js';
 import { getYtPlaylistVideos } from '../youtube';
 import { Episode } from './Episode.js';
@@ -478,6 +478,17 @@ Item.prototype.updateEpisodesFromYoutube = async function() {
   this.updateUpdatedFromSourceAt();
   // store.loading_msg = `${addedCount} video${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
   return { added_count: addedCount, updated_count: updatedCount };
+}
+
+Item.prototype.openTvdbSlug = function(slug = false) {
+  if (!slug) slug = this.tvdb_slug;
+  if (!slug) return false;
+  open(`https://www.thetvdb.com/${this.type === 'show' ? 'series' : 'movies'}/${slug}`);
+}
+
+Item.prototype.openFileOrFolder = function() {
+  if (this.dir_name) useOpenOrHomeDir(store.settings.tv_dir + '/' + this.dir_name);
+  else if (this.pathname) useShowInExplorer(this.pathname);
 }
   
 Item.prototype.delete = async function() {

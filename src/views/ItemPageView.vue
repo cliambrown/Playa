@@ -106,11 +106,6 @@ watch(
   }
 )
 
-function openTvdbSlug(slug) {
-  if (!slug) return false;
-  open(`https://www.thetvdb.com/${item.value.type === 'show' ? 'series' : 'movies'}/${slug}`);
-}
-
 async function searchItemInTvdb() {
   if (!item.value || !item.value.name) return false;
   const matches = await searchTvdb(store, item.value.name, item.value.type);
@@ -191,6 +186,14 @@ function handleKeydown(event) {
       event.preventDefault();
       item.value.play()
       break;
+    case 't':
+      event.preventDefault();
+      item.value.openTvdbSlug();
+      break;
+    case 'f':
+      event.preventDefault();
+      item.value.openFileOrFolder();
+      break;
   }
   return true;
 }
@@ -239,22 +242,16 @@ onBeforeUnmount(() => {
           {{ displayName }}
         </h2>
         
-        <Button variant="link" @click="openTvdbSlug(item.tvdb_slug)" :disabled="!item.tvdb_slug">
+        <Button variant="link" @click="item.openTvdbSlug()" :disabled="!item.tvdb_slug">
           <TvIcon />
           TVDB
         </Button>
         
-        <Button v-if="item.dir_name" variant="link" @click="useOpenOrHomeDir(store.settings.tv_dir + '/' + item.dir_name)"  class="max-w-64">
+        <Button v-if="item.dir_name || item.pathname" variant="link" @click="item.openFileOrFolder()" class="max-w-64">
           <FolderIcon />
           <span class="overflow-hidden whitespace-nowrap text-ellipsis">
-            Folder
-          </span>
-        </Button>
-        
-        <Button v-if="item.pathname" variant="link" @click="useShowInExplorer(item.pathname)" class="max-w-64">
-          <FolderIcon />
-          <span class="overflow-hidden whitespace-nowrap text-ellipsis">
-            Show File
+            <template v-if="item.dir_name">Folder</template>
+            <template v-else>Show File</template>
           </span>
         </Button>
         
@@ -322,7 +319,7 @@ onBeforeUnmount(() => {
             :itemTvdbId="item.tvdb_id"
             @toggle-show-matches="showMatches = !showMatches"
             @match-select="(match) => selectTvdbMatch(match)"
-            @tvdb-link-click="(matchSlug) => openTvdbSlug(matchSlug)"
+            @tvdb-link-click="(matchSlug) => item.openTvdbSlug(matchSlug)"
             >
           </TvdbMatches>
           
