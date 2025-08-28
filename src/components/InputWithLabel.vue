@@ -103,6 +103,8 @@ while (counter < 8) {
         @keydown.left.stop
         @keydown.right.stop
         @keydown.space.stop
+        @keydown.t.stop
+        @keydown.f.stop
         />
       
       <div v-if="isSearch"

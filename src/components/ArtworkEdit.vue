@@ -89,11 +89,37 @@ async function replaceArtwork() {
           </legend>
         </div>
         <div class="flex items-center">
-          <input id="artwork-src-url" name="artwork-src" type="radio" value="url" v-model="artworkSrc" class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500">
+          <input type="radio"
+            id="artwork-src-url"
+            name="artwork-src"
+            value="url" v
+            model="artworkSrc"
+            class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500"
+            @keydown.up.stop
+            @keydown.down.stop
+            @keydown.left.stop
+            @keydown.right.stop
+            @keydown.space.stop
+            @keydown.t.stop
+            @keydown.f.stop
+            />
           <label for="artwork-src-url" class="block pl-2 text-sm font-medium leading-6 cursor-pointer">URL</label>
         </div>
         <div class="flex items-center">
-          <input id="artwork-src-upload" name="artwork-src" type="radio" value="upload" v-model="artworkSrc" class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500">
+          <input type="radio"
+            id="artwork-src-upload"
+            name="artwork-src"
+            value="upload" v
+            model="artworkSrc"
+            class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500"
+            @keydown.up.stop
+            @keydown.down.stop
+            @keydown.left.stop
+            @keydown.right.stop
+            @keydown.space.stop
+            @keydown.t.stop
+            @keydown.f.stop
+            />
           <label for="artwork-src-upload" class="block pl-2 text-sm font-medium leading-6 cursor-pointer">Local file</label>
         </div>
       </fieldset>
