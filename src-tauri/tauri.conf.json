@@ -21,7 +21,7 @@
   },
   "productName": "Playa",
   "mainBinaryName": "Playa",
-  "version": "0.3.11",
+  "version": "0.3.12",
   "identifier": "com.cliambrown.playa",
   "plugins": {},
   "app": {

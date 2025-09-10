@@ -162,7 +162,7 @@ watch(
               {{ duration }} 
             </span>
             
-            <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="inline-flex items-center p-2 -my-2 -mr-2 text-indigo-600">
+            <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="inline-flex items-center p-2 ml-auto -my-2 -mr-2 text-indigo-600">
               
               <template v-if="item.episode_ids.length">
                 <span v-if="remainingEps > 0" class="text-black">
