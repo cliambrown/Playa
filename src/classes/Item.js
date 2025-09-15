@@ -274,13 +274,28 @@ Item.prototype.episodeNav = function(destination) {
   if (this.current_episode_id != prevCurrentEpID)
     this.updateCurrentEpInDB();
 }
+
+Item.prototype.getPlayingMsg = function() {
+  let str = this.name;
+  if (this.current_episode_id) {
+    const ep = this.episodes[this.current_episode_id];
+    if (ep) {
+      if (ep.season_num || ep.name) str = str + ' — ';
+      if (ep.season_num) str = str + ' ' + ep.sXXeXX;
+      if (ep.name) str = str + ' ' + ep.name;
+    }
+  }
+  return '⏵ Playing ' + str;
+}
   
 Item.prototype.play = function() {
   if (this.source === 'local') {
     if (this.type === 'movie' ) {
+      store.loading_msg = this.getPlayingMsg();
       openPath(this.pathname);
     } else {
       if (!this.current_episode_id) return false;
+      store.loading_msg = this.getPlayingMsg();
       openPath(this.episodes[this.current_episode_id].pathname);
     }
   } else {
@@ -296,6 +311,7 @@ Item.prototype.play = function() {
       url = this.episodes[this.current_episode_id].url;
     }
     if (!url) return false;
+    store.loading_msg = this.getPlayingMsg();
     openUrl(url);
   }
   this.last_watched_at = Math.round(Date.now() / 1000);
