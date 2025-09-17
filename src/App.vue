@@ -73,7 +73,7 @@ onBeforeUnmount(() => {
           Playa
         </RouterLink>
         
-        <div v-if="appVersion" class="mt-1.5 text-xs text-gray-300">
+        <div v-if="appVersion" class="mt-1.5 text-sm text-gray-300">
           v{{ appVersion }}
         </div>
         
@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
           </Transition>
         </div>
         
-        <div class="mt-1.5 overflow-hidden text-green-600 text-ellipsis whitespace-nowrap">
+        <div class="mt-0 overflow-hidden text-base text-green-600 text-ellipsis whitespace-nowrap">
           {{ store.loading_msg }}
         </div>
         

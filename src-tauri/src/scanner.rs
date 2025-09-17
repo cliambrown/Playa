@@ -90,7 +90,7 @@ pub async fn scan_shows(
                 continue;
             }
             let path = ep_entry.path();
-            emit_global(&app_handle, "loading-event", path.to_str().unwrap());
+            emit_global(&app_handle, "loading-event", ("Scanning ".to_owned() + path.to_str().unwrap()).as_str());
             let kind = match infer::get_from_path(path) {
                 Ok(opt) => match opt {
                     Some(k) => k,
@@ -141,6 +141,7 @@ pub async fn scan_movies(
         }
         let path = entry.path();
         emit_global(&app_handle, "loading-event", path.to_str().unwrap());
+        emit_global(&app_handle, "loading-event", ("Scanning ".to_owned() + path.to_str().unwrap()).as_str());
         let kind = match infer::get_from_path(path) {
             Ok(opt) => match opt {
                 Some(k) => k,
