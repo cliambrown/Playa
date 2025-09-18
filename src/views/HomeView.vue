@@ -77,7 +77,6 @@ function updateAllYtPlaylistsFromSource() {
 function handleKeydown(event) {
   if (store.show_search) return false;
   let item;
-  console.log(event.key);
   switch (event.key) {
     case 'Control':
       ctrlIsDown = true;

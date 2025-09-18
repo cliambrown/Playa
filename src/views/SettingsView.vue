@@ -246,7 +246,7 @@ async function createBackup() {
           Clear unused artwork
         </Button>
         
-        <RouterLink :to="{ name: 'clearPlayback' }" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-6 text-blue-200 transition duration-150 ease-in-out rounded-md shadow-sm disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500 bg-sky-900 hover:bg-sky-800">
+        <RouterLink :to="{ name: 'clearPlayback' }" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-6 text-blue-200 transition duration-150 ease-in-out rounded-md shadow-sm disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 bg-sky-900 hover:bg-sky-800">
           <HistoryIcon />
           Clear Playback Positions
         </RouterLink>

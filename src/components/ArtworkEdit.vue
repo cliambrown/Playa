@@ -94,7 +94,7 @@ async function replaceArtwork() {
             name="artwork-src"
             value="url" v
             model="artworkSrc"
-            class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500"
+            class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus-visible:ring-blue-500"
             @keydown.up.stop
             @keydown.down.stop
             @keydown.left.stop
@@ -111,7 +111,7 @@ async function replaceArtwork() {
             name="artwork-src"
             value="upload" v
             model="artworkSrc"
-            class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus:ring-blue-500"
+            class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus-visible:ring-blue-500"
             @keydown.up.stop
             @keydown.down.stop
             @keydown.left.stop

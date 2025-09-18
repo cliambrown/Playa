@@ -5,7 +5,7 @@ defineProps(['to', 'isActive'])
 <template>
   <RouterLink
     :to="to"
-    class="inline-block px-1 py-2 font-medium transition duration-150 ease-in-out rounded-md focus:outline-none focus:ring-1 focus:ring-gray-600"
+    class="inline-block px-1 py-2 font-medium transition duration-150 ease-in-out rounded-md focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-600"
     :class="{
       'text-blue-300 hover:text-blue-400': !isActive,
       'text-gray-300 hover:text-gray-400': isActive

@@ -10,7 +10,7 @@
     "externalBin": [
       "binaries/ffprobe"
     ],
-    "targets": "all",
+    "targets": ["deb"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -21,7 +21,7 @@
   },
   "productName": "Playa",
   "mainBinaryName": "Playa",
-  "version": "0.3.14",
+  "version": "0.3.15",
   "identifier": "com.cliambrown.playa",
   "plugins": {},
   "app": {

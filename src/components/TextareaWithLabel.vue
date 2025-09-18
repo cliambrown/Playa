@@ -44,7 +44,7 @@ while (counter < 8) {
       
       <Textarea
         :id="id"
-        class="block w-full px-3 py-2 text-sm leading-6 text-gray-900 transition duration-150 ease-in-out border-0 rounded-md resize-none ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-500"
+        class="block w-full px-3 py-2 text-sm leading-6 text-gray-900 transition duration-150 ease-in-out border-0 rounded-md resize-none ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
         v-model="val"
         :readonly="readonly"
         autocomplete="new-password"

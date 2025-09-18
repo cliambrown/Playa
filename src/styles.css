@@ -49,3 +49,8 @@ textarea {
 textarea::-webkit-scrollbar {
   display: none;
 }
+
+input[type="checkbox"],
+input[type="checkbox"]:focus {
+  box-shadow: none;
+}
