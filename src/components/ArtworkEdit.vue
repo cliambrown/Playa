@@ -92,8 +92,8 @@ async function replaceArtwork() {
           <input type="radio"
             id="artwork-src-url"
             name="artwork-src"
-            value="url" v
-            model="artworkSrc"
+            value="url"
+            v-model="artworkSrc"
             class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus-visible:ring-blue-500"
             @keydown.up.stop
             @keydown.down.stop
@@ -109,8 +109,8 @@ async function replaceArtwork() {
           <input type="radio"
             id="artwork-src-upload"
             name="artwork-src"
-            value="upload" v
-            model="artworkSrc"
+            value="upload"
+            v-model="artworkSrc"
             class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus-visible:ring-blue-500"
             @keydown.up.stop
             @keydown.down.stop
