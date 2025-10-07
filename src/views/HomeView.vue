@@ -165,36 +165,164 @@ onBeforeUnmount(() => {
         </Button>
         
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-          <div v-if="showKeyboardMenu" class="absolute left-0 z-10 w-auto mt-2 origin-top-right rounded-md shadow-lg bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
-            <div class="py-1">
-              <div class="px-2 py-1.5 whitespace-nowrap">
+          <div v-if="showKeyboardMenu" class="absolute z-10 w-auto px-4 py-1 mt-2 text-sm -translate-x-1/2 border border-gray-600 rounded-md shadow-lg shadow-black origin-top-center left-1/2 bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+            
+            <table class="w-full whitespace-nowrap">
+              <tbody class="[&>*:not(:last-child)]:border-b *:border-gray-700">
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Next/prev item
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center mr-1 bg-gray-700 rounded size-6">
+                      ←
+                    </span>
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                      →
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Next/prev episode
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center mr-1 bg-gray-700 rounded size-6">
+                      ↓
+                    </span>
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                      ↑
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Play item
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                      Space
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Open item
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                      Enter
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Open TVDB
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                      T
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Show File/Folder
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                      F
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Search items
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                      Ctrl
+                    </span>
+                    +
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                      K
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Reload
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                      Ctrl
+                    </span>
+                    +
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                      R
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Go back
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                      Esc
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="px-1 py-2 pr-2">
+                    Close app
+                  </td>
+                  <td class="px-1 py-2 text-right">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                      Ctrl
+                    </span>
+                    +
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                      W
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            
+            <!-- <div class="px-4 py-1">
+              <div class="py-1.5 whitespace-nowrap">
                 ← / → <span class="text-gray-400">=</span> Next/prev item
               </div>
-              <div class="px-2 py-1.5 whitespace-nowrap">
+              <div class="py-1.5 whitespace-nowrap">
                 ↓ / ↑ <span class="text-gray-400">=</span> Next/prev episode
               </div>
-              <div class="px-2 py-1.5 whitespace-nowrap">
+              <div class="py-1.5 whitespace-nowrap">
                 Space <span class="text-gray-400">=</span> Play item
               </div>
-              <div class="px-2 py-1.5 whitespace-nowrap">
+              <div class="py-1.5 whitespace-nowrap">
                 Enter <span class="text-gray-400">=</span> Open item
               </div>
-              <div class="px-2 py-1.5 whitespace-nowrap">
+              <div class="py-1.5 whitespace-nowrap">
                 T <span class="text-gray-400">=</span> Open TVDB
               </div>
-              <div class="px-2 py-1.5 whitespace-nowrap">
+              <div class="py-1.5 whitespace-nowrap">
                 F <span class="text-gray-400">=</span> Show File/Folder
               </div>
-              <div class="px-2 py-1.5 whitespace-nowrap">
+              <div class="py-1.5 whitespace-nowrap">
                 Ctrl + K <span class="text-gray-400">=</span> Search items
               </div>
-              <div class="px-2 py-1.5 whitespace-nowrap">
-                Ctrl + R <span class="text-gray-400">=</span> Refresh items
+              <div class="py-1.5 whitespace-nowrap">
+                Ctrl + R <span class="text-gray-400">=</span> Reload
               </div>
-              <div class="px-2 py-1.5 whitespace-nowrap">
-                Backspace <span class="text-gray-400">=</span> Go back
+              <div class="py-1.5 whitespace-nowrap">
+                Esc <span class="text-gray-400">=</span> Go back
               </div>
-            </div>
+              <div class="py-1.5 whitespace-nowrap">
+                Ctrl + W <span class="text-gray-400">=</span> Close app
+              </div>
+            </div> -->
+            
           </div>
         </transition>
         
@@ -223,7 +351,7 @@ onBeforeUnmount(() => {
         </Button>
         
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-          <div v-if="showScanMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right rounded-md shadow-lg bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+          <div v-if="showScanMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right border border-gray-600 rounded-md shadow-lg shadow-black bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
               <button type="button" @click="scanShows" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-300 hover:text-blue-400">
                 <TvIcon />
@@ -254,7 +382,7 @@ onBeforeUnmount(() => {
         </Button>
         
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-          <div v-if="showExtItemMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right rounded-md shadow-lg bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+          <div v-if="showExtItemMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right border border-gray-600 rounded-md shadow-lg shadow-black bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
               <RouterLink :to="{ name: 'item.create.show' }" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-300 hover:text-blue-400">
                 <TvIcon />
