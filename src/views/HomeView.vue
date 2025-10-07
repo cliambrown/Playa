@@ -160,7 +160,7 @@ onBeforeUnmount(() => {
       
       <div class="relative" ref="keyboardMenu">
         
-        <Button variant="link" :square="true" @click="toggleShowKeyboardMenu">
+        <Button :variant="showKeyboardMenu ? 'link-bg' : 'link'" :square="true" @click="toggleShowKeyboardMenu">
           <KeyboardIcon />
         </Button>
         
@@ -175,10 +175,10 @@ onBeforeUnmount(() => {
                   </td>
                   <td class="px-1 py-2 text-right">
                     <span class="inline-flex items-center justify-center mr-1 bg-gray-700 rounded size-6">
-                      ←
+                      →
                     </span>
                     <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
-                      →
+                      ←
                     </span>
                   </td>
                 </tr>
@@ -289,39 +289,6 @@ onBeforeUnmount(() => {
                 </tr>
               </tbody>
             </table>
-            
-            <!-- <div class="px-4 py-1">
-              <div class="py-1.5 whitespace-nowrap">
-                ← / → <span class="text-gray-400">=</span> Next/prev item
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                ↓ / ↑ <span class="text-gray-400">=</span> Next/prev episode
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                Space <span class="text-gray-400">=</span> Play item
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                Enter <span class="text-gray-400">=</span> Open item
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                T <span class="text-gray-400">=</span> Open TVDB
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                F <span class="text-gray-400">=</span> Show File/Folder
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                Ctrl + K <span class="text-gray-400">=</span> Search items
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                Ctrl + R <span class="text-gray-400">=</span> Reload
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                Esc <span class="text-gray-400">=</span> Go back
-              </div>
-              <div class="py-1.5 whitespace-nowrap">
-                Ctrl + W <span class="text-gray-400">=</span> Close app
-              </div>
-            </div> -->
             
           </div>
         </transition>
