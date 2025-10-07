@@ -1,7 +1,7 @@
 {
   "name": "playa",
   "private": true,
-  "version": "0.3.17",
+  "version": "0.3.18",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -16,6 +16,7 @@
     "@tauri-apps/plugin-fs": "^2.4.1",
     "@tauri-apps/plugin-http": "^2.5.1",
     "@tauri-apps/plugin-opener": "^2.5.0",
+    "@tauri-apps/plugin-process": "^2.3.0",
     "@tauri-apps/plugin-shell": "^2.3.0",
     "@tauri-apps/plugin-sql": "^2.3.0",
     "@tauri-apps/plugin-window-state": "^2.4.0",

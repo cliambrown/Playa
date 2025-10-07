@@ -6,6 +6,7 @@ import { join } from '@tauri-apps/api/path';
 import { listen } from '@tauri-apps/api/event'
 import { appLocalDataDir } from '@tauri-apps/api/path';
 import { getVersion } from '@tauri-apps/api/app';
+import { exit } from '@tauri-apps/plugin-process';
 import Database from '@tauri-apps/plugin-sql';
 import NavLink from './components/NavLink.vue';
 import ArchiveIcon from './icons/ArchiveIcon.vue';
@@ -19,6 +20,8 @@ store.route = route;
 store.router = router;
 
 const appVersion = ref(null);
+
+let ctrlIsDown = false;
 
 onBeforeMount(async () => {
   store.loading = true;
@@ -44,20 +47,36 @@ listen('loading-event', (event) => {
 });
 
 function handleKeydown(event) {
-  if (route.name === 'home') return true;
+  console.log('keydown')
   switch (event.key) {
+    case 'Control':
+      ctrlIsDown = true;
+      break;
+    case 'w':
+      if (ctrlIsDown) {
+        event.preventDefault();
+        exit(0);
+      }
+      break;
     case 'Escape':
-    router.go(-1);
-    break;
+      if (route.name === 'home') return true;
+      router.go(-1);
+      break;
   }
   return true;
 }
 
+function handleKeyup(event) {
+  if (event.key === 'Control') ctrlIsDown = false;
+}
+
 onBeforeMount(() => {
   window.addEventListener('keydown', handleKeydown);
+  window.addEventListener('keyup', handleKeyup);
 });
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown);
+  window.removeEventListener('keyup', handleKeyup);
 });
 
 </script>

@@ -120,6 +120,8 @@
         { "path" : "/media/*" }
       ],
       "requireLiteralLeadingDot": false
-    }
+    },
+    
+    "process:allow-exit"
   ]
 }

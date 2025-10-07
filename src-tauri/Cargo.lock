@@ -3580,7 +3580,7 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 
 [[package]]
 name = "playa"
-version = "0.3.17"
+version = "0.3.18"
 dependencies = [
  "fix-path-env",
  "image",
@@ -3596,6 +3596,7 @@ dependencies = [
  "tauri-plugin-fs",
  "tauri-plugin-http",
  "tauri-plugin-opener",
+ "tauri-plugin-process",
  "tauri-plugin-shell",
  "tauri-plugin-sql",
  "tauri-plugin-window-state",
@@ -5508,6 +5509,16 @@ dependencies = [
  "url",
  "windows 0.61.3",
  "zbus",
+]
+
+[[package]]
+name = "tauri-plugin-process"
+version = "2.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7461c622a5ea00eb9cd9f7a08dbd3bf79484499fd5c21aa2964677f64ca651ab"
+dependencies = [
+ "tauri",
+ "tauri-plugin",
 ]
 
 [[package]]
