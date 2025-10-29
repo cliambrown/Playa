@@ -1,14 +1,13 @@
 {
-  "identifier": "migrated",
-  "description": "permissions that were migrated from v1",
-  "local": true,
-  "windows": [
-    "main"
-  ],
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "windows": ["main"],
   "permissions": [
+    "window-state:default",
     "core:default",
     "core:app:allow-app-show",
-    "core:app:allow-app-hide",
+    "core:app:allow-app-hide",    
+    "process:allow-exit",
     
     "dialog:default",
     "dialog:allow-open",
@@ -59,7 +58,6 @@
       "allow": [
         {
           "args": true,
-          "cmd": "",
           "name": "ffprobe",
           "sidecar": true
         }
@@ -69,12 +67,8 @@
     {
       "identifier": "http:default",
       "allow": [
-        {
-          "url": "https://api4.thetvdb.com/v4/*"
-        },
-        {
-          "url": "https://www.googleapis.com/youtube/v3/*"
-        }
+        { "url": "https://api4.thetvdb.com/v4/*" },
+        { "url": "https://www.googleapis.com/youtube/v3/*" }
       ]
     },
     
@@ -82,7 +76,15 @@
     "sql:allow-execute",
     
     "opener:default",
-    "opener:allow-open-url",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://*",
+          "app": true
+        }
+      ]
+    },
     {
       "identifier": "opener:allow-open-path",
       "allow": [
@@ -120,8 +122,6 @@
         { "path" : "/media/*" }
       ],
       "requireLiteralLeadingDot": false
-    },
-    
-    "process:allow-exit"
+    }
   ]
 }

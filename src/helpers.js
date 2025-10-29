@@ -92,3 +92,26 @@ export async function useOpenOrHomeDir(dir) {
 export function useShowInExplorer(path) {
   invoke('show_in_folder', {path});
 }
+
+export function isYoutubeUrl(urlString) {
+  if (!urlString || typeof urlString !== 'string') return false;
+  let url = null;
+  try {
+    url = new URL(urlString);
+  } catch (error) {
+    return false;
+  }
+  let domain = url.hostname;
+  if (domain.indexOf('www.') === 0) domain = domain.substring(4);
+  switch (domain) {
+    case 'youtube.com':
+    case 'youtube.ca':
+    case 'youtu.be':
+    case 'youtube.googleapis.com':
+    case 'yt.be':
+      return true;
+      break;
+    default:
+      return false;
+  }
+}

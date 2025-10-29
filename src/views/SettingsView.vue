@@ -298,6 +298,52 @@ async function createBackup() {
         </template>
       </InputWithLabel>
       
+      <fieldset class="mt-10">
+        <legend class="block mb-2 text-sm font-medium leading-6">App to handle YouTube URLs</legend>
+        <div class="flex items-center gap-x-8">
+          <div class="flex items-center">
+            <label for="app_for_youtube_urls-null" class="flex items-center px-3 rounded-md cursor-pointer gap-x-2 focus-visible:ring-2 focus-visible:ring-indigo-500" tabindex="1">
+              <input type="radio"
+                id="app_for_youtube_urls-null"
+                class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full focus:outline-none"
+                v-model="store.settings.app_for_youtube_urls"
+                @change="handleUpdate"
+                :disabled="store.loading"
+                :value="null"
+                @keydown.up.stop
+                @keydown.down.stop
+                @keydown.left.stop
+                @keydown.right.stop
+                @keydown.space.stop
+                @keydown.t.stop
+                @keydown.f.stop
+                />
+              <span>System Default</span>
+            </label>
+          </div>
+          <div class="flex items-center">
+            <label for="app_for_youtube_urls-freetube" class="flex items-center px-3 rounded-md cursor-pointer gap-x-2 focus-visible:ring-2 focus-visible:ring-indigo-500" tabindex="1">
+              <input type="radio"
+                id="app_for_youtube_urls-freetube"
+                class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full focus:outline-none"
+                v-model="store.settings.app_for_youtube_urls"
+                @change="handleUpdate"
+                :disabled="store.loading"
+                value="freetube"
+                @keydown.up.stop
+                @keydown.down.stop
+                @keydown.left.stop
+                @keydown.right.stop
+                @keydown.space.stop
+                @keydown.t.stop
+                @keydown.f.stop
+                />
+              <span>FreeTube</span>
+            </label>
+          </div>
+        </div>
+      </fieldset>
+      
       <div class="flex items-center gap-6 mt-24">
         
         <h3 class="mr-auto text-xl text-slate-200">

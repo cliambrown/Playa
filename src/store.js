@@ -56,6 +56,7 @@ export const store = reactive({
     tvdb_pin: null,
     youtube_api_key: null,
     mpv_watched_dir: null,
+    app_for_youtube_urls: null,
   },
   
   scan_results: {

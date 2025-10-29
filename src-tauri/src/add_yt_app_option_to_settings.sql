@@ -1,0 +1,1 @@
+INSERT INTO settings (name, value) VALUES ('app_for_youtube_urls', NULL);

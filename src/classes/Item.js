@@ -3,7 +3,7 @@ import { Command, open } from '@tauri-apps/plugin-shell';
 
 import { invoke } from '@tauri-apps/api/core';
 import { store } from '../store';
-import { useGetProp, useAlphaName, useMinutesToTimeStr, useOpenOrHomeDir, useShowInExplorer } from '../helpers.js';
+import { useGetProp, useAlphaName, useMinutesToTimeStr, useOpenOrHomeDir, useShowInExplorer, isYoutubeUrl } from '../helpers.js';
 import { getEpisodes } from '../tvdb.js';
 import { getYtPlaylistVideos } from '../youtube';
 import { Episode } from './Episode.js';
@@ -312,7 +312,8 @@ Item.prototype.play = function() {
     }
     if (!url) return false;
     store.loading_msg = this.getPlayingMsg();
-    openUrl(url);
+    if (store.settings.app_for_youtube_urls === 'freetube' && isYoutubeUrl(url)) openUrl(url, 'freetube');
+    else openUrl(url);
   }
   this.last_watched_at = Math.round(Date.now() / 1000);
   this.updateLastWatchedAtInDB();
