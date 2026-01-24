@@ -1,6 +1,6 @@
 import { reactive } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { useSecondsToTimeStr, useGetProp, useAlphaName } from './helpers.js';
+import { useGetDuration, useSecondsToTimeStr, useGetProp, useAlphaName } from './helpers.js';
 import { Item } from './classes/Item.js';
 import { Episode } from './classes/Episode.js';
 
@@ -298,10 +298,8 @@ export const store = reactive({
       let item = itemsByDirName[episodeData.show_dir_name];
       let episode = await item.getEpisodeFromData(episodeData);
       if (episode.is_new && !episode.duration) {
-        let duration = await invoke('get_duration', { path: episode.pathname });
-        console.log('get_duration', duration);
-        duration = useSecondsToTimeStr(duration);
-          if (duration) {
+        const duration = await useGetDuration(episode.pathname);
+        if (duration) {
           episode.duration = duration;
           await episode.saveToDB();
         }
@@ -349,8 +347,7 @@ export const store = reactive({
       movieData.source = 'local';
       let item = await this.getItemFromAttribute('pathname', movieData);
       if (item.is_new && !item.duration) {
-        let duration = await invoke('get_duration', { path: item.pathname });
-        duration = useSecondsToTimeStr(duration);
+        let duration = await useGetDuration(item.pathname);
         console.log('get_duration', duration);
         if (duration) {
           item.duration = duration;

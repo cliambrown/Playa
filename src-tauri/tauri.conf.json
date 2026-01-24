@@ -7,9 +7,6 @@
   },
   "bundle": {
     "active": true,
-    "externalBin": [
-      "binaries/ffprobe"
-    ],
     "targets": ["deb"],
     "icon": [
       "icons/32x32.png",
@@ -21,7 +18,7 @@
   },
   "productName": "Playa",
   "mainBinaryName": "Playa",
-  "version": "0.4.0",
+  "version": "0.4.2",
   "identifier": "com.cliambrown.playa",
   "plugins": {},
   "app": {

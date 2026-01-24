@@ -60,6 +60,18 @@ fn main() {
             sql: include_str!("./add_finale_columns_to_episodes.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 3,
+            description: "add_yt_app_option_to_settings",
+            sql: include_str!("./add_yt_app_option_to_settings.sql"),
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 4,
+            description: "add_yt_playlist_option_to_items",
+            sql: include_str!("./add_yt_playlist_option_to_items.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()
@@ -78,7 +90,7 @@ fn main() {
         )
         .invoke_handler(tauri::generate_handler![
             playback_positions::get_playback_positions,
-            scanner::get_duration,
+            // scanner::get_duration,
             scanner::scan_shows,
             scanner::scan_movies,
             images::copy_local_image,

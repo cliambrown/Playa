@@ -4,9 +4,9 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 // use tauri::api::process::{Command, CommandEvent};
-use tauri::async_runtime::block_on;
-use tauri_plugin_shell::process::CommandEvent;
-use tauri_plugin_shell::ShellExt;
+// use tauri::async_runtime::block_on;
+// use tauri_plugin_shell::process::CommandEvent;
+// use tauri_plugin_shell::ShellExt;
 use walkdir::WalkDir;
 
 const VIDEO_MIMES: [&str; 9] = [
@@ -20,46 +20,6 @@ const VIDEO_MIMES: [&str; 9] = [
     "video/mpeg",
     "video/x-flv",
 ];
-
-async fn get_duration_with_sidecar(app_handle: AppHandle, path: &str) -> String {
-    let sidecar_command = app_handle.shell().sidecar("ffprobe").unwrap().args([
-        "-v",
-        "error",
-        "-show_entries",
-        "format=duration",
-        "-of",
-        "default=noprint_wrappers=1:nokey=1",
-        path,
-    ]);
-
-    let (mut rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
-
-    // let (mut rx, mut _child) = Command::new_sidecar("ffprobe")
-    //     .expect("failed to create `ffprobe` binary command")
-    //     .args([
-    //         "-v",
-    //         "error",
-    //         "-show_entries",
-    //         "format=duration",
-    //         "-of",
-    //         "default=noprint_wrappers=1:nokey=1",
-    //         path,
-    //     ])
-    //     .spawn()
-    //     .expect("Failed to spawn sidecar");
-
-    let cmd_evt = rx.recv().await;
-    if let CommandEvent::Stdout(output) = cmd_evt.unwrap() {
-        // output = String::from_utf8(output);
-        return String::from_utf8(output).unwrap().trim().to_string();
-    }
-    return "".to_string();
-}
-
-#[tauri::command]
-pub fn get_duration(app_handle: AppHandle, path: &str) -> String {
-    return block_on(get_duration_with_sidecar(app_handle, path));
-}
 
 #[tauri::command(async)]
 pub async fn scan_shows(

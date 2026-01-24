@@ -54,12 +54,22 @@
       ]
     },
     {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "args": true,
+          "name": "ffprobe",
+          "cmd": "ffprobe"
+        }
+      ]
+    },
+    {
       "identifier": "shell:allow-execute",
       "allow": [
         {
           "args": true,
           "name": "ffprobe",
-          "sidecar": true
+          "cmd": "ffprobe"
         }
       ]
     },
@@ -119,7 +129,8 @@
         { "path": "$RESOURCE/**/*" },
         { "path": "$RESOURCE/*" },
         { "path" : "/media/**/*" },
-        { "path" : "/media/*" }
+        { "path" : "/media/*" },
+        { "path": "/**" }
       ],
       "requireLiteralLeadingDot": false
     }

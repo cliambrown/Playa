@@ -1,10 +1,46 @@
 import { openPath } from '@tauri-apps/plugin-opener';
 import { invoke } from '@tauri-apps/api/core';
+import { Command } from '@tauri-apps/plugin-shell';
+
+export async function useGetDuration(pathname) {
+  let output;
+  try {
+    output = await Command.create('ffprobe', [
+        '-v',
+        'error',
+        '-show_entries',
+        'format=duration',
+        '-of',
+        'default=noprint_wrappers=1:nokey=1',
+        pathname,
+      ])
+      .execute();
+  } catch(error) {
+    window.alert('Error while getting episode duration with ffprobe: ' + error);
+    console.log('useGetDuration', null);
+    return null;
+  }
+  if (!output) {
+    window.alert('Unknown error while getting episode duration with ffprobe: no output');
+  } else if (output.stderr && output.stderr !== '') {
+    window.alert('Error while getting episode duration with ffprobe: ' + output.stderr);
+  } else if (output.code !== 0 || output.signal !== null) {
+    window.alert('Error while getting episode duration with ffprobe: code = ' + output.code + '; signal = ' + output.signal);
+  } else if (!output.stdout) {
+    window.alert('Error while getting episode duration with ffprobe: no stdout');
+  } else {
+    const duration = useSecondsToTimeStr(output.stdout);
+    console.log('useGetDuration', duration);
+    return duration;
+  }
+  console.log('useGetDuration', null);
+  return null;
+}
 
 export function useSecondsToTimeStr(seconds) {
   if (typeof seconds === 'string') {
     // expect format 'XXXX.XXXXXX'
-    if (/^\s\d+\.\d+\s*$/.test(seconds)) return null;
+    if (!/^\s*\d+(\.\d+)?\s*$/.test(seconds)) return null;
     const parts = seconds.split('.');
     seconds = parseInt(parts[0].trim());
   } else {

@@ -65,8 +65,10 @@ async function importBackup() {
   const filename = backupImportSrc.value.replace(/^.*[\\/]/, '');
   let contents;
   let importData;
+  console.log(backupImportSrc)
+  console.log(BaseDirectory)
   try {
-    contents = await readTextFile(filename, { dir: BaseDirectory.AppLocalData });
+    contents = await readTextFile(filename, { baseDir: BaseDirectory.AppLocalData });
     if (!contents) return false;
     importData = JSON.parse(contents);
   } catch (e) {

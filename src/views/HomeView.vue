@@ -40,7 +40,7 @@ function toggleShowExtItemMenu() {
 }
 onClickOutside(extItemMenu, e => { if (showExtItemMenu.value) showExtItemMenu.value = false });
 
-function toggleShowFinished() {
+async function toggleShowFinished() {
   if (
     store.show_finished_items
     && store.home_selected_item_id
