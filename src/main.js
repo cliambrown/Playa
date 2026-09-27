@@ -3,7 +3,7 @@ import { createApp } from 'vue';
 import { plugin as vueTransitionsPlugin } from '@morev/vue-transitions';
 import '@morev/vue-transitions/styles';
 
-import VueDatePicker from '@vuepic/vue-datepicker';
+import { VueDatePicker } from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
 import './styles.css';

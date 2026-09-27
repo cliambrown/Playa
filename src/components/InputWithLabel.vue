@@ -71,7 +71,7 @@ while (counter < 8) {
     <label
       v-if="withLabel"
       :for="datepicker ? 'dp-input-'+id : id"
-      class="block mb-2 text-sm font-medium leading-6"
+      class="block mb-2 font-medium text-sm leading-6"
       :class="{
         'text-slate-100': isDark,
         'text-gray-900': !isDark
@@ -87,7 +87,7 @@ while (counter < 8) {
         :id="id"
         :name="id + randstr"
         ref="input"
-        class="block w-full px-3 py-2 text-sm leading-6 transition duration-150 ease-in-out border-0 rounded-md ring-1 ring-inset focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+        class="block px-3 py-2 border-0 rounded-md ring-1 focus-visible:ring-2 focus-visible:ring-blue-500 ring-inset focus-visible:ring-inset w-full text-sm leading-6 transition duration-150 ease-in-out"
         :class="{
           'pr-10': isSearch,
           'bg-slate-700 ring-gray-600': isDark,
@@ -108,7 +108,7 @@ while (counter < 8) {
         />
       
       <div v-if="isSearch"
-        class="absolute w-6 h-6 right-1 top-2.5"
+        class="top-2.5 right-1 absolute w-6 h-6"
         :class="{
           'text-slate-100': isDark,
           'text-gray-900': !isDark
@@ -121,9 +121,10 @@ while (counter < 8) {
         v-if="datepicker"
         v-model="valMs"
         model-type="timestamp"
-        :format="'yyyy-MM-dd' + (enableTimePicker ? ' HH:mm' : '')"
-        :uid="id"
-        :enable-time-picker="enableTimePicker"
+        :formats="{ input: 'yyyy-MM-dd' + (enableTimePicker ? ' HH:mm' : ''), preview: 'yyyy-MM-dd' + (enableTimePicker ? ' HH:mm' : '') }"
+        :menu-id="'dp-menu-'+id"
+        :input-attrs="{ id: id }"
+        :time-config="{ enableTimePicker: enableTimePicker }"
         @update:model-value="$emit('input')"
         @keydown.up.stop
         @keydown.down.stop

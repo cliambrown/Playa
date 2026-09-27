@@ -1,7 +1,7 @@
 {
   "name": "playa",
   "private": true,
-  "version": "0.4.2",
+  "version": "0.4.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,29 +10,33 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@morev/vue-transitions": "^3.0.2",
-    "@tauri-apps/api": "^2.7.0",
-    "@tauri-apps/plugin-dialog": "^2.3.2",
-    "@tauri-apps/plugin-fs": "^2.4.1",
-    "@tauri-apps/plugin-http": "^2.5.1",
-    "@tauri-apps/plugin-opener": "^2.5.0",
-    "@tauri-apps/plugin-process": "^2.3.0",
-    "@tauri-apps/plugin-shell": "^2.3.0",
-    "@tauri-apps/plugin-sql": "^2.3.0",
-    "@tauri-apps/plugin-window-state": "^2.4.0",
-    "@vuepic/vue-datepicker": "^8.3.1",
-    "@vueuse/core": "^10.9.0",
-    "vue": "^3.3.4",
-    "vue-router": "^4.3.0"
+    "@morev/vue-transitions": "^3.0.5",
+    "@tauri-apps/api": "^2.12.0",
+    "@tauri-apps/plugin-dialog": "^2.8.0",
+    "@tauri-apps/plugin-fs": "^2.6.0",
+    "@tauri-apps/plugin-http": "^2.7.0",
+    "@tauri-apps/plugin-opener": "^2.6.0",
+    "@tauri-apps/plugin-process": "^2.4.0",
+    "@tauri-apps/plugin-shell": "^2.4.0",
+    "@tauri-apps/plugin-sql": "^2.5.0",
+    "@tauri-apps/plugin-window-state": "^2.5.0",
+    "@vuepic/vue-datepicker": "^14.0.0",
+    "@vueuse/core": "^15.0.0",
+    "vue": "^3.5.43",
+    "vue-router": "^5.3.1"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.7",
-    "@tauri-apps/cli": "^2.7.1",
-    "@vitejs/plugin-vue": "^5.0.4",
-    "autoprefixer": "^10.4.18",
-    "baseline-browser-mapping": "^2.9.17",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
-    "vite": "^5.0.0"
+    "@tailwindcss/forms": "^0.5.11",
+    "@tauri-apps/cli": "^2.12.0",
+    "@vitejs/plugin-vue": "^6.0.9",
+    "autoprefixer": "^10.6.1",
+    "baseline-browser-mapping": "^2.11.26",
+    "postcss": "^8.5.28",
+    "tailwindcss": "^3.4.17",
+    "vite": "^8.3.1"
+  },
+  "allowScripts": {
+    "@morev/vue-transitions@3.0.5": true,
+    "vue-demi@0.14.10": true
   }
 }

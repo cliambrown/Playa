@@ -83,34 +83,34 @@ onBeforeUnmount(() => {
 
 <template>
   
-  <div class="flex flex-col h-full max-h-full min-h-screen">
+  <div class="flex flex-col h-full min-h-screen max-h-full">
     
-    <header class="flex flex-wrap w-full max-w-full py-2 text-sm bg-black sm:justify-start sm:flex-nowrap">
-      <nav class="w-full max-w-full px-4 mx-auto sm:gap-x-3 sm:flex sm:items-center sm:justify-between" aria-label="Global">
+    <header class="flex flex-wrap sm:flex-nowrap sm:justify-start bg-black py-2 w-full max-w-full text-sm">
+      <nav class="sm:flex sm:justify-between sm:items-center sm:gap-x-3 mx-auto px-4 w-full max-w-full" aria-label="Global">
         
-        <RouterLink :to="{ name: 'home' }" class="flex-none py-2 text-xl font-semibold text-white">
+        <RouterLink :to="{ name: 'home' }" class="flex-none py-2 font-semibold text-white text-xl">
           Playa
         </RouterLink>
         
-        <div v-if="appVersion" class="mt-1.5 text-sm text-gray-300">
+        <div v-if="appVersion" class="mt-1.5 text-gray-300 text-sm">
           v{{ appVersion }}
         </div>
         
-        <div class="mt-1.5 text-gray-200 w-4">
+        <div class="mt-1.5 w-4 text-gray-200">
           <Transition name="fade">
             <span v-show="store.loading">
-              <div class="relative top-0.5 animate-spin inline-block size-4 border-[3px] border-current border-t-transparent rounded-full text-blue-100" role="status" aria-label="loading">
+              <div class="inline-block top-0.5 relative border-[3px] border-current border-t-transparent rounded-full size-4 text-blue-100 animate-spin" role="status" aria-label="loading">
                 <span class="sr-only">Loading...</span>
               </div>
             </span>
           </Transition>
         </div>
         
-        <div class="mt-0 overflow-hidden text-base text-green-600 text-ellipsis whitespace-nowrap">
+        <div class="mt-0 overflow-hidden text-green-600 text-base text-ellipsis whitespace-nowrap">
           {{ store.loading_msg }}
         </div>
         
-        <div class="flex flex-row items-center gap-5 mt-5 ml-auto sm:justify-end sm:mt-0 sm:ps-5">
+        <div class="flex flex-row sm:justify-end items-center gap-5 mt-5 sm:mt-0 ml-auto sm:ps-5">
           <NavLink :to="{ name: 'home' }" :isActive="$route.name === 'home'">
             <HomeIcon />
             Home
