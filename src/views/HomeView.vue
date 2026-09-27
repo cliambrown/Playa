@@ -165,7 +165,7 @@ onBeforeUnmount(() => {
         </Button>
         
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-          <div v-if="showKeyboardMenu" class="absolute z-10 w-auto px-4 py-1 mt-2 text-sm -translate-x-1/2 border border-gray-600 rounded-md shadow-lg shadow-black origin-top-center left-1/2 bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+          <div v-if="showKeyboardMenu" class="absolute z-10 w-auto px-4 py-1 mt-2 text-sm -translate-x-1/2 border border-gray-600 rounded-md shadow-lg shadow-black origin-top-center left-1/2 bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-hidden" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             
             <table class="w-full whitespace-nowrap">
               <tbody class="[&>*:not(:last-child)]:border-b *:border-gray-700">
@@ -174,10 +174,10 @@ onBeforeUnmount(() => {
                     Next/prev item
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center mr-1 bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center mr-1 bg-gray-700 rounded-sm size-6">
                       →
                     </span>
-                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded-sm size-6">
                       ←
                     </span>
                   </td>
@@ -187,10 +187,10 @@ onBeforeUnmount(() => {
                     Next/prev episode
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center mr-1 bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center mr-1 bg-gray-700 rounded-sm size-6">
                       ↓
                     </span>
-                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded-sm size-6">
                       ↑
                     </span>
                   </td>
@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
                     Play item
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded-sm">
                       Space
                     </span>
                   </td>
@@ -210,7 +210,7 @@ onBeforeUnmount(() => {
                     Open item
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded-sm">
                       Enter
                     </span>
                   </td>
@@ -220,7 +220,7 @@ onBeforeUnmount(() => {
                     Open TVDB
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded-sm size-6">
                       T
                     </span>
                   </td>
@@ -230,7 +230,7 @@ onBeforeUnmount(() => {
                     Show File/Folder
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded-sm size-6">
                       F
                     </span>
                   </td>
@@ -240,11 +240,11 @@ onBeforeUnmount(() => {
                     Search items
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded-sm">
                       Ctrl
                     </span>
                     +
-                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded-sm size-6">
                       K
                     </span>
                   </td>
@@ -254,11 +254,11 @@ onBeforeUnmount(() => {
                     Reload
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded-sm">
                       Ctrl
                     </span>
                     +
-                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded-sm size-6">
                       R
                     </span>
                   </td>
@@ -268,7 +268,7 @@ onBeforeUnmount(() => {
                     Go back
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded-sm">
                       Esc
                     </span>
                   </td>
@@ -278,11 +278,11 @@ onBeforeUnmount(() => {
                     Close app
                   </td>
                   <td class="px-1 py-2 text-right">
-                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded">
+                    <span class="inline-flex items-center justify-center h-6 px-2 bg-gray-700 rounded-sm">
                       Ctrl
                     </span>
                     +
-                    <span class="inline-flex items-center justify-center bg-gray-700 rounded size-6">
+                    <span class="inline-flex items-center justify-center bg-gray-700 rounded-sm size-6">
                       W
                     </span>
                   </td>
@@ -318,7 +318,7 @@ onBeforeUnmount(() => {
         </Button>
         
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-          <div v-if="showScanMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right border border-gray-600 rounded-md shadow-lg shadow-black bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+          <div v-if="showScanMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right border border-gray-600 rounded-md shadow-lg shadow-black bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-hidden" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
               <button type="button" @click="scanShows" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-300 hover:text-blue-400">
                 <TvIcon />
@@ -349,7 +349,7 @@ onBeforeUnmount(() => {
         </Button>
         
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
-          <div v-if="showExtItemMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right border border-gray-600 rounded-md shadow-lg shadow-black bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+          <div v-if="showExtItemMenu" class="absolute left-0 z-10 w-full mt-2 origin-top-right border border-gray-600 rounded-md shadow-lg shadow-black bg-slate-900 ring-1 ring-black ring-opacity-5 focus:outline-hidden" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
               <RouterLink :to="{ name: 'item.create.show' }" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-300 hover:text-blue-400">
                 <TvIcon />
@@ -376,7 +376,7 @@ onBeforeUnmount(() => {
       
     </div>
     
-    <div v-if="store.home_unfinished_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
+    <div v-if="store.home_unfinished_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,570px))]">
       <ItemCard
         v-for="itemID in store.home_unfinished_show_ids"
         :itemID="itemID"
@@ -384,7 +384,7 @@ onBeforeUnmount(() => {
     </div>
     
     <TransitionExpand>
-      <div v-show="store.show_finished_items && store.home_finished_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
+      <div v-show="store.show_finished_items && store.home_finished_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,570px))]">
         <ItemCard
           v-for="itemID in store.home_finished_show_ids"
           :itemID="itemID"
@@ -392,7 +392,7 @@ onBeforeUnmount(() => {
       </div>
     </TransitionExpand>
     
-    <div v-if="store.home_unfinished_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,_360px))]">
+    <div v-if="store.home_unfinished_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,360px))]">
       <ItemCard
         v-for="itemID in store.home_unfinished_movie_ids"
         :itemID="itemID"
@@ -400,7 +400,7 @@ onBeforeUnmount(() => {
     </div>
     
     <TransitionExpand>
-      <div v-show="store.show_finished_items && store.home_finished_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,_360px))]">
+      <div v-show="store.show_finished_items && store.home_finished_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,360px))]">
         <ItemCard
           v-for="itemID in store.home_finished_movie_ids"
           :itemID="itemID"

@@ -34,7 +34,7 @@ const showMatches = ref(true);
     <TransitionExpand>
       <ul v-show="showMatches" class="p-1">
         <li v-for="match in matches" class="flex flex-wrap gap-2 my-2">
-          <Button variant="secondary" @click="$emit('matchSelect', match)" whitespace="normal" :class="{ 'ring-[2px] ring-green-400 ring-offset-0 ring-offset-slate-800': match.tvdb_id === itemTvdbId }">
+          <Button variant="secondary" @click="$emit('matchSelect', match)" whitespace="normal" :class="{ 'ring-2 ring-green-400 ring-offset-0 ring-offset-slate-800': match.tvdb_id === itemTvdbId }">
             {{ match.name }}
             ({{ match.country }} {{ match.year }})
           </Button>

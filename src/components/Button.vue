@@ -28,9 +28,9 @@ defineEmits(['buttonClick']);
 <template>
   <button 
     type="button"
-    class="inline-flex items-center justify-center text-sm font-medium leading-6 transition duration-150 ease-in-out disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+    class="inline-flex justify-center items-center gap-x-2 disabled:opacity-60 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 font-medium text-sm leading-6 transition duration-150 ease-in-out cursor-pointer disabled:pointer-events-none"
     :class="{
-      'shadow-sm': variant !== 'tertiary' && variant !== 'tertiary-light' && variant !== 'close',
+      'shadow-xs': variant !== 'tertiary' && variant !== 'tertiary-light' && variant !== 'close',
       
       'px-3 py-2': !circular && !square,
       'w-10 h-10': circular || square,
@@ -43,8 +43,8 @@ defineEmits(['buttonClick']);
       'text-indigo-800 hover:text-gray-700': variant === 'tertiary-light',
       'text-blue-300 hover:text-blue-400': variant === 'link',
       'text-blue-200 bg-sky-900 hover:bg-sky-800': variant === 'link-bg',
-      'text-amber-900 bg-amber-100 hover:bg-sky-800': variant === 'archive',
-      'text-white-400 bg-red-900 hover:bg-sky-800': variant === 'delete',
+      'text-amber-900 bg-amber-100 hover:bg-amber-200': variant === 'archive',
+      'text-white-400 bg-red-900 hover:bg-red-800': variant === 'delete',
       
       'whitespace-nowrap': whitespace === 'nowrap',
     }"

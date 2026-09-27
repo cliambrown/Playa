@@ -177,7 +177,7 @@ watch(
                 <Badge v-if="hasNewEpisodes" class="relative ml-2 bottom-px" variant="new">New</Badge>
               </template>
               
-              <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="flex items-center justify-center ml-4 -my-2 -mr-3 text-indigo-600 transition duration-150 ease-in-out bg-gray-100 rounded-md size-10 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
+              <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="flex items-center justify-center ml-4 -my-2 -mr-3 text-indigo-600 transition duration-150 ease-in-out bg-gray-100 rounded-md size-10 hover:bg-gray-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-icon lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
               </RouterLink>
               

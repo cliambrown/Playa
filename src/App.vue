@@ -1,18 +1,23 @@
 <script setup>
-import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { convertFileSrc } from '@tauri-apps/api/core';
-import { join } from '@tauri-apps/api/path';
-import { listen } from '@tauri-apps/api/event'
-import { appLocalDataDir } from '@tauri-apps/api/path';
 import { getVersion } from '@tauri-apps/api/app';
+import { convertFileSrc } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+import { appLocalDataDir, join } from '@tauri-apps/api/path';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { exit } from '@tauri-apps/plugin-process';
 import Database from '@tauri-apps/plugin-sql';
+import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import NavLink from './components/NavLink.vue';
 import ArchiveIcon from './icons/ArchiveIcon.vue';
-import { store } from './store.js';
 import HomeIcon from './icons/HomeIcon.vue';
 import SetttingsIcon from './icons/SetttingsIcon.vue';
+import { store } from './store.js';
+import XIcon from './icons/XIcon.vue';
+import ExpandIcon from './icons/ExpandIcon.vue';
+import ChevronDownIcon from './icons/ChevronDownIcon.vue';
+import ChevronUpIcon from './icons/ChevronUpIcon.vue';
+import DiamondIcon from './icons/DiamondIcon.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -20,6 +25,10 @@ store.route = route;
 store.router = router;
 
 const appVersion = ref(null);
+
+const appWindow = getCurrentWindow();
+const isMaximized = ref(true);
+let windowMaxUnlisten;
 
 let ctrlIsDown = false;
 
@@ -40,6 +49,10 @@ onBeforeMount(async () => {
   store.selectFirstArchivesItem();
   store.loading = false;
   appVersion.value = await getVersion();
+  isMaximized.value = await appWindow.isMaximized();
+  windowMaxUnlisten = await appWindow.onResized(async ({ payload: size }) => {
+    isMaximized.value = await appWindow.isMaximized();
+  });
 });
 
 listen('loading-event', (event) => {
@@ -47,7 +60,6 @@ listen('loading-event', (event) => {
 });
 
 function handleKeydown(event) {
-  console.log('keydown')
   switch (event.key) {
     case 'Control':
       ctrlIsDown = true;
@@ -77,6 +89,7 @@ onBeforeMount(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown);
   window.removeEventListener('keyup', handleKeyup);
+  if (windowMaxUnlisten) windowMaxUnlisten();
 });
 
 </script>
@@ -86,7 +99,7 @@ onBeforeUnmount(() => {
   <div class="flex flex-col h-full min-h-screen max-h-full">
     
     <header class="flex flex-wrap sm:flex-nowrap sm:justify-start bg-black py-2 w-full max-w-full text-sm">
-      <nav class="sm:flex sm:justify-between sm:items-center sm:gap-x-3 mx-auto px-4 w-full max-w-full" aria-label="Global">
+      <nav class="sm:flex sm:justify-between sm:items-center sm:gap-x-3 mx-auto px-4 w-full max-w-full" aria-label="Global" data-tauri-drag-region>
         
         <RouterLink :to="{ name: 'home' }" class="flex-none py-2 font-semibold text-white text-xl">
           Playa
@@ -124,6 +137,24 @@ onBeforeUnmount(() => {
             Settings
           </NavLink>
         </div>
+        
+        <div class="flex flex-row sm:justify-end items-center gap-2 mt-5 sm:mt-0 sm:ps-5">
+          
+          <button type="button" @click="appWindow.minimize()" class="inline-block px-1 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out cursor-pointer">
+            <ChevronDownIcon />
+          </button>
+          
+          <button type="button" @click="appWindow.toggleMaximize()" class="inline-block px-1 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out cursor-pointer">
+            <DiamondIcon v-if="isMaximized" />
+            <ChevronUpIcon v-else />
+          </button>
+          
+          <button type="button" @click="appWindow.close()" class="inline-block -mr-2 px-1 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out cursor-pointer">
+            <XIcon />
+          </button>
+          
+        </div>
+        
         
       </nav>
     </header>

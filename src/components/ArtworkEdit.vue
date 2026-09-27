@@ -185,7 +185,7 @@ async function replaceArtwork() {
               :class="{
                 'w-80': type === 'show',
                 'w-40': type === 'movie',
-                'ring-[2px] ring-green-400 ring-offset-[2px] ring-offset-slate-800': artworkSrcUrl === artwork.image
+                'ring-2 ring-green-400 ring-offset-2 ring-offset-slate-800': artworkSrcUrl === artwork.image
               }"
               @click="artworkSrcUrl = artwork.image; replaceArtwork()"
               >

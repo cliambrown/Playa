@@ -248,7 +248,7 @@ async function createBackup() {
           Clear unused artwork
         </Button>
         
-        <RouterLink :to="{ name: 'clearPlayback' }" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-6 text-blue-200 transition duration-150 ease-in-out rounded-md shadow-sm disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 bg-sky-900 hover:bg-sky-800">
+        <RouterLink :to="{ name: 'clearPlayback' }" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-6 text-blue-200 transition duration-150 ease-in-out rounded-md shadow-xs disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 bg-sky-900 hover:bg-sky-800">
           <HistoryIcon />
           Clear Playback Positions
         </RouterLink>
@@ -307,7 +307,7 @@ async function createBackup() {
             <label for="app_for_youtube_urls-null" class="flex items-center px-3 rounded-md cursor-pointer gap-x-2 focus-visible:ring-2 focus-visible:ring-indigo-500" tabindex="1">
               <input type="radio"
                 id="app_for_youtube_urls-null"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full focus:outline-none"
+                class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full focus:outline-hidden"
                 v-model="store.settings.app_for_youtube_urls"
                 @change="handleUpdate"
                 :disabled="store.loading"
@@ -327,7 +327,7 @@ async function createBackup() {
             <label for="app_for_youtube_urls-freetube" class="flex items-center px-3 rounded-md cursor-pointer gap-x-2 focus-visible:ring-2 focus-visible:ring-indigo-500" tabindex="1">
               <input type="radio"
                 id="app_for_youtube_urls-freetube"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full focus:outline-none"
+                class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full focus:outline-hidden"
                 v-model="store.settings.app_for_youtube_urls"
                 @change="handleUpdate"
                 :disabled="store.loading"

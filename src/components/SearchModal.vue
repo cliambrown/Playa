@@ -66,19 +66,19 @@ onBeforeUnmount(() => {
   <Transition name="backdrop-fade">
     <div
       v-show="show"
-      class="relative z-20"
+      class="z-20 relative"
       aria-labelledby="modal-title" role="dialog" aria-modal="true"
       >
-      <div class="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-75"></div>
-      <div class="fixed inset-0 z-20 w-screen h-screen">
+      <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"></div>
+      <div class="z-20 fixed inset-0 w-screen h-screen">
         <Transition name="panel-fade">
-          <div v-show="show" class="flex items-start justify-center h-full p-4 text-center">
+          <div v-show="show" class="flex justify-center items-start p-4 h-full text-center">
             
-            <div ref="panel" class="flex flex-col w-full max-w-xl max-h-full text-left text-gray-900 transition-all transform bg-white rounded-lg shadow-xl">
+            <div ref="panel" class="flex flex-col bg-white shadow-xl rounded-lg w-full max-w-xl max-h-full text-gray-900 text-left transition-all transform">
               
               <div class="px-6 pt-6">
                 <div class="flex justify-between">
-                  <h3 class="text-lg font-semibold">
+                  <h3 class="font-semibold text-lg">
                     Search Titles
                   </h3>
                   <Button variant="close" :circular="true" @click="show = false" class="-mt-3 -mr-3">
@@ -94,11 +94,11 @@ onBeforeUnmount(() => {
               </div>
               
               <div class="px-4 pb-6 overflow-y-auto">
-                <div v-if="loadingMsg && !store.search_results.length" class="px-2 mt-4 text-gray-600">
+                <div v-if="loadingMsg && !store.search_results.length" class="mt-4 px-2 text-gray-600">
                   {{ loadingMsg }}
                 </div>
                 <div v-for="itemInfo in store.search_results" class="overflow-x-visible">
-                  <RouterLink :to="{ name: 'item', params: { id: itemInfo.id } }" class="flex items-center justify-start gap-2 px-2 py-2 mt-2 transition duration-150 ease-in-out rounded hover:bg-gray-100 focus:outline-none focus:bg-blue-500 focus:text-white group">
+                  <RouterLink :to="{ name: 'item', params: { id: itemInfo.id } }" class="group flex justify-start items-center gap-2 hover:bg-gray-100 focus:bg-blue-500 mt-2 px-2 py-2 rounded-sm focus:outline-hidden focus:text-white transition duration-150 ease-in-out">
                     <span class="text-slate-600 group-focus:text-white shrink">
                       <template v-if="itemInfo.type === 'movie'">
                         <MovieIcon />
@@ -110,7 +110,7 @@ onBeforeUnmount(() => {
                         <TvIcon />
                       </template>
                     </span>
-                    <div class="overflow-hidden grow text-ellipsis whitespace-nowrap">
+                    <div class="overflow-hidden text-ellipsis whitespace-nowrap grow">
                       {{ itemInfo.name }}
                     </div>
                   </RouterLink>
@@ -127,17 +127,18 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.backdrop-fade-enter-active { @apply ease-out duration-300; }
+@reference 'tailwindcss';
+.backdrop-fade-enter-active { @apply duration-300 ease-out; }
 .backdrop-fade-enter-from { @apply opacity-0; }
 .backdrop-fade-enter-to { @apply opacity-100; }
-.backdrop-fade-leave-active { @apply ease-in duration-200; }
+.backdrop-fade-leave-active { @apply duration-200 ease-in; }
 .backdrop-fade-leave-from { @apply opacity-100; }
 .backdrop-fade-leave-to { @apply opacity-0; }
 
-.panel-fade-enter-active { @apply ease-out duration-300; }
-.panel-fade-enter-from { @apply opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95; }
-.panel-fade-enter-to { @apply opacity-100 translate-y-0 sm:scale-100; }
-.panel-fade-leav-active { @apply ease-in duration-200; }
-.panel-fade-leave-from { @apply opacity-100 translate-y-0 sm:scale-100; }
-.panel-fade-leave-to { @apply opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95; }
+.panel-fade-enter-active { @apply duration-300 ease-out; }
+.panel-fade-enter-from { @apply opacity-0 sm:scale-95 translate-y-4 sm:translate-y-0; }
+.panel-fade-enter-to { @apply opacity-100 sm:scale-100 translate-y-0; }
+.panel-fade-leav-active { @apply duration-200 ease-in; }
+.panel-fade-leave-from { @apply opacity-100 sm:scale-100 translate-y-0; }
+.panel-fade-leave-to { @apply opacity-0 sm:scale-95 translate-y-4 sm:translate-y-0; }
 </style>

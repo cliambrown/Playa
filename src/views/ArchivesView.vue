@@ -44,14 +44,14 @@ onBeforeUnmount(() => {
   
   <div class="px-12 pt-8 pb-20 overflow-y-scroll grow">
     
-    <div v-if="store.archives_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,_570px))]">
+    <div v-if="store.archives_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,570px))]">
       <ItemCard
         v-for="itemID in store.archives_show_ids"
         :itemID="itemID"
       ></ItemCard>
     </div>
     
-    <div v-if="store.archives_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,_360px))]">
+    <div v-if="store.archives_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,360px))]">
       <ItemCard
         v-for="itemID in store.archives_movie_ids"
         :itemID="itemID"
