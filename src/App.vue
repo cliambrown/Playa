@@ -98,8 +98,8 @@ onBeforeUnmount(() => {
   
   <div class="flex flex-col h-full min-h-screen max-h-full">
     
-    <header class="flex flex-wrap sm:flex-nowrap sm:justify-start bg-black py-2 w-full max-w-full text-sm">
-      <nav class="sm:flex sm:justify-between sm:items-center sm:gap-x-3 mx-auto px-4 w-full max-w-full" aria-label="Global" data-tauri-drag-region>
+    <header class="flex flex-wrap sm:flex-nowrap sm:justify-start bg-black w-full max-w-full text-sm">
+      <nav class="sm:flex sm:justify-between sm:items-center sm:gap-x-3 mx-auto ps-4 w-full max-w-full overflow-hidden" aria-label="Global" data-tauri-drag-region>
         
         <RouterLink :to="{ name: 'home' }" class="flex-none py-2 font-semibold text-white text-xl">
           Playa
@@ -138,18 +138,18 @@ onBeforeUnmount(() => {
           </NavLink>
         </div>
         
-        <div class="flex flex-row sm:justify-end items-center gap-2 mt-5 sm:mt-0 sm:ps-5">
+        <div class="flex flex-row sm:justify-end items-stretch self-stretch gap-1 sm:ps-5">
           
-          <button type="button" @click="appWindow.minimize()" class="inline-block px-1 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out cursor-pointer">
+          <button type="button" @click="appWindow.minimize()" class="px-2 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium hover:text-gray-300 transition duration-150 ease-in-out">
             <ChevronDownIcon />
           </button>
           
-          <button type="button" @click="appWindow.toggleMaximize()" class="inline-block px-1 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out cursor-pointer">
+          <button type="button" @click="appWindow.toggleMaximize()" class="px-2 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium hover:text-gray-300 transition duration-150 ease-in-out">
             <DiamondIcon v-if="isMaximized" />
             <ChevronUpIcon v-else />
           </button>
           
-          <button type="button" @click="appWindow.close()" class="inline-block -mr-2 px-1 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out cursor-pointer">
+          <button type="button" @click="appWindow.close()" class="-me-1 px-2 ps-2 pe-3 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium hover:text-gray-300 transition duration-150 ease-in-out">
             <XIcon />
           </button>
           
