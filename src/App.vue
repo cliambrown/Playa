@@ -140,17 +140,23 @@ onBeforeUnmount(() => {
         
         <div class="flex flex-row sm:justify-end items-stretch self-stretch gap-1 sm:ps-5">
           
-          <button type="button" @click="appWindow.minimize()" class="px-2 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium hover:text-gray-300 transition duration-150 ease-in-out">
-            <ChevronDownIcon />
+          <button type="button" @click="appWindow.minimize()" class="group px-1 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out">
+            <div class="flex justify-center items-center bg-transparent group-hover:bg-gray-700 rounded-full size-6 transition duration-100 ease-in-out">
+              <ChevronDownIcon />
+            </div>
           </button>
           
-          <button type="button" @click="appWindow.toggleMaximize()" class="px-2 py-2 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium hover:text-gray-300 transition duration-150 ease-in-out">
-            <DiamondIcon v-if="isMaximized" />
-            <ChevronUpIcon v-else />
+          <button type="button" @click="appWindow.toggleMaximize()" class="group px-1 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out">
+            <div class="flex justify-center items-center bg-transparent group-hover:bg-gray-700 rounded-full size-6 transition duration-100 ease-in-out">
+              <DiamondIcon v-if="isMaximized" />
+              <ChevronUpIcon v-else />
+            </div>
           </button>
           
-          <button type="button" @click="appWindow.close()" class="-me-1 px-2 ps-2 pe-3 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium hover:text-gray-300 transition duration-150 ease-in-out">
-            <XIcon />
+          <button type="button" @click="appWindow.close()" class="group -me-1 ps-2 pe-3 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out">
+            <div class="flex justify-center items-center bg-transparent group-hover:bg-gray-700 rounded-full size-6 transition duration-100 ease-in-out">
+              <XIcon />
+            </div>
           </button>
           
         </div>
