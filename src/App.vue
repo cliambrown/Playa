@@ -146,7 +146,7 @@ onBeforeUnmount(() => {
             <div v-show="statusMsgHistoryList.length > 1 && showStatusHistory" class="top-full -right-3 -left-3 z-20 absolute bg-black ring-opacity-5 shadow-black shadow-lg p-3 border border-gray-600 rounded-md focus:outline-hidden ring-1 ring-black max-h-[410px] overflow-y-auto">
               <ul class="flex flex-col gap-6">
                 <template v-for="msg in statusMsgHistoryList">
-                  <li v-if="!store.status_msg || msg.timestamp != store.status_msg_timestamp">
+                  <li>
                     {{ msg.msg }}
                     <div class="text-gray-400 text-sm">
                       {{ msg.date.toLocaleString() }}
