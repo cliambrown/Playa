@@ -20,9 +20,9 @@ let backupImportSrc = ref('');
 
 async function handleUpdate() {
   window.clearTimeout(updateTimeoutId);
-  store.loading_msg = 'Waiting...';
+  store.setStatusMsg('Waiting...');
   updateTimeoutId = window.setTimeout(async () => {
-    store.loading_msg = 'Saving...';
+    store.setStatusMsg('Saving...');
     let query = '';
     let paramsArr = [];
     for (const property in store.settings) {
@@ -31,7 +31,7 @@ async function handleUpdate() {
     }
     const response = await store.db.execute(query, paramsArr);
     if (parseInt(useGetProp(response, 'rowsAffected'))) {
-      store.loading_msg = 'Settings saved';
+      store.setStatusMsg('Settings saved', true, true);
     }
     console.log('settings handleUpdate', response);
   }, 500);
@@ -41,7 +41,7 @@ async function clearUnusedArtwork() {
   const confirmed = await confirm('Are you sure you want to delete unused images?', { title: 'Playa - Delete Unused Artwork', type: 'warning' });
   if (!confirmed) return false;
   store.loading = true;
-  store.loading_msg = 'Deleting unused artwork...';
+  store.setStatusMsg('Deleting unused artwork...');
   let filenamesToKeep = [];
   const rows = await store.db.select(`SELECT artwork_filename FROM items`);
   for (const row of rows) {
@@ -52,7 +52,7 @@ async function clearUnusedArtwork() {
     filenamesToKeep: filenamesToKeep,
   });
   console.log('clearUnusedArtwork', response);
-  store.loading_msg = response;
+  store.setStatusMsg(response, true, true);
   store.loading = false;
 }
 
@@ -60,7 +60,7 @@ async function importBackup() {
   if (!backupImportSrc.value) return false;
   const confirmed = await confirm('This will overwrite settings and insert items. Are you sure you want to proceed?', { title: 'Playa - Import Backup', type: 'warning' });
   store.loading = true;
-  store.loading_msg = 'Getting backup data...';
+  store.setStatusMsg('Getting backup data...');
   await store.loadFromDB();
   const filename = backupImportSrc.value.replace(/^.*[\\/]/, '');
   let contents;
@@ -178,7 +178,7 @@ async function importBackup() {
   store.selectFirstHomeItem()
   store.selectFirstArchivesItem();
   
-  store.loading_msg = `Import complete. Items added: ${itemsAdded} — Items updated: ${itemsUpdated} — Episodes added: ${episodesAdded} — Episodes updated: ${episodesUpdated}`;
+  store.setStatusMsg(`Import complete. Items added: ${itemsAdded} — Items updated: ${itemsUpdated} — Episodes added: ${episodesAdded} — Episodes updated: ${episodesUpdated}`, true);
   store.loading = false;
 }
 
@@ -229,12 +229,12 @@ async function createBackup() {
 
 <template>
   
-  <div class="w-full px-4 pt-8 pb-20 overflow-y-auto grow">
-    <form action="" method="get" @submit.prevent autocomplete="off" class="w-full max-w-4xl mx-auto">
+  <div class="px-4 pt-8 pb-20 w-full overflow-y-auto grow">
+    <form action="" method="get" @submit.prevent autocomplete="off" class="mx-auto w-full max-w-4xl">
       
       <div class="flex items-center gap-6">
         
-        <h2 class="text-2xl text-slate-200 grow">
+        <h2 class="text-slate-200 text-2xl grow">
           Settings
         </h2>
         
@@ -248,7 +248,7 @@ async function createBackup() {
           Clear unused artwork
         </Button>
         
-        <RouterLink :to="{ name: 'clearPlayback' }" class="inline-flex items-center px-3 py-2 text-sm font-medium leading-6 text-blue-200 transition duration-150 ease-in-out rounded-md shadow-xs disabled:opacity-60 disabled:pointer-events-none gap-x-2 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 bg-sky-900 hover:bg-sky-800">
+        <RouterLink :to="{ name: 'clearPlayback' }" class="inline-flex items-center gap-x-2 bg-sky-900 hover:bg-sky-800 disabled:opacity-60 shadow-xs px-3 py-2 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 font-medium text-blue-200 text-sm leading-6 transition duration-150 ease-in-out disabled:pointer-events-none">
           <HistoryIcon />
           Clear Playback Positions
         </RouterLink>
@@ -277,7 +277,7 @@ async function createBackup() {
         </template>
       </InputWithLabel>
       
-      <InputWithLabel class="max-w-md mt-10" id="tvdb_apikey" v-model="store.settings.tvdb_apikey" :readonly="store.loading" @input="handleUpdate">
+      <InputWithLabel class="mt-10 max-w-md" id="tvdb_apikey" v-model="store.settings.tvdb_apikey" :readonly="store.loading" @input="handleUpdate">
         TVDB API Key
       </InputWithLabel>
       
@@ -285,7 +285,7 @@ async function createBackup() {
         TVDB PIN
       </InputWithLabel>
       
-      <InputWithLabel class="max-w-md mt-10" id="youtube_api_key" v-model="store.settings.youtube_api_key" :readonly="store.loading" @input="handleUpdate">
+      <InputWithLabel class="mt-10 max-w-md" id="youtube_api_key" v-model="store.settings.youtube_api_key" :readonly="store.loading" @input="handleUpdate">
         YouTube API Key
       </InputWithLabel>
       
@@ -301,13 +301,13 @@ async function createBackup() {
       </InputWithLabel>
       
       <fieldset class="mt-10">
-        <legend class="block mb-2 text-sm font-medium leading-6">App to handle YouTube URLs</legend>
+        <legend class="block mb-2 font-medium text-sm leading-6">App to handle YouTube URLs</legend>
         <div class="flex items-center gap-x-8">
           <div class="flex items-center">
-            <label for="app_for_youtube_urls-null" class="flex items-center px-3 rounded-md cursor-pointer gap-x-2 focus-visible:ring-2 focus-visible:ring-indigo-500" tabindex="1">
+            <label for="app_for_youtube_urls-null" class="flex items-center gap-x-2 px-3 rounded-md focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer" tabindex="1">
               <input type="radio"
                 id="app_for_youtube_urls-null"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full focus:outline-hidden"
+                class="border-gray-300 rounded-full focus:outline-hidden w-4 h-4 text-indigo-600"
                 v-model="store.settings.app_for_youtube_urls"
                 @change="handleUpdate"
                 :disabled="store.loading"
@@ -324,10 +324,10 @@ async function createBackup() {
             </label>
           </div>
           <div class="flex items-center">
-            <label for="app_for_youtube_urls-freetube" class="flex items-center px-3 rounded-md cursor-pointer gap-x-2 focus-visible:ring-2 focus-visible:ring-indigo-500" tabindex="1">
+            <label for="app_for_youtube_urls-freetube" class="flex items-center gap-x-2 px-3 rounded-md focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer" tabindex="1">
               <input type="radio"
                 id="app_for_youtube_urls-freetube"
-                class="w-4 h-4 text-indigo-600 border-gray-300 rounded-full focus:outline-hidden"
+                class="border-gray-300 rounded-full focus:outline-hidden w-4 h-4 text-indigo-600"
                 v-model="store.settings.app_for_youtube_urls"
                 @change="handleUpdate"
                 :disabled="store.loading"
@@ -348,7 +348,7 @@ async function createBackup() {
       
       <div class="flex items-center gap-6 mt-24">
         
-        <h3 class="mr-auto text-xl text-slate-200">
+        <h3 class="mr-auto text-slate-200 text-xl">
           Import Backup
         </h3>
         
@@ -375,7 +375,7 @@ async function createBackup() {
         </template>
       </InputWithLabel>
       
-      <ul class="pl-6 mt-4 text-gray-300 list-disc">
+      <ul class="mt-4 pl-6 text-gray-300 list-disc">
         <li>Does not check the validity of import info before processing</li>
         <li>Overwrites any settings found in import file</li>
         <li>Updates item info only if import data is newer than current data</li>

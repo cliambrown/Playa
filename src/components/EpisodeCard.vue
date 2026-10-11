@@ -68,12 +68,12 @@ watch(showEdit, async (newVal) => {
 
 async function handleUpdate() {
   window.clearTimeout(updateTimeoutId);
-  store.loading_msg = 'Waiting...';
+  store.setStatusMsg('Waiting...');
   updateTimeoutId = window.setTimeout(async () => {
-    store.loading_msg = 'Saving Episode...';
+    store.setStatusMsg('Saving Episode...');
     const response = await episode.value.saveToDB();
     if (parseInt(useGetProp(response, 'rowsAffected'))) {
-      store.loading_msg = 'Episode saved';
+      store.setStatusMsg('Episode saved: ' + episode.value.name, true, true);
     }
   }, 500);
 }
@@ -98,18 +98,18 @@ watch(
 
 <template>
   <div
-    class="relative my-6 text-left text-gray-900 transition duration-150 ease-in-out rounded-lg shadow-md"
+    class="relative shadow-md my-6 rounded-lg text-gray-900 text-left transition duration-150 ease-in-out"
     :class="{
       'ring-[6px] ring-green-400 ring-offset-[6px] ring-offset-gray-900': isSelected
     }"
     >
     
-    <div v-if="episodeID === 0" class="flex items-center gap-2 px-6 py-4 bg-white rounded-lg">
+    <div v-if="episodeID === 0" class="flex items-center gap-2 bg-white px-6 py-4 rounded-lg">
       <UnplayedIcon />
       Unfinished
     </div>
     
-    <div v-else-if="episodeID === null" class="flex items-center gap-2 px-6 py-4 bg-white rounded-lg">
+    <div v-else-if="episodeID === null" class="flex items-center gap-2 bg-white px-6 py-4 rounded-lg">
       <PlayedIcon class="text-green-700" />
       <span>
         Finished
@@ -122,17 +122,17 @@ watch(
         
         <div class="flex items-start gap-4">
           
-          <div class="text-xl font-semibold">
-            <Badge v-if="episode.is_new" class="relative bottom-0.5 mr-2" variant="new">
+          <div class="font-semibold text-xl">
+            <Badge v-if="episode.is_new" class="bottom-0.5 relative mr-2" variant="new">
               New
             </Badge>
-            <Badge v-if="episode.is_updated" class="relative bottom-0.5 mr-2" variant="updated">
+            <Badge v-if="episode.is_updated" class="bottom-0.5 relative mr-2" variant="updated">
               Updated
             </Badge>
-            <Badge v-if="episode.is_season_finale && !episode.is_series_finale" class="relative bottom-0.5 mr-2" variant="seasonfinale">
+            <Badge v-if="episode.is_season_finale && !episode.is_series_finale" class="bottom-0.5 relative mr-2" variant="seasonfinale">
               Season Finale
             </Badge>
-            <Badge v-if="episode.is_series_finale" class="relative bottom-0.5 mr-2" variant="seriesfinale">
+            <Badge v-if="episode.is_series_finale" class="bottom-0.5 relative mr-2" variant="seriesfinale">
               Series Finale
             </Badge>
             <span v-if="item.source !== 'ytPlaylist'" class="mr-2">
@@ -141,7 +141,7 @@ watch(
             <span>{{ episode.name }}</span>
           </div>
           
-          <Button variant="tertiary-light" :square="true" class="ml-auto -mx-2 -mt-2" @click.stop="showEdit = !showEdit">
+          <Button variant="tertiary-light" :square="true" class="-mx-2 -mt-2 ml-auto" @click.stop="showEdit = !showEdit">
             <EditIcon />
           </Button>
           
@@ -180,11 +180,11 @@ watch(
           
           <div v-show="expanded && episode.overview && (episode.filename || episode.url)" class="mt-1 text-slate-600">
             <template v-if="episode.filename">
-              <FileIcon class="relative inline-block mr-1 text-slate-600 bottom-0.5" />
+              <FileIcon class="inline-block bottom-0.5 relative mr-1 text-slate-600" />
               {{ episode.filename }}
             </template>
             <template v-else>
-              <GlobeIcon class="relative inline-block mr-1 text-slate-600 bottom-0.5" />
+              <GlobeIcon class="inline-block bottom-0.5 relative mr-1 text-slate-600" />
               {{ episode.url }}
             </template>
           </div>
@@ -193,7 +193,7 @@ watch(
         
       </div>
       
-      <div v-show="showEdit" class="px-6 pt-4 pb-6 bg-gray-100 rounded-b-lg" @click.stop>
+      <div v-show="showEdit" class="bg-gray-100 px-6 pt-4 pb-6 rounded-b-lg" @click.stop>
         
         <InputWithLabel class="w-full" :isDark="false" :id="`episode-${episode.id}-name`" v-model="episode.name" :readonly="store.loading">
           Name
@@ -235,7 +235,7 @@ watch(
       
     </div>
     
-    <div class="absolute left-0 right-0 opacity-0 pointer-events-none -top-10 -bottom-10 -z-10" ref="wrapper"></div>
+    <div class="-top-10 right-0 -bottom-10 left-0 -z-10 absolute opacity-0 pointer-events-none" ref="wrapper"></div>
     
   </div>
 </template>

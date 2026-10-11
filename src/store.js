@@ -24,7 +24,10 @@ export const store = reactive({
   artworks_dir_url: null,
   db: null,
   loading: false,
-  loading_msg: null,
+  status_msg: null,
+  status_msg_timestamp: null,
+  status_msg_timeout: null,
+  status_msg_history: [],
   router: null,
   route: null,
   tvdb_token: null,
@@ -73,6 +76,24 @@ export const store = reactive({
     this.scan_results.new_episodes_count = 0;
     this.scan_results.deleted_items_count = 0;
     this.scan_results.deleted_episodes_count = 0;
+  },
+  
+  setStatusMsg(msg, saveToHistory = false, timeout = false) {
+    if (this.status_msg_timeout) window.clearTimeout(this.status_msg_timeout);
+    const timestamp = Date.now();
+    if (msg && saveToHistory) this.status_msg_history.unshift({
+      msg: msg,
+      date: new Date(),
+      timestamp: timestamp,
+    });
+    this.status_msg = msg;
+    this.status_msg_timestamp = timestamp;
+    if (timeout) {
+      this.status_msg_timeout = window.setTimeout(() => {
+        this.status_msg = null;
+        this.status_msg_timestamp = null;
+      }, 15000);
+    }
   },
   
   addItem(itemData) {
@@ -259,7 +280,7 @@ export const store = reactive({
       return false;
     }
     this.loading = true;
-    this.loading_msg = 'Starting scan...';
+    this.setStatusMsg('Starting scan...');
     this.resetScanResults();
     let response;
     for (const itemID of this.item_ids) {
@@ -276,7 +297,7 @@ export const store = reactive({
       return false;
     }
     console.log('scan_shows', response);
-    this.loading_msg = 'Processing files...';
+    this.setStatusMsg('Processing files...');
     // Add shows
     let foundShowDirNames = useGetProp(response, 'show_dir_names', []);
     let itemsByDirName = {};
@@ -305,7 +326,7 @@ export const store = reactive({
         }
       }
     }
-    this.loading_msg = 'Finishing up...';
+    this.setStatusMsg('Finishing up...');
     // Prune and sort
     await this.pruneMissingShows(foundShowDirNames);
     await this.pruneMissingEpisodes(foundEpisodePathnames);
@@ -315,7 +336,7 @@ export const store = reactive({
       this.items[itemID].setCurrentEpToNewEp();
     }
     this.sortItems();
-    this.loading_msg = `Scan complete. New items: ${this.scan_results.new_item_ids.size} — Items with new episodes: ${this.scan_results.item_ids_with_new_episodes.size} — New episodes: ${this.scan_results.new_episodes_count} — Deleted items: ${this.scan_results.deleted_items_count} — Deleted episodes: ${this.scan_results.deleted_episodes_count}`
+    this.setStatusMsg(`Scan complete. New items: ${this.scan_results.new_item_ids.size} — Items with new episodes: ${this.scan_results.item_ids_with_new_episodes.size} — New episodes: ${this.scan_results.new_episodes_count} — Deleted items: ${this.scan_results.deleted_items_count} — Deleted episodes: ${this.scan_results.deleted_episodes_count}`, true);
     this.loading = false;
   },
   
@@ -324,7 +345,7 @@ export const store = reactive({
       return false;
     }
     this.loading = true;
-    this.loading_msg = 'Starting scan...';
+    this.setStatusMsg('Starting scan...');
     this.resetScanResults();
     // Scan movies
     let response;
@@ -356,11 +377,11 @@ export const store = reactive({
       }
       foundMoviePathnames.push(movieData.pathname);
     }
-    this.loading_msg = 'Finishing up...';
+    this.setStatusMsg('Finishing up...');
     // Prune and sort
     await this.pruneMissingMovies(foundMoviePathnames);
     this.sortItems();
-    this.loading_msg = `Scan complete. New items: ${this.scan_results.new_item_ids.size} — Deleted items: ${this.scan_results.deleted_items_count}`;
+    this.setStatusMsg(`Scan complete. New items: ${this.scan_results.new_item_ids.size} — Deleted items: ${this.scan_results.deleted_items_count}`, true);
     this.loading = false;
   },
   
@@ -490,9 +511,9 @@ export const store = reactive({
       updatedItems++;
     }
     if (updatedItems) {
-      store.loading_msg = `${updatedItems} playlist${updatedItems === 1 ? '' : 's'} updated from YouTube — ${itemsWithNewVideos} item${itemsWithNewVideos == 1 ? '' : 's'} with new videos — ${addedVideos} total video${addedVideos === 1 ? '' : 's'} added`;
+      store.setStatusMsg(`${updatedItems} playlist${updatedItems === 1 ? '' : 's'} updated from YouTube — ${itemsWithNewVideos} item${itemsWithNewVideos == 1 ? '' : 's'} with new videos — ${addedVideos} total video${addedVideos === 1 ? '' : 's'} added`, true);
     } else {
-      store.loading_msg = '';
+      store.setStatusMsg('');
     }
   },
   

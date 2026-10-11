@@ -291,11 +291,11 @@ Item.prototype.getPlayingMsg = function() {
 Item.prototype.play = function() {
   if (this.source === 'local') {
     if (this.type === 'movie' ) {
-      store.loading_msg = this.getPlayingMsg();
+      store.setStatusMsg(this.getPlayingMsg(), true, true);
       openPath(this.pathname);
     } else {
       if (!this.current_episode_id) return false;
-      store.loading_msg = this.getPlayingMsg();
+      store.setStatusMsg(this.getPlayingMsg(), true, true);
       openPath(this.episodes[this.current_episode_id].pathname);
     }
   } else {
@@ -311,7 +311,7 @@ Item.prototype.play = function() {
       url = this.episodes[this.current_episode_id].url;
     }
     if (!url) return false;
-    store.loading_msg = this.getPlayingMsg();
+    store.setStatusMsg(this.getPlayingMsg(), true, true);
     if (store.settings.app_for_youtube_urls === 'freetube' && isYoutubeUrl(url)) openUrl(url, 'freetube');
     else openUrl(url);
   }
@@ -323,11 +323,11 @@ Item.prototype.play = function() {
 Item.prototype.updateEpisodesFromTvdb = async function() {
   if (!this.tvdb_id) return false;
   
-  store.loading_msg = 'Loading episodes...';
+  store.setStatusMsg('Loading episodes...');
   
   const tvdbEpisodes = await getEpisodes(store, this.tvdb_id, this.source);
   if (!tvdbEpisodes) {
-    store.loading_msg = 'No episodes retrieved';
+    store.setStatusMsg('No episodes retrieved');
     return false;
   }
   
@@ -370,7 +370,7 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
       }
     }
     this.sortEpisodes();
-    store.loading_msg = `${updatedCount} episode${updatedCount == 1 ? '' : 's'} updated`;
+    store.setStatusMsg(`${updatedCount} episode${updatedCount == 1 ? '' : 's'} updated`, true);
     
   } else {
     
@@ -426,7 +426,7 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
     this.sortEpisodes();
     this.setCurrentEpToNewEp();
     this.updateUpdatedFromSourceAt();
-    store.loading_msg = `${addedCount} episode${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
+    store.setStatusMsg(`${addedCount} episode${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`, true);
     
   }
 }
@@ -442,13 +442,13 @@ Item.prototype.updateEpisodesFromYoutube = async function() {
     return false;
   }
   if (!playlistID) return false;
-  store.loading_msg = 'Loading videos for ' + this.name + '...';
+  store.setStatusMsg('Loading videos for ' + this.name + '...');
   let addedCount = 0;
   let updatedCount = 0;
   let foundEpisodeIDs = [];
   const videosData = await getYtPlaylistVideos(playlistID, store.settings.youtube_api_key);
   if (!videosData || !Array.isArray(videosData)) {
-    store.loading_msg = 'Invalid response';
+    store.setStatusMsg('Invalid response');
     return false;
   }
   for (const videoData of videosData) {
@@ -493,7 +493,7 @@ Item.prototype.updateEpisodesFromYoutube = async function() {
   this.sortEpisodes();
   this.setCurrentEpToNewEp();
   this.updateUpdatedFromSourceAt();
-  // store.loading_msg = `${addedCount} video${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`;
+  // store.setStatusMsg(`${addedCount} video${addedCount == 1 ? '' : 's'} added, ${updatedCount} updated`, true);
   return { added_count: addedCount, updated_count: updatedCount };
 }
 

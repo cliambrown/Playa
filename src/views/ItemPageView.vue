@@ -72,12 +72,12 @@ const updatedFromSourceAt = computed(() => {
 
 async function handleUpdate() {
   window.clearTimeout(updateTimeoutId);
-  store.loading_msg = 'Waiting...';
+  store.setStatusMsg('Waiting...');
   updateTimeoutId = window.setTimeout(async () => {
-    store.loading_msg = 'Saving Item...';
+    store.setStatusMsg('Saving Item...');
     const response = await item.value.saveToDB();
     if (parseInt(useGetProp(response, 'rowsAffected'))) {
-      store.loading_msg = 'Item saved';
+      store.setStatusMsg('Item saved: ' + item.value.name, true, true);
     }
   }, 500);
 }
@@ -150,7 +150,7 @@ async function updateEpisodesFromYoutube() {
   if (!item.value) return false;
   store.loading = true;
   const results = await item.value.updateEpisodesFromYoutube();
-  store.loading_msg = `${results.added_count} video${results.added_count == 1 ? '' : 's'} added, ${results.updated_count} updated`;
+  store.setStatusMsg(`${results.added_count} video${results.added_count == 1 ? '' : 's'} added, ${results.updated_count} updated`, true);
   store.loading = false;
 }
 
@@ -159,7 +159,7 @@ async function deleteItem() {
   const confirmed = await confirm('Are you sure you want to delete this item?', { title: 'Playa - Delete Item', type: 'warning' });
   if (!confirmed) return false;
   await item.value.delete();
-  store.loading_msg = 'Item deleted';
+  store.setStatusMsg('Item deleted: ' + item.value.name, true, true);
   store.router.push({ name: 'home' });
 }
 
@@ -211,7 +211,7 @@ onBeforeUnmount(() => {
   
   <div
     v-if="!!item"
-    class="w-full pt-8 grow"
+    class="pt-8 w-full grow"
     :class="{
       'flex flex-col max-h-full mx-auto': item.episode_ids.length,
       'overflow-y-auto': !item.episode_ids.length
@@ -219,7 +219,7 @@ onBeforeUnmount(() => {
     >
     
     <div
-      class="w-full max-w-4xl px-4 mx-auto"
+      class="mx-auto px-4 w-full max-w-4xl"
       :class="{
         'shrink-0': item.episode_ids.length,
         'w-full': !item.episode_ids.length
@@ -227,7 +227,7 @@ onBeforeUnmount(() => {
       >
       
       <div
-        class="flex items-center justify-center bg-gray-700"
+        class="flex justify-center items-center bg-gray-700"
         :class="{
           'min-h-32': item.type === 'show',
           'min-h-56': item.type === 'movie'
@@ -236,9 +236,9 @@ onBeforeUnmount(() => {
         <img :src="artworkAssetUrl" :class="{'max-w-80': item.type === 'movie'}">
       </div>
       
-      <div class="flex items-start mt-4 gap-x-4">
+      <div class="flex items-start gap-x-4 mt-4">
         
-        <h2 class="text-2xl text-slate-200 grow">
+        <h2 class="text-slate-200 text-2xl grow">
           {{ displayName }}
         </h2>
         
@@ -249,7 +249,7 @@ onBeforeUnmount(() => {
         
         <Button v-if="item.dir_name || item.pathname" variant="link" @click="item.openFileOrFolder()" class="max-w-64">
           <FolderIcon />
-          <span class="overflow-hidden whitespace-nowrap text-ellipsis">
+          <span class="overflow-hidden text-ellipsis whitespace-nowrap">
             <template v-if="item.dir_name">Folder</template>
             <template v-else>Show File</template>
           </span>
@@ -375,13 +375,13 @@ onBeforeUnmount(() => {
       
       <div v-if="item.id && (!showEdit || !item.episode_ids.length)" class="mt-12">
         
-        <div v-if="item.id && item.source === 'ytPlaylist'" class="mb-3 text-xs text-right text-gray-300">
+        <div v-if="item.id && item.source === 'ytPlaylist'" class="mb-3 text-gray-300 text-xs text-right">
           Last updated: {{ updatedFromSourceAt }}
         </div>
         
         <div v-if="item.id" class="flex items-center gap-x-4">
           
-          <h3 v-if="item.type === 'show'" class="mr-auto text-xl text-slate-200">
+          <h3 v-if="item.type === 'show'" class="mr-auto text-slate-200 text-xl">
             {{ item.episode_ids.length }}
             Episodes
           </h3>
@@ -418,14 +418,14 @@ onBeforeUnmount(() => {
     
     <div
       v-if="item.id && (!showEdit || !item.episode_ids.length)"
-      class="pb-12 mt-4 overflow-y-scroll grow"
+      class="mt-4 pb-12 overflow-y-scroll grow"
       :class="{
         'min-h-40': item.episode_ids.length,
         'min-h-24': !item.episode_ids.length
       }"
       >
       
-      <div class="max-w-4xl pl-6 pr-2 mx-auto">
+      <div class="mx-auto pr-2 pl-6 max-w-4xl">
         
         <EpisodeCard
           v-if="!item.episode_ids.length"

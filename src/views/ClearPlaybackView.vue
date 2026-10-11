@@ -33,7 +33,7 @@ function addEntryByFilename(entry) {
 async function getPlaybackPositions() {
   if (!store.settings.mpv_watched_dir) return false;
   store.loading = true;
-  store.loading_msg = null;
+  store.setStatusMsg(null);
   let entries;
   try {
     entries = await invoke('get_playback_positions', { dir: store.settings.mpv_watched_dir });
@@ -83,7 +83,7 @@ watch(
 )
 
 async function deleteSelectedEntries() {
-  store.loading_msg = null;
+  store.setStatusMsg(null);
   store.loading = true;
   let response = await invoke('trash_files', {
     dir: store.settings.mpv_watched_dir,
@@ -98,13 +98,13 @@ async function deleteSelectedEntries() {
 
 <template>
   
-  <div class="w-full px-4 pt-8 pb-20 overflow-y-auto grow">
+  <div class="px-4 pt-8 pb-20 w-full overflow-y-auto grow">
     
-    <div class="w-full max-w-6xl mx-auto">
+    <div class="mx-auto w-full max-w-6xl">
       
       <div class="flex gap-x-6">
         
-        <h2 class="mr-auto text-2xl text-slate-200">
+        <h2 class="mr-auto text-slate-200 text-2xl">
           Clear Playback Positions
         </h2>
         
@@ -128,7 +128,7 @@ async function deleteSelectedEntries() {
     
   </div>
   
-  <div class="flex items-center justify-end p-4 bg-gray-900 gap-x-4">
+  <div class="flex justify-end items-center gap-x-4 bg-gray-900 p-4">
       
     <div>
       {{ selectedEntries.length }} selected:
