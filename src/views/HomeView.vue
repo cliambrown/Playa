@@ -320,15 +320,15 @@ onBeforeUnmount(() => {
         <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
           <div v-if="showScanMenu" class="left-0 z-10 absolute bg-slate-900 ring-opacity-5 shadow-black shadow-lg mt-2 border border-gray-600 rounded-md focus:outline-hidden ring-1 ring-black w-full origin-top-right" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
-              <button type="button" @click="scanShows" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm">
+              <button type="button" @click="scanShows" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm cursor-pointer">
                 <TvIcon />
                 Local Shows
               </button>
-              <button type="button" @click="scanMovies" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm">
+              <button type="button" @click="scanMovies" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm cursor-pointer">
                 <MovieIcon />
                 Local Movies
               </button>
-              <button type="button" @click="updateAllYtPlaylistsFromSource" class="flex justify-left items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm whitespace-nowrap">
+              <button type="button" @click="updateAllYtPlaylistsFromSource" class="flex justify-left items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm whitespace-nowrap cursor-pointer">
                 <YoutubeIcon />
                 YouTube Playlists
               </button>

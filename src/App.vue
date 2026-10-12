@@ -135,7 +135,7 @@ onBeforeUnmount(() => {
         </div>
         
         <div class="relative flex items-stretch self-stretch text-green-600 text-base grow"- ref="statusMsgHistory">
-          <button type="button" class="flex items-center w-full overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer" @click="showStatusHistory = !showStatusHistory">
+          <button type="button" class="flex items-center w-full overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer" @click="showStatusHistory = !showStatusHistory" data-tauri-drag-region>
             <div class="mt-1">
               {{ store.status_msg }}
             </div>
@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
           </transition>
         </div>
         
-        <div class="flex flex-row sm:justify-end items-center gap-5 mt-5 sm:mt-0 ml-auto sm:ps-5 shrink-0">
+        <div class="flex flex-row sm:justify-end items-center gap-5 mt-5 sm:mt-0 ml-auto sm:ps-5 shrink-0" @click.stop>
           <NavLink :to="{ name: 'home' }" :isActive="$route.name === 'home'">
             <HomeIcon />
             Home
@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
           </NavLink>
         </div>
         
-        <div class="flex flex-row sm:justify-end items-stretch self-stretch gap-1 sm:ps-5 overflow-hidden shrink-0">
+        <div class="flex flex-row sm:justify-end items-stretch self-stretch gap-1 sm:ps-5 overflow-hidden shrink-0" @click.stop>
           
           <button type="button" @click="appWindow.minimize()" class="group px-1 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out">
             <div class="flex justify-center items-center bg-transparent group-hover:bg-gray-700 rounded-full size-6 transition duration-100 ease-in-out">

@@ -129,11 +129,17 @@ watch(
             <Badge v-if="episode.is_updated" class="bottom-0.5 relative mr-2" variant="updated">
               Updated
             </Badge>
+            <Badge v-if="episode.episode_num == 1 && episode.season_num != 0" class="bottom-0.5 relative mr-2" variant="premiere">
+              Season premiere
+            </Badge>
             <Badge v-if="episode.is_season_finale && !episode.is_series_finale" class="bottom-0.5 relative mr-2" variant="seasonfinale">
               Season Finale
             </Badge>
             <Badge v-if="episode.is_series_finale" class="bottom-0.5 relative mr-2" variant="seriesfinale">
               Series Finale
+            </Badge>
+            <Badge v-if="episode.is_special" class="bottom-0.5 relative mr-2" variant="special">
+              Special
             </Badge>
             <span v-if="item.source !== 'ytPlaylist'" class="mr-2">
               {{ episode.sXXeXX }}
@@ -224,6 +230,8 @@ watch(
           <CheckboxWithLabel :input_id="`episode-${episode.id}-is_season_finale`" @checkbox-change="handleUpdate" v-model="episode.is_season_finale" :readonly="store.loading" @input="handleUpdate" :trueValue="1" :falseValue="0">Season Finale</CheckboxWithLabel>
           
           <CheckboxWithLabel :input_id="`episode-${episode.id}-is_series_finale`" @checkbox-change="handleUpdate" v-model="episode.is_series_finale" :readonly="store.loading" @input="handleUpdate" :trueValue="1" :falseValue="0">Series Finale</CheckboxWithLabel>
+          
+          <CheckboxWithLabel :input_id="`episode-${episode.id}-is_special`" @checkbox-change="handleUpdate" v-model="episode.is_special" :readonly="store.loading" @input="handleUpdate" :trueValue="1" :falseValue="0">Special</CheckboxWithLabel>
           
         </div>
         

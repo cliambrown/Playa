@@ -348,17 +348,20 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
           const origReleasedOn = episode.released_on;
           const origIsSeasonFinale = episode.is_season_finale;
           const origIsSeriesFinale = episode.is_series_finale;
+          const origIsSpecial = episode.is_special;
           episode.name = tvdbEpisode.name;
           episode.overview = tvdbEpisode.overview;
           episode.released_on = tvdbEpisode.released_on;
           episode.is_season_finale = tvdbEpisode.is_season_finale;
           episode.is_series_finale = tvdbEpisode.is_series_finale;
+          episode.is_special = tvdbEpisode.is_special;
           if (
             origName !== episode.name
             || origOverview !== episode.overview
             || origReleasedOn !== episode.released_on
             || origIsSeasonFinale != episode.is_season_finale
             || origIsSeriesFinale != episode.is_series_finale
+            || origIsSpecial != episode.is_special
           ) {
             episode.setSearchableText();
             episode.saveToDB();
@@ -396,12 +399,14 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
         const origDuration = episode.duration;
         const origIsSeasonFinale = episode.is_season_finale;
         const origIsSeriesFinale = episode.is_series_finale;
+        const origIsSpecial = episode.is_special;
         episode.name = tvdbEpisode.name;
         episode.overview = tvdbEpisode.overview;
         episode.released_on = tvdbEpisode.released_on;
         episode.duration = tvdbEpisode.duration;
         episode.is_season_finale = tvdbEpisode.is_season_finale;
         episode.is_series_finale = tvdbEpisode.is_series_finale;
+        episode.is_special = tvdbEpisode.is_special;
         if (
           origName !== episode.name
           || origOverview !== episode.overview
@@ -409,6 +414,7 @@ Item.prototype.updateEpisodesFromTvdb = async function() {
           || origDuration !== episode.duration
           || origIsSeasonFinale != episode.is_season_finale
           || origIsSeriesFinale != episode.is_series_finale
+          || origIsSpecial != episode.is_special
         ) {
           episode.setSearchableText();
           episode.saveToDB();

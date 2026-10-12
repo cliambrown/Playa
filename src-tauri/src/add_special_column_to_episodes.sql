@@ -1,0 +1,1 @@
+ALTER TABLE episodes ADD COLUMN is_special INTEGER DEFAULT 0;

@@ -12,10 +12,14 @@ const props = defineProps({
           return 'emerald';
         case 'updated':
           return 'slate';
+        case 'premiere':
+          return 'teal';
         case 'seasonfinale':
           return 'violet';
         case 'seriesfinale':
           return 'rose';
+        case 'special':
+          return 'fuchsia';
         default:
           return 'green';
       }
@@ -26,7 +30,7 @@ const props = defineProps({
 
 <template>
   <span
-    class="inline-block px-2 text-sm text-white rounded-full bottom-0.5 font-semibold tracking-wider"
+    class="inline-block bottom-0.5 px-2 rounded-full font-semibold text-white text-sm tracking-wider"
     :class="{
       'bg-slate-700': color === 'slate',
       'bg-gray-700': color === 'gray',

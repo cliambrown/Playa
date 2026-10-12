@@ -72,6 +72,12 @@ fn main() {
             sql: include_str!("./add_yt_playlist_option_to_items.sql"),
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "add_special_column_to_episodes",
+            sql: include_str!("./add_special_column_to_episodes.sql"),
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

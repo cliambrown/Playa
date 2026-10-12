@@ -108,7 +108,7 @@ watch(
   <div
     v-if="!!item"
     @click="setAsSelected"
-    class="relative w-full transition duration-150 ease-in-out sm:w-auto"
+    class="relative w-full sm:w-auto transition duration-150 ease-in-out"
     :class="{
       'rounded-xl': item.type === 'show',
       'rounded-b-xl': item.type === 'movie',
@@ -118,7 +118,7 @@ watch(
     >
     
     <div
-      class="overflow-hidden text-lg text-left text-gray-900"
+      class="overflow-hidden text-gray-900 text-lg text-left"
       :class="{
         'rounded-xl': item.type === 'show',
         'rounded-b-xl': item.type === 'movie',
@@ -129,21 +129,27 @@ watch(
         <img :src="artworkAssetUrl" class="block" :class="{ 'w-full aspect-[758/140_auto]': item.type === 'show', 'aspect-[680/1000_auto]': item.type === 'movie' }">
       </div>
       
-      <div class="px-6 pt-3 pb-4 bg-white">
+      <div class="bg-white px-6 pt-3 pb-4">
         
         <div>
-          <Badge v-if="item.is_new" class="relative mr-2 bottom-1" variant="new">New</Badge>
-          <span class="text-2xl font-semibold">
+          <Badge v-if="item.is_new" class="bottom-1 relative mr-2" variant="new">New</Badge>
+          <span class="font-semibold text-2xl">
             {{ item.name }}
           </span>
         </div>
           
         <div v-if="currentEp" class="mt-1 font-semibold text-gray-700">
-          <Badge v-if="currentEp.is_season_finale && !currentEp.is_series_finale" class="relative bottom-0.5 mr-2" variant="seasonfinale">
+          <Badge v-if="currentEp.episode_num == 1 && currentEp.season_num != 0" class="bottom-0.5 relative mr-2" variant="premiere">
+            Season Premiere
+          </Badge>
+          <Badge v-if="currentEp.is_season_finale && !currentEp.is_series_finale" class="bottom-0.5 relative mr-2" variant="seasonfinale">
             Season Finale
           </Badge>
-          <Badge v-if="currentEp.is_series_finale" class="relative bottom-0.5 mr-2" variant="seriesfinale">
+          <Badge v-if="currentEp.is_series_finale" class="bottom-0.5 relative mr-2" variant="seriesfinale">
             Series Finale
+          </Badge>
+          <Badge v-if="currentEp.is_special" class="bottom-0.5 relative mr-2" variant="special">
+            Special
           </Badge>
           <span v-if="item.source !== 'ytPlaylist'" class="mr-2">{{ currentEp.sXXeXX }}</span>
           <span>{{ currentEp.name }}</span>
@@ -151,7 +157,7 @@ watch(
         
         <div>
           
-          <div class="flex items-center justify-between gap-8 mt-1 text-gray-900">
+          <div class="flex justify-between items-center gap-8 mt-1 text-gray-900">
             
             <PlayedIcon v-if="item.current_episode_id === null" class="-mr-4 text-green-600" />
             
@@ -174,10 +180,10 @@ watch(
                 <span v-else class="text-black">
                   {{ item.episode_ids.length }} episodes
                 </span>
-                <Badge v-if="hasNewEpisodes" class="relative ml-2 bottom-px" variant="new">New</Badge>
+                <Badge v-if="hasNewEpisodes" class="bottom-px relative ml-2" variant="new">New</Badge>
               </template>
               
-              <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="flex items-center justify-center ml-4 -my-2 -mr-3 text-indigo-600 transition duration-150 ease-in-out bg-gray-100 rounded-md size-10 hover:bg-gray-200 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500">
+              <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="flex justify-center items-center bg-gray-100 hover:bg-gray-200 -my-2 -mr-3 ml-4 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 size-10 text-indigo-600 transition duration-150 ease-in-out">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-icon lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
               </RouterLink>
               
@@ -191,7 +197,7 @@ watch(
       
     </div>
     
-    <div class="absolute left-0 right-0 opacity-0 pointer-events-none -top-10 -bottom-10 -z-10" ref="wrapper"></div>
+    <div class="-top-10 right-0 -bottom-10 left-0 -z-10 absolute opacity-0 pointer-events-none" ref="wrapper"></div>
     
   </div>
 </template>

@@ -69,10 +69,10 @@ onBeforeUnmount(() => {
       class="z-20 relative"
       aria-labelledby="modal-title" role="dialog" aria-modal="true"
       >
-      <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity"></div>
+      <div class="fixed inset-0 bg-gray-900/75 transition-opacity"></div>
       <div class="z-20 fixed inset-0 w-screen h-screen">
         <Transition name="panel-fade">
-          <div v-show="show" class="flex justify-center items-start p-4 h-full text-center">
+          <div v-show="show" class="flex justify-center items-start p-20 h-full text-center">
             
             <div ref="panel" class="flex flex-col bg-white shadow-xl rounded-lg w-full max-w-xl max-h-full text-gray-900 text-left transition-all transform">
               
