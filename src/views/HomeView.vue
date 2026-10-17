@@ -1,5 +1,5 @@
 <script setup>
-import { CirclePlus, Eye, EyeOff, Film, Keyboard, Radar, RefreshCcw, Search, Tv } from '@lucide/vue';
+import { CirclePlus, Eye, EyeOff, Film, FolderSearch, Keyboard, RefreshCcw, Search, Tv } from '@lucide/vue';
 import { TransitionExpand } from '@morev/vue-transitions';
 import { onClickOutside } from '@vueuse/core';
 import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
@@ -302,7 +302,7 @@ onBeforeUnmount(() => {
       <div class="relative" ref="scanMenu">
         
         <Button @click="toggleShowScanMenu" :disabled="store.loading">
-          <Radar class="size-5" />
+          <FolderSearch class="size-5" />
           Scan for Updates
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
             <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
@@ -313,7 +313,7 @@ onBeforeUnmount(() => {
           <div v-if="showScanMenu" class="left-0 z-10 absolute bg-slate-900 ring-opacity-5 shadow-black shadow-lg mt-2 border border-gray-600 rounded-md focus:outline-hidden ring-1 ring-black w-full origin-top-right" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
               <button type="button" @click="scanShows" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm cursor-pointer">
-                <Tv class="bottom-0.5 relative size-5" />
+                <Tv class="bottom-px relative size-5" />
                 Local Shows
               </button>
               <button type="button" @click="scanMovies" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm cursor-pointer">
@@ -344,7 +344,7 @@ onBeforeUnmount(() => {
           <div v-if="showExtItemMenu" class="left-0 z-10 absolute bg-slate-900 ring-opacity-5 shadow-black shadow-lg mt-2 border border-gray-600 rounded-md focus:outline-hidden ring-1 ring-black w-full origin-top-right" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
               <RouterLink :to="{ name: 'item.create.show' }" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm">
-                <Tv class="bottom-0.5 relative size-5" />
+                <Tv class="bottom-px relative size-5" />
                 Show
               </RouterLink>
               <RouterLink :to="{ name: 'item.create.movie' }" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm">

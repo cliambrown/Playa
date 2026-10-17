@@ -105,7 +105,7 @@ onBeforeUnmount(() => {
                         <YoutubeIcon />
                       </template>
                       <template v-else>
-                        <Tv class="bottom-0.5 relative size-5" />
+                        <Tv class="bottom-px relative size-5" />
                       </template>
                     </span>
                     <div class="overflow-hidden text-ellipsis whitespace-nowrap grow">

@@ -1,5 +1,5 @@
 <script setup>
-import { Archive, ArchiveRestore, ArrowDownToLine, ArrowUpToLine, Dices, ExternalLink, Folder, Pencil, Radar, Rows3, Search, Trash2, Tv } from '@lucide/vue';
+import { Archive, ArchiveRestore, ArrowDownToLine, ArrowUpToLine, CloudDownload, Dices, ExternalLink, Folder, Pencil, Rows3, Search, Trash2, Tv } from '@lucide/vue';
 import { open } from '@tauri-apps/plugin-shell';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { Item } from '../classes/Item';
@@ -254,7 +254,7 @@ onBeforeUnmount(() => {
         </h2>
         
         <Button variant="link" @click="item.openTvdbSlug()" :disabled="!item.tvdb_slug">
-          <Tv class="bottom-0.5 relative size-5" />
+          <Tv class="bottom-px relative size-5" />
           TVDB
         </Button>
         
@@ -412,12 +412,12 @@ onBeforeUnmount(() => {
           <InputWithLabel v-if="item.episode_ids.length" :with-label="false" :is-search="true" v-model="filterStr"></InputWithLabel>
           
           <Button v-if="item.type === 'show' && item.source !== 'ytPlaylist'" @click="updateEpisodesFromTvdb" :disabled="!item.tvdb_id || store.loading">
-            <Radar class="size-5" />
+             <CloudDownload class="size-5" />
             Update from TVDB
           </Button>
           
           <Button v-if="item.source === 'ytPlaylist'" @click="updateEpisodesFromYoutube" :disabled="!item.url || store.loading || !store.settings.youtube_api_key">
-            <Radar class="size-5" />
+            <CloudDownload class="size-5" />
             Update from YouTube
           </Button>
           

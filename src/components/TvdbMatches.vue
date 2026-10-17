@@ -39,7 +39,7 @@ const showMatches = ref(true);
             ({{ match.country }} {{ match.year }})
           </Button>
           <Button variant="link" @click="$emit('tvdbLinkClick', match.slug)">
-            <Tv class="bottom-0.5 relative size-5" />
+            <Tv class="bottom-px relative size-5" />
             <span>TVDB</span>
           </Button>
         </li>
