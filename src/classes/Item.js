@@ -204,9 +204,8 @@ Item.prototype.getEpisodeFromData = async function(episodeData, fromScan = true)
       this.is_archived = null;
       await this.saveToDB();
     }
-    if (!store.scan_results.new_item_ids.has(this.id)) {
-      store.scan_results.item_ids_with_new_episodes.add(this.id);
-    }
+    store.scan_results.item_ids_with_new_episodes.add(this.id);
+    if (this.source === 'local') store.item_ids_with_eps_needing_edits.add(this.id);
     store.scan_results.new_episodes_count++;
   }
   return episode;

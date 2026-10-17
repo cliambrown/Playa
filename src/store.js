@@ -72,6 +72,9 @@ export const store = reactive({
     deleted_episodes_count: 0,
   },
   
+  item_ids_needing_edits: new Set([]),
+  item_ids_with_eps_needing_edits: new Set([]),
+  
   resetScanResults() {
     this.scan_results.new_item_ids.clear();
     this.scan_results.item_ids_with_new_episodes.clear();
@@ -404,6 +407,7 @@ export const store = reactive({
     this.items[item.id] = item;
     this.item_ids.push(item.id);
     this.scan_results.new_item_ids.add(item.id);
+    if (item.source === 'local') store.item_ids_needing_edits.add(item.id);
     return item;
   },
   

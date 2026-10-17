@@ -16,7 +16,7 @@ const item = computed(() => {
 });
 
 const itemCount = computed(() => {
-    return store.scan_results.new_item_ids.size + store.scan_results.item_ids_with_new_episodes.size;
+    return store.item_ids_needing_edits.size + store.item_ids_with_eps_needing_edits.size;
 });
 
 watch(itemCount, (newItemCount, oldItemCount) => {
@@ -27,20 +27,21 @@ function nextItem() {
     let tempItemID = itemID.value;
     if (tempItemID) {
         if (isNewItem.value) {
-            store.scan_results.new_item_ids.delete(tempItemID);
+            store.item_ids_needing_edits.delete(tempItemID);
         } else {
-            store.scan_results.item_ids_with_new_episodes.delete(tempItemID);
+            store.item_ids_with_eps_needing_edits.delete(tempItemID);
         }
     }
-    if (tempItemID && isNewItem.value) {
+    if (tempItemID && isNewItem.value && store.items[tempItemID].type === 'show') {
+        // For shows, go to add new eps
         isNewItem.value = false;
     } else {
         tempItemID = null;
-        if (store.scan_results.new_item_ids.size) {
-            [tempItemID] = store.scan_results.new_item_ids;
+        if (store.item_ids_needing_edits.size) {
+            [tempItemID] = store.item_ids_needing_edits;
             isNewItem.value = true;
-        } else if (store.scan_results.item_ids_with_new_episodes.size) {
-            [tempItemID] = store.scan_results.item_ids_with_new_episodes;
+        } else if (store.item_ids_with_eps_needing_edits.size) {
+            [tempItemID] = store.item_ids_with_eps_needing_edits;
             isNewItem.value = false;
         }
     }
@@ -58,7 +59,7 @@ function nextItem() {
 </script>
 
 <template>
-    <div class="flex justify-end items-center gap-8 bg-black px-12 py-4 w-full max-w-full"  v-if="item && itemCount > 0">
+    <div class="flex justify-end items-center gap-8 bg-black px-12 py-4 w-full max-w-full" v-if="item && itemCount > 0">
         
         <RouterLink :to="itemLinkTo" class="px-3 py-2 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 font-medium text-gray-300 hover:text-gray-400 text-sm leading-6 transition duration-150 ease-in-out cursor-pointer">
             <template v-if="isNewItem">

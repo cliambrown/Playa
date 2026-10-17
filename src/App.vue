@@ -199,7 +199,6 @@ onBeforeUnmount(() => {
       <RouterView />
     </main>
     
-    <!-- <NewItemsBar v-if="store.scan_results.new_item_ids.length || store.scan_results.newitem_ids_with_new_episodes"></NewItemsBar> -->
     <NewItemsBar></NewItemsBar>
     
   </div>
