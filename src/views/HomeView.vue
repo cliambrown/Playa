@@ -1,21 +1,13 @@
 <script setup>
-import { store } from '../store';
-import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
+import { CirclePlus, Eye, EyeOff, Film, Keyboard, Radar, RefreshCcw, Search, Tv } from '@lucide/vue';
 import { TransitionExpand } from '@morev/vue-transitions';
 import { onClickOutside } from '@vueuse/core';
-import SearchModal from '../components/SearchModal.vue';
+import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import ItemCard from '../components/ItemCard.vue';
+import SearchModal from '../components/SearchModal.vue';
 import { useGetProp } from '../helpers';
-import KeyboardIcon from '../icons/KeyboardIcon.vue';
-import RefreshIcon from '../icons/RefreshIcon.vue';
-import ScanIcon from '../icons/ScanIcon.vue';
-import ShowIcon from '../icons/ShowIcon.vue';
-import HideIcon from '../icons/HideIcon.vue';
-import TvIcon from '../icons/TvIcon.vue';
-import MovieIcon from '../icons/MovieIcon.vue';
 import YoutubeIcon from '../icons/YoutubeIcon.vue';
-import SearchIcon from '../icons/SearchIcon.vue';
-import AddIcon from '../icons/AddIcon.vue';
+import { store } from '../store';
 
 let ctrlIsDown = false;
 
@@ -161,10 +153,10 @@ onBeforeUnmount(() => {
       <div class="relative" ref="keyboardMenu">
         
         <Button :variant="showKeyboardMenu ? 'link-bg' : 'link'" :square="true" @click="toggleShowKeyboardMenu">
-          <KeyboardIcon />
+          <Keyboard class="size-5" />
         </Button>
         
-        <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+        <!-- <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0"> -->
           <div v-if="showKeyboardMenu" class="left-1/2 z-10 absolute bg-slate-900 ring-opacity-5 shadow-black shadow-lg mt-2 px-4 py-1 border border-gray-600 rounded-md focus:outline-hidden ring-1 ring-black w-auto text-sm origin-top-center -translate-x-1/2" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             
             <table class="w-full whitespace-nowrap">
@@ -291,41 +283,41 @@ onBeforeUnmount(() => {
             </table>
             
           </div>
-        </transition>
+        <!-- </transition> -->
         
       </div>
       
       <Button variant="secondary" @click="toggleShowFinished" :disabled="!store.home_finished_show_ids.length">
-        <HideIcon v-if="store.show_finished_items" />
-        <ShowIcon v-else />
+        <EyeOff v-if="store.show_finished_items" class="size-5" />
+        <Eye v-else class="size-5" />
         {{ store.home_finished_show_ids.length + store.home_finished_movie_ids.length }}
         Finished
       </Button>
       
       <Button variant="primary" @click="refresh" :disabled="store.loading">
-        <RefreshIcon />
+        <RefreshCcw class="size-4" />
         Refresh
       </Button>
       
       <div class="relative" ref="scanMenu">
         
         <Button @click="toggleShowScanMenu" :disabled="store.loading">
-          <ScanIcon />
+          <Radar class="size-5" />
           Scan for Updates
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
             <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
           </svg>
         </Button>
         
-        <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+        <!-- <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0"> -->
           <div v-if="showScanMenu" class="left-0 z-10 absolute bg-slate-900 ring-opacity-5 shadow-black shadow-lg mt-2 border border-gray-600 rounded-md focus:outline-hidden ring-1 ring-black w-full origin-top-right" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
               <button type="button" @click="scanShows" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm cursor-pointer">
-                <TvIcon />
+                <Tv class="bottom-0.5 relative size-5" />
                 Local Shows
               </button>
               <button type="button" @click="scanMovies" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm cursor-pointer">
-                <MovieIcon />
+                <Film class="size-5" />
                 Local Movies
               </button>
               <button type="button" @click="updateAllYtPlaylistsFromSource" class="flex justify-left items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm whitespace-nowrap cursor-pointer">
@@ -334,29 +326,29 @@ onBeforeUnmount(() => {
               </button>
             </div>
           </div>
-        </transition>
+        <!-- </transition> -->
         
       </div>
       
       <div class="relative" ref="extItemMenu">
         
         <Button @click="toggleShowExtItemMenu" :disabled="store.loading">
-          <AddIcon />
+          <CirclePlus class="size-5" />
           External Item
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
             <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
           </svg>
         </Button>
         
-        <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+        <!-- <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0"> -->
           <div v-if="showExtItemMenu" class="left-0 z-10 absolute bg-slate-900 ring-opacity-5 shadow-black shadow-lg mt-2 border border-gray-600 rounded-md focus:outline-hidden ring-1 ring-black w-full origin-top-right" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
             <div class="py-1">
               <RouterLink :to="{ name: 'item.create.show' }" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm">
-                <TvIcon />
+                <Tv class="bottom-0.5 relative size-5" />
                 Show
               </RouterLink>
               <RouterLink :to="{ name: 'item.create.movie' }" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm">
-                <MovieIcon />
+                <Film class="size-5" />
                 Movie
               </RouterLink>
               <RouterLink :to="{ name: 'item.create.ytPlaylist' }" class="flex items-center gap-2 px-4 py-2 font-semibold text-blue-300 hover:text-blue-400 text-sm">
@@ -365,12 +357,12 @@ onBeforeUnmount(() => {
               </RouterLink>
             </div>
           </div>
-        </transition>
+        <!-- </transition> -->
         
       </div>
       
       <Button variant="secondary" @click="store.show_search = true" :disabled="store.loading">
-        <SearchIcon />
+        <Search class="size-5" />
         Search
       </Button>
       

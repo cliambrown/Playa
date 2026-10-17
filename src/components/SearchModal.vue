@@ -1,12 +1,10 @@
 <script setup>
-import { ref, watch, onBeforeMount, onMounted, onBeforeUnmount } from 'vue';
+import { Film, Tv, X } from '@lucide/vue';
 import { onClickOutside } from '@vueuse/core';
+import { onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import YoutubeIcon from '../icons/YoutubeIcon.vue';
 import { store } from '../store';
 import InputWithLabel from './InputWithLabel.vue';
-import CloseIcon from '../icons/CloseIcon.vue';
-import TvIcon from '../icons/TvIcon.vue';
-import MovieIcon from '../icons/MovieIcon.vue';
-import YoutubeIcon from '../icons/YoutubeIcon.vue';
 
 const show = defineModel();
 
@@ -63,7 +61,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Transition name="backdrop-fade">
+  <!-- <Transition name="backdrop-fade"> -->
     <div
       v-show="show"
       class="z-20 relative"
@@ -71,7 +69,7 @@ onBeforeUnmount(() => {
       >
       <div class="fixed inset-0 bg-gray-900/75 transition-opacity"></div>
       <div class="z-20 fixed inset-0 w-screen h-screen">
-        <Transition name="panel-fade">
+        <!-- <Transition name="panel-fade"> -->
           <div v-show="show" class="flex justify-center items-start p-20 h-full text-center">
             
             <div ref="panel" class="flex flex-col bg-white shadow-xl rounded-lg w-full max-w-xl max-h-full text-gray-900 text-left transition-all transform">
@@ -82,7 +80,7 @@ onBeforeUnmount(() => {
                     Search Titles
                   </h3>
                   <Button variant="close" :circular="true" @click="show = false" class="-mt-3 -mr-3">
-                    <CloseIcon />
+                    <X class="size-5" />
                   </Button>
                 </div>
                 <div class="mt-2">
@@ -101,13 +99,13 @@ onBeforeUnmount(() => {
                   <RouterLink :to="{ name: 'item', params: { id: itemInfo.id } }" class="group flex justify-start items-center gap-2 hover:bg-gray-100 focus:bg-blue-500 mt-2 px-2 py-2 rounded-sm focus:outline-hidden focus:text-white transition duration-150 ease-in-out">
                     <span class="text-slate-600 group-focus:text-white shrink">
                       <template v-if="itemInfo.type === 'movie'">
-                        <MovieIcon />
+                        <Film class="size-5" />
                       </template>
                       <template v-else-if="itemInfo.source === 'ytPlaylist'">
                         <YoutubeIcon />
                       </template>
                       <template v-else>
-                        <TvIcon />
+                        <Tv class="bottom-0.5 relative size-5" />
                       </template>
                     </span>
                     <div class="overflow-hidden text-ellipsis whitespace-nowrap grow">
@@ -120,14 +118,17 @@ onBeforeUnmount(() => {
             </div>
             
           </div>
-        </Transition>
+        <!-- </Transition> -->
       </div>
     </div>
-  </Transition>
+  <!-- </Transition> -->
 </template>
 
 <style scoped>
 @reference 'tailwindcss';
+
+/**
+
 .backdrop-fade-enter-active { @apply duration-300 ease-out; }
 .backdrop-fade-enter-from { @apply opacity-0; }
 .backdrop-fade-enter-to { @apply opacity-100; }
@@ -141,4 +142,7 @@ onBeforeUnmount(() => {
 .panel-fade-leav-active { @apply duration-200 ease-in; }
 .panel-fade-leave-from { @apply opacity-100 sm:scale-100 translate-y-0; }
 .panel-fade-leave-to { @apply opacity-0 sm:scale-95 translate-y-4 sm:translate-y-0; }
+
+ */
+
 </style>

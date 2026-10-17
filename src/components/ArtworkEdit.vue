@@ -1,12 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ImageUp, Search } from '@lucide/vue';
 import { invoke } from '@tauri-apps/api/core';
-import { store } from '../store.js';
-import { useGet } from '../helpers';
-import { getArtwork } from '../tvdb';
+import { computed, ref } from 'vue';
 import DirSelect from '../components/DirSelect.vue';
-import ImageReplaceIcon from '../icons/ImageReplaceIcon.vue';
-import SearchIcon from '../icons/SearchIcon.vue';
+import { useGet } from '../helpers';
+import { store } from '../store.js';
+import { getArtwork } from '../tvdb';
 
 const props = defineProps([
   'tvdbID',
@@ -80,11 +79,11 @@ async function replaceArtwork() {
   
   <div>
     
-    <div class="flex items-center mt-4 gap-x-4">
+    <div class="flex items-center gap-x-4 mt-4">
       
-      <fieldset class="flex flex-wrap items-center mr-auto gap-x-6">
+      <fieldset class="flex flex-wrap items-center gap-x-6 mr-auto">
         <div>
-          <legend class="text-sm font-medium uppercase text-slate-200">
+          <legend class="font-medium text-slate-200 text-sm uppercase">
             Replace artwork from:
           </legend>
         </div>
@@ -94,7 +93,7 @@ async function replaceArtwork() {
             name="artwork-src"
             value="url"
             v-model="artworkSrc"
-            class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus-visible:ring-blue-500"
+            class="border-gray-300 focus-visible:ring-blue-500 w-4 h-4 text-blue-500 cursor-pointer"
             @keydown.up.stop
             @keydown.down.stop
             @keydown.left.stop
@@ -103,7 +102,7 @@ async function replaceArtwork() {
             @keydown.t.stop
             @keydown.f.stop
             />
-          <label for="artwork-src-url" class="block pl-2 text-sm font-medium leading-6 cursor-pointer">URL</label>
+          <label for="artwork-src-url" class="block pl-2 font-medium text-sm leading-6 cursor-pointer">URL</label>
         </div>
         <div class="flex items-center">
           <input type="radio"
@@ -111,7 +110,7 @@ async function replaceArtwork() {
             name="artwork-src"
             value="upload"
             v-model="artworkSrc"
-            class="w-4 h-4 text-blue-500 border-gray-300 cursor-pointer focus-visible:ring-blue-500"
+            class="border-gray-300 focus-visible:ring-blue-500 w-4 h-4 text-blue-500 cursor-pointer"
             @keydown.up.stop
             @keydown.down.stop
             @keydown.left.stop
@@ -120,7 +119,7 @@ async function replaceArtwork() {
             @keydown.t.stop
             @keydown.f.stop
             />
-          <label for="artwork-src-upload" class="block pl-2 text-sm font-medium leading-6 cursor-pointer">Local file</label>
+          <label for="artwork-src-upload" class="block pl-2 font-medium text-sm leading-6 cursor-pointer">Local file</label>
         </div>
       </fieldset>
       
@@ -132,7 +131,7 @@ async function replaceArtwork() {
         <template v-slot:afterInput>
           <div class="flex items-center gap-x-2">
             <Button :disabled="store.loading || !artworkSrcFilepath" @click="replaceArtwork">
-              <ImageReplaceIcon />
+              <ImageUp class="size-4" />
               Replace
             </Button>
             <DirSelect v-model="artworkSrcFilepath" :directory="false" defaultPath="%HomeDrive%"/>
@@ -147,11 +146,11 @@ async function replaceArtwork() {
         Artwork URL
         <template v-slot:afterInput>
           <Button :disabled="store.loading || !artworkSrcUrl" @click="replaceArtwork">
-            <ImageReplaceIcon />
+            <ImageUp class="size-4" />
             Replace
           </Button>
           <Button variant="secondary" @click="getArtworksFromTvdb" :disabled="!tvdbID || store.loading">
-            <SearchIcon />
+            <Search class="size-5" />
             Load TVDB Artworks
           </Button>
         </template>
@@ -159,7 +158,7 @@ async function replaceArtwork() {
       
       <div v-if="artworks.length" class="mt-4">
         <div class="flex items-center gap-6">
-          <div class="text-sm font-medium uppercase text-slate-200">
+          <div class="font-medium text-slate-200 text-sm uppercase">
             Artworks ({{ artworks.length }})
           </div>
           <button type="button" @click="showArtworks = !showArtworks" class="text-white">
@@ -170,7 +169,7 @@ async function replaceArtwork() {
               hide
             </span>
             <span v-if="!showArtworks" class="inline-flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 ">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
                 <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
               </svg>
               show
@@ -178,13 +177,17 @@ async function replaceArtwork() {
           </button>
         </div>
         <TransitionExpand>
-          <div v-show="showArtworks" class="flex flex-wrap gap-2 mt-2">
+          <div v-show="showArtworks"
+            :class="{
+              'grid-cols-2': type === 'show',
+              'grid-cols-3': type === 'movie',
+            }"
+            class="gap-2 grid mt-2"
+            >
             <button
               v-for="artwork in artworks"
               type="button"
               :class="{
-                'w-80': type === 'show',
-                'w-40': type === 'movie',
                 'ring-2 ring-green-400 ring-offset-2 ring-offset-slate-800': artworkSrcUrl === artwork.image
               }"
               @click="artworkSrcUrl = artwork.image; replaceArtwork()"

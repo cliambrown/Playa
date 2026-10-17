@@ -1,15 +1,11 @@
 <script setup>
-import { ref } from 'vue'
-import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { FileDown, FilePlus, Folder, History, Trash2 } from '@lucide/vue';
 import { invoke } from '@tauri-apps/api/core';
-import { store } from '../store.js'
-import { useGet, useGetProp, useOpenOrHomeDir } from '../helpers.js';
+import { BaseDirectory, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { ref } from 'vue';
 import DirSelect from '../components/DirSelect.vue';
-import TrashIcon from '../icons/TrashIcon.vue';
-import FolderIcon from '../icons/FolderIcon.vue';
-import FileDownIcon from '../icons/FileDownIcon.vue';
-import FileAddIcon from '../icons/FileAddIcon.vue';
-import HistoryIcon from '../icons/HistoryIcon.vue';
+import { useGet, useGetProp, useOpenOrHomeDir } from '../helpers.js';
+import { store } from '../store.js';
 // import { Show } from '../classes/Show';
 // import { Episode } from '../classes/Episode';
 // import { ExternalItemEpisode } from '../classes/ExternalItemEpisode';
@@ -239,17 +235,17 @@ async function createBackup() {
         </h2>
         
         <Button variant="link" @click="useOpenOrHomeDir(store.artworks_dir)" :disabled="!store.artworks_dir">
-          <FolderIcon />
+          <Folder class="size-5" />
           Artwork
         </Button>
         
         <Button variant="secondary" @click="clearUnusedArtwork" :disabled="!store.artworks_dir || store.loading">
-          <TrashIcon />
+          <Trash2 class="size-5" />
           Clear unused artwork
         </Button>
         
         <RouterLink :to="{ name: 'clearPlayback' }" class="inline-flex items-center gap-x-2 bg-sky-900 hover:bg-sky-800 disabled:opacity-60 shadow-xs px-3 py-2 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 font-medium text-blue-200 text-sm leading-6 transition duration-150 ease-in-out disabled:pointer-events-none">
-          <HistoryIcon />
+          <History class="size-5" />
           Clear Playback Positions
         </RouterLink>
         
@@ -260,7 +256,7 @@ async function createBackup() {
         <template v-slot:afterInput>
           <DirSelect v-model="store.settings.tv_dir" defaultPath="%HomeDrive%" :disabled="store.loading" @select="handleUpdate" />
           <Button variant="link" @click="useOpenOrHomeDir(store.settings.tv_dir)" :disabled="!store.settings.tv_dir">
-            <FolderIcon />
+            <Folder class="size-5" />
             Open
           </Button>
         </template>
@@ -271,7 +267,7 @@ async function createBackup() {
         <template v-slot:afterInput>
           <DirSelect v-model="store.settings.movie_dir" defaultPath="%HomeDrive%" :disabled="store.loading" @select="handleUpdate" />
           <Button variant="link" @click="useOpenOrHomeDir(store.settings.movie_dir)" :disabled="!store.settings.movie_dir">
-            <FolderIcon />
+            <Folder class="size-5" />
             Open
           </Button>
         </template>
@@ -294,7 +290,7 @@ async function createBackup() {
         <template v-slot:afterInput>
           <DirSelect v-model="store.settings.mpv_watched_dir" defaultPath="%AppData%\mpv" :disabled="store.loading" @select="handleUpdate" />
           <Button variant="link" @click="useOpenOrHomeDir(store.settings.mpv_watched_dir)" :disabled="!store.settings.mpv_watched_dir">
-            <FolderIcon />
+            <Folder class="size-5" />
             Open
           </Button>
         </template>
@@ -353,12 +349,12 @@ async function createBackup() {
         </h3>
         
         <Button variant="link" @click="useOpenOrHomeDir(store.local_data_dir)">
-          <FolderIcon />
+          <Folder class="size-5" />
           Backup Save Location
         </Button>
         
         <Button @click="createBackup">
-          <FileAddIcon />
+          <FilePlus class="size-5" />
           Save New Backup
         </Button>
         
@@ -369,7 +365,7 @@ async function createBackup() {
         <template v-slot:afterInput>
           <DirSelect v-model="backupImportSrc" :directory="false" :defaultPath="store.local_data_dir" :disabled="store.loading" />
           <Button @click="importBackup" :disabled="store.loading || !backupImportSrc">
-            <FileDownIcon />
+            <FileDown class="size-5" />
             Import
           </Button>
         </template>

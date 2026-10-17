@@ -1,6 +1,6 @@
 <script setup>
+import { Search } from '@lucide/vue';
 import { ref, watch } from 'vue';
-import SearchIcon from '../icons/SearchIcon.vue';
 
 const props = defineProps({
   type: {
@@ -114,7 +114,7 @@ while (counter < 8) {
           'text-gray-900': !isDark
         }"
         >
-        <SearchIcon />
+        <Search class="size-5" />
       </div>
 
       <VueDatePicker

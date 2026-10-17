@@ -1,6 +1,6 @@
 [package]
 name = "playa"
-version = "0.5.6"
+version = "0.5.7"
 description = "Playa"
 authors = ["C. Liam Brown"]
 edition = "2021"

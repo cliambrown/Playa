@@ -1,7 +1,7 @@
 <script setup>
-import { ref } from 'vue';
+import { Tv } from '@lucide/vue';
 import { TransitionExpand } from '@morev/vue-transitions';
-import TvIcon from '../icons/TvIcon.vue';
+import { ref } from 'vue';
 const props = defineProps(['matches','showMatches','itemTvdbId']);
 defineEmits(['matchSelect', 'tvdbLinkClick']);
 const showMatches = ref(true);
@@ -12,7 +12,7 @@ const showMatches = ref(true);
   <div v-if="matches.length">
     
     <div class="flex items-center gap-6">
-      <div class="text-sm font-medium uppercase text-slate-200">
+      <div class="font-medium text-slate-200 text-sm uppercase">
         Search results ({{ matches.length }})
       </div>
       <button type="button" @click="showMatches = !showMatches" class="text-white">
@@ -23,7 +23,7 @@ const showMatches = ref(true);
           hide
         </span>
         <span v-if="!showMatches" class="inline-flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4 ">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" class="w-4 h-4">
             <path fill-rule="evenodd" d="M4.22 6.22a.75.75 0 0 1 1.06 0L8 8.94l2.72-2.72a.75.75 0 1 1 1.06 1.06l-3.25 3.25a.75.75 0 0 1-1.06 0L4.22 7.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
           </svg>
           show
@@ -39,7 +39,7 @@ const showMatches = ref(true);
             ({{ match.country }} {{ match.year }})
           </Button>
           <Button variant="link" @click="$emit('tvdbLinkClick', match.slug)">
-            <TvIcon />
+            <Tv class="bottom-0.5 relative size-5" />
             <span>TVDB</span>
           </Button>
         </li>

@@ -1,7 +1,7 @@
 {
   "name": "playa",
   "private": true,
-  "version": "0.5.6",
+  "version": "0.5.7",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,8 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@morev/vue-transitions": "^3.0.5",
+    "@lucide/vue": "^1.59.0",
+    "@morev/vue-transitions": "^4.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tauri-apps/api": "^2.12.0",
     "@tauri-apps/plugin-dialog": "^2.8.0",

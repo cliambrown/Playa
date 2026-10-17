@@ -1,7 +1,7 @@
 <script setup>
-import { store } from '../store.js';
+import { Folder } from '@lucide/vue';
 import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
-import FolderIcon from '../icons/FolderIcon.vue';
+import { store } from '../store.js';
 
 const props = defineProps(['level']);
 
@@ -15,7 +15,7 @@ function handleCheckboxChange(event, level) {
   
   <div class="mt-2 text-yellow-300">
     <CheckboxWithLabel :input_id="'level-'+level.slug" @checkbox-change="handleCheckboxChange($event, level)" v-model="level.checked" :disabled="store.loading">
-      <FolderIcon />
+      <Folder class="size-5" />
       <span>
         {{ level.name }}
       </span>

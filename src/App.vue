@@ -1,4 +1,5 @@
 <script setup>
+import { Archive, ChevronDown, ChevronUp, Diamond, House, Settings, X } from '@lucide/vue';
 import { getVersion } from '@tauri-apps/api/app';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
@@ -6,19 +7,12 @@ import { appLocalDataDir, join } from '@tauri-apps/api/path';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { exit } from '@tauri-apps/plugin-process';
 import Database from '@tauri-apps/plugin-sql';
+import { onClickOutside } from '@vueuse/core';
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import NavLink from './components/NavLink.vue';
-import ArchiveIcon from './icons/ArchiveIcon.vue';
-import HomeIcon from './icons/HomeIcon.vue';
-import SetttingsIcon from './icons/SetttingsIcon.vue';
+import NewItemsBar from './components/NewItemsBar.vue';
 import { store } from './store.js';
-import XIcon from './icons/XIcon.vue';
-import ExpandIcon from './icons/ExpandIcon.vue';
-import ChevronDownIcon from './icons/ChevronDownIcon.vue';
-import ChevronUpIcon from './icons/ChevronUpIcon.vue';
-import DiamondIcon from './icons/DiamondIcon.vue';
-import { onClickOutside } from '@vueuse/core';
 
 const router = useRouter();
 const route = useRoute();
@@ -56,7 +50,9 @@ onBeforeMount(async () => {
   const artworkFilepath = await join(localDataDir, 'artworks', 'x');
   store.artworks_dir = artworkFilepath.slice(0,-1);
   store.artworks_dir_url = convertFileSrc(store.artworks_dir);
-  store.db = await Database.load('sqlite:playa.db');
+  store.db = await Database.load(
+    (import.meta.env.DEV ? 'sqlite:playa_dev.db' : 'sqlite:playa.db')
+  );
   await store.loadFromDB();
   await store.getPlaybackPositions();
   await store.updateAllYtPlaylistsFromSource();
@@ -139,10 +135,10 @@ onBeforeUnmount(() => {
             <div class="mt-1">
               {{ store.status_msg }}
             </div>
-            <ChevronDownIcon v-show="statusMsgHistoryList.length > 1 && !showStatusHistory" class="ml-auto text-gray-500" />
-            <ChevronUpIcon v-show="statusMsgHistoryList.length > 1 && showStatusHistory" class="ml-auto text-gray-500" />
+            <ChevronDown v-show="statusMsgHistoryList.length > 1 && !showStatusHistory" class="ml-auto size-5 text-gray-500" />
+            <ChevronUp v-show="statusMsgHistoryList.length > 1 && showStatusHistory" class="ml-auto size-5 text-gray-500" />
           </button>
-          <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
+          <!-- <transition enter-active-class="transition duration-100 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0"> -->
             <div v-show="statusMsgHistoryList.length > 1 && showStatusHistory" class="top-full -right-3 -left-3 z-20 absolute bg-black ring-opacity-5 shadow-black shadow-lg p-3 border border-gray-600 rounded-md focus:outline-hidden ring-1 ring-black max-h-[410px] overflow-y-auto">
               <ul class="flex flex-col gap-6">
                 <template v-for="msg in statusMsgHistoryList">
@@ -155,20 +151,20 @@ onBeforeUnmount(() => {
                 </template>
               </ul>
             </div>
-          </transition>
+          <!-- </transition> -->
         </div>
         
         <div class="flex flex-row sm:justify-end items-center gap-5 mt-5 sm:mt-0 ml-auto sm:ps-5 shrink-0" @click.stop>
           <NavLink :to="{ name: 'home' }" :isActive="$route.name === 'home'">
-            <HomeIcon />
+            <House class="size-5" />
             Home
           </NavLink>
           <NavLink :to="{ name: 'archives' }" :isActive="$route.name === 'archives'">
-            <ArchiveIcon />
+            <Archive class="size-5" />
             Archives
           </NavLink>
           <NavLink :to="{ name: 'settings' }" :isActive="$route.name === 'settings'">
-            <SetttingsIcon />
+            <Settings class="size-5" />
             Settings
           </NavLink>
         </div>
@@ -177,25 +173,24 @@ onBeforeUnmount(() => {
           
           <button type="button" @click="appWindow.minimize()" class="group px-1 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out">
             <div class="flex justify-center items-center bg-transparent group-hover:bg-gray-700 rounded-full size-6 transition duration-100 ease-in-out">
-              <ChevronDownIcon />
+              <ChevronDown class="size-5" />
             </div>
           </button>
           
           <button type="button" @click="appWindow.toggleMaximize()" class="group px-1 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out">
             <div class="flex justify-center items-center bg-transparent group-hover:bg-gray-700 rounded-full size-6 transition duration-100 ease-in-out">
-              <DiamondIcon v-if="isMaximized" />
-              <ChevronUpIcon v-else />
+              <Diamond v-if="isMaximized" class="size-4" />
+              <ChevronUp v-else class="size-5" />
             </div>
           </button>
           
           <button type="button" @click="appWindow.close()" class="group -me-1 ps-2 pe-3 rounded-md focus:outline-hidden focus-visible:ring-1 focus-visible:ring-gray-600 font-medium transition duration-150 ease-in-out">
             <div class="flex justify-center items-center bg-transparent group-hover:bg-gray-700 rounded-full size-6 transition duration-100 ease-in-out">
-              <XIcon />
+              <X class="size-5" />
             </div>
           </button>
           
         </div>
-        
         
       </nav>
     </header>
@@ -203,6 +198,9 @@ onBeforeUnmount(() => {
     <main class="flex flex-col w-full min-h-0 grow">
       <RouterView />
     </main>
+    
+    <!-- <NewItemsBar v-if="store.scan_results.new_item_ids.length || store.scan_results.newitem_ids_with_new_episodes"></NewItemsBar> -->
+    <NewItemsBar></NewItemsBar>
     
   </div>
   

@@ -52,6 +52,8 @@ export const store = reactive({
   show_finished_items: false,
   show_search: false,
   
+  item_edit_id: null,
+  
   settings: {
     tv_dir: null,
     movie_dir: null,

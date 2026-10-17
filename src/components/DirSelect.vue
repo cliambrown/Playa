@@ -1,6 +1,6 @@
 <script setup>
+import { FolderSearch2 } from '@lucide/vue';
 import { open } from '@tauri-apps/plugin-dialog';
-import BrowseFoldersIcon from '../icons/BrowseFoldersIcon.vue';
 
 const props = defineProps({
   defaultPath: {
@@ -32,7 +32,7 @@ const openDir = async () => {
 
 <template>
   <Button variant="secondary" @click="openDir">
-    <BrowseFoldersIcon />
+    <FolderSearch2 class="size-5" />
     Browse
   </Button>
 </template>

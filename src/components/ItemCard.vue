@@ -1,11 +1,9 @@
 <script setup>
-import { computed, ref, watch, onMounted, nextTick } from 'vue';
-import { store } from '../store';
+import { MonitorCheck } from '@lucide/vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useGetProp } from '../helpers.js';
+import { store } from '../store';
 import Badge from './Badge.vue';
-import PlayedIcon from '../icons/PlayedIcon.vue';
-import EpisodesIcon from '../icons/EpisodesIcon.vue';
-import EditIcon from '../icons/EditIcon.vue';
 
 const props = defineProps(['itemID']);
 const wrapper = ref(null);
@@ -159,7 +157,7 @@ watch(
           
           <div class="flex justify-between items-center gap-8 mt-1 text-gray-900">
             
-            <PlayedIcon v-if="item.current_episode_id === null" class="-mr-4 text-green-600" />
+            <MonitorCheck v-if="item.current_episode_id === null" class="-mr-4 size-5 text-green-600" />
             
             <span v-if="duration && (currentEp || item.type === 'movie')" class="">
               <span v-show="playbackPosition">

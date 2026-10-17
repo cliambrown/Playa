@@ -1,14 +1,12 @@
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core';
+import { computed, onMounted, ref, watch } from 'vue';
 // import { readDir } from '@tauri-apps/plugin-fs';
-import { store } from '../store.js';
-import { useSlugify, useOpenOrHomeDir } from '../helpers.js';
+import { Folder, RefreshCcw, Trash2 } from '@lucide/vue';
 import { Level } from '../classes/Level.js';
 import PlaybackPosnLevel from '../components/PlaybackPosnLevel.vue';
-import FolderIcon from '../icons/FolderIcon.vue';
-import RefreshIcon from '../icons/RefreshIcon.vue';
-import TrashIcon from '../icons/TrashIcon.vue';
+import { useOpenOrHomeDir, useSlugify } from '../helpers.js';
+import { store } from '../store.js';
 
 const levels = ref(new Level());
 const entriesByFilename = ref({});
@@ -43,6 +41,8 @@ async function getPlaybackPositions() {
     return false;
   }
   let fetchedEntryFilenames = [];
+  const epRegex = /^(?<show_name>.*)\.(?<season>S\d\d*)(E\d\d*)\./;
+  const movieRegex = /^.*\.(19|20)\d\d\./;
   for (let entry of entries) {
     fetchedEntryFilenames.push(entry.src_file_name);
     entry.slug = useSlugify(entry.src_file_name);
@@ -53,7 +53,19 @@ async function getPlaybackPositions() {
       addEntryByFilename(entry);
       continue;
     }
-    if (!entry.media_path) entry.media_path = '[none]';
+    if (!entry.media_path) {
+      const epMatch = entry.media_filename.match(epRegex);
+      if (epMatch) {
+        entry.media_path = 'TV/'+epMatch.groups.show_name+'/'+epMatch.groups.season;
+      } else {
+        const movieMatch = entry.media_filename.match(movieRegex);
+        if (movieMatch) {
+          entry.media_path = 'Movies';
+        } else {
+          entry.media_path = '[none]';
+        }
+      }
+    }
     if (!entry.media_filename) entry.media_filename = '[none]';
     if (entry.media_path.startsWith('http')) {
       entry.media_filename = entry.media_pathname;
@@ -109,12 +121,12 @@ async function deleteSelectedEntries() {
         </h2>
         
         <Button variant="link" @click="useOpenOrHomeDir(store.settings.mpv_watched_dir)" :disabled="!store.settings.mpv_watched_dir">
-          <FolderIcon />
+          <Folder class="size-5" />
           {{ store.settings.mpv_watched_dir }}
         </Button>
         
         <Button variant="secondary" @click="getPlaybackPositions" :disabled="store.loading || !store.settings.mpv_watched_dir">
-          <RefreshIcon />
+          <RefreshCcw class="size-4" />
           Refresh
         </Button>
         
@@ -128,16 +140,20 @@ async function deleteSelectedEntries() {
     
   </div>
   
-  <div class="flex justify-end items-center gap-x-4 bg-gray-900 p-4">
-      
-    <div>
-      {{ selectedEntries.length }} selected:
-    </div>
+  <div class="flex justify-center items-center gap-x-4 bg-gray-900 p-4">
     
-    <Button @click="deleteSelectedEntries" :disabled="!selectedEntries.length || store.loading">
-      <TrashIcon />
-      Delete Entries
-    </Button>
+    <div class="flex justify-end items-center gap-x-4 w-full max-w-6xl">
+      
+      <div>
+        {{ selectedEntries.length }} selected:
+      </div>
+      
+      <Button @click="deleteSelectedEntries" :disabled="!selectedEntries.length || store.loading">
+        <Trash2 class="size-5" />
+        Delete Entries
+      </Button>
+      
+    </div>
     
   </div>
   

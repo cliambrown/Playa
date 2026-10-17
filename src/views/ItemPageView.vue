@@ -1,48 +1,59 @@
 <script setup>
-import { store } from '../store.js';
+import { Archive, ArchiveRestore, ArrowDownToLine, ArrowUpToLine, Dices, ExternalLink, Folder, Pencil, Radar, Rows3, Search, Trash2, Tv } from '@lucide/vue';
 import { open } from '@tauri-apps/plugin-shell';
-import { computed, ref, watch, onBeforeMount, onBeforeUnmount } from 'vue';
-import { searchTvdb, getMovieRuntime } from '../tvdb';
-import { useGetProp, useMinutesToTimeStr, useAlphaName, useOpenOrHomeDir, useShowInExplorer } from '../helpers';
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { Item } from '../classes/Item';
-import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
-import TvdbMatches from '../components/TvdbMatches.vue';
 import ArtworkEdit from '../components/ArtworkEdit.vue';
+import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
 import EpisodeCard from '../components/EpisodeCard.vue';
-import TvIcon from '../icons/TvIcon.vue';
-import TopIcon from '../icons/TopIcon.vue';
-import RandIcon from '../icons/RandIcon.vue';
-import BottomIcon from '../icons/BottomIcon.vue';
-import FolderIcon from '../icons/FolderIcon.vue';
-import ArchiveIcon from '../icons/ArchiveIcon.vue';
-import UnarchiveIcon from '../icons/UnarchiveIcon.vue';
-import TrashIcon from '../icons/TrashIcon.vue';
-import EditIcon from '../icons/EditIcon.vue';
-import EpisodesIcon from '../icons/EpisodesIcon.vue';
-import SearchIcon from '../icons/SearchIcon.vue';
-import ExternalLinkIcon from '../icons/ExternalLinkIcon.vue';
-import ScanIcon from '../icons/ScanIcon.vue';
+import TvdbMatches from '../components/TvdbMatches.vue';
+import { useAlphaName, useGet, useGetProp, useMinutesToTimeStr } from '../helpers';
+import { store } from '../store.js';
+import { getMovieRuntime, searchTvdb } from '../tvdb';
 
-let itemID = null;
-if (store.route.name === 'item.create.show') {
-  store.new_item = new Item({ is_new: true, type: 'show', source: 'external' });
-} else if (store.route.name === 'item.create.movie') {
-  store.new_item = new Item({ is_new: true, type: 'movie', source: 'external' });
-} else if (store.route.name === 'item.create.ytPlaylist') {
-  store.new_item = new Item({ is_new: true, type: 'show', source: 'ytPlaylist' });
-} else {
-  itemID = store.route.params.id;
-}
+let itemID = ref(null);
 
 let updateTimeoutId = null;
 let updateFilterStrTimeoutId = null;
 
-const showEdit = ref(!itemID);
+getItemID();
+
+const showEdit = ref(!itemID.value);
 const showMatches = ref(true);
 const filterStr = ref('');
 const filterStrDebounced = ref('');
 
-const item = computed(() => itemID ? store.items[itemID] : store.new_item);
+getRouteView();
+
+function getItemID() {
+  let newItemID = null;
+  if (store.route.name === 'item.create.show') {
+    store.new_item = new Item({ is_new: true, type: 'show', source: 'external' });
+  } else if (store.route.name === 'item.create.movie') {
+    store.new_item = new Item({ is_new: true, type: 'movie', source: 'external' });
+  } else if (store.route.name === 'item.create.ytPlaylist') {
+    store.new_item = new Item({ is_new: true, type: 'show', source: 'ytPlaylist' });
+  } else {
+    newItemID = store.route.params.id;
+  }
+  itemID.value = newItemID;
+}
+
+function getRouteView() {
+  const routeView = useGet(store.route, 'query.view');
+  if (routeView === 'edit') showEdit.value = true;
+  else if (routeView === 'episodes') showEdit.value = false;
+}
+
+watch(
+  () => store.route.fullPath,
+  (newRoute) => {
+    getItemID();
+    getRouteView();
+  }
+)
+
+const item = computed(() => itemID.value ? store.items[itemID.value] : store.new_item);
 
 const artworkAssetUrl = computed(() => {
   return (store.artworks_dir_url && item.value.artwork_filename)
@@ -243,12 +254,12 @@ onBeforeUnmount(() => {
         </h2>
         
         <Button variant="link" @click="item.openTvdbSlug()" :disabled="!item.tvdb_slug">
-          <TvIcon />
+          <Tv class="bottom-0.5 relative size-5" />
           TVDB
         </Button>
         
         <Button v-if="item.dir_name || item.pathname" variant="link" @click="item.openFileOrFolder()" class="max-w-64">
-          <FolderIcon />
+          <Folder class="size-5" />
           <span class="overflow-hidden text-ellipsis whitespace-nowrap">
             <template v-if="item.dir_name">Folder</template>
             <template v-else>Show File</template>
@@ -257,13 +268,13 @@ onBeforeUnmount(() => {
         
         <Button variant="archive" @click="toggleArchived" :disabled="store.loading || !item.id">
           <template v-if="item.is_archived">
-            <UnarchiveIcon />
+            <ArchiveRestore class="size-5" />
             <span>
               Unarchive
             </span>
           </template>
           <template v-else>
-            <ArchiveIcon />
+            <Archive class="size-5" />
             <span>
               Archive
             </span>
@@ -271,17 +282,17 @@ onBeforeUnmount(() => {
         </Button>
         
         <Button v-if="item.source !== 'local'" variant="delete" :disabled="store.loading || !item.id" @click="deleteItem">
-          <TrashIcon />
+          <Trash2 class="size-5" />
           Delete
         </Button>
         
         <Button v-if="item.episode_ids.length" variant="secondary" @click="showEdit = !showEdit" class="justify-center w-28">
           <template v-if="!showEdit">
-            <EditIcon />
+            <Pencil class="size-5" />
             Edit
           </template>
           <template v-if="showEdit">
-            <EpisodesIcon />
+            <Rows3 class="size-5" />
             Episodes
           </template>
         </Button>
@@ -294,7 +305,7 @@ onBeforeUnmount(() => {
           URL
           <template v-slot:afterInput>
             <Button variant="link" @click="open(item.url)" :disabled="!item.url">
-              <ExternalLinkIcon />
+              <ExternalLink class="size-4" />
               Open
             </Button>
           </template>
@@ -306,7 +317,7 @@ onBeforeUnmount(() => {
             Name
             <template v-slot:afterInput>
               <Button variant="secondary" @click="searchItemInTvdb">
-                <SearchIcon />
+                <Search class="size-5" />
                 Search TVDB
               </Button>
             </template>
@@ -387,26 +398,26 @@ onBeforeUnmount(() => {
           </h3>
           
           <Button variant="secondary" :square="true" @click="item.episodeNav('first')" class="ml-auto" :title="item.episode_ids.length ? 'First' : 'Unfinished'">
-            <TopIcon />
+            <ArrowUpToLine class="size-6" />
           </Button>
           
           <Button v-if="item.episode_ids.length" variant="secondary" :square="true" @click="item.episodeNav('random')" title="Random">
-             <RandIcon />
+             <Dices class="size-6" />
           </Button>
           
           <Button variant="secondary" :square="true" @click="item.episodeNav('finished')" title="Finished">
-            <BottomIcon />
+            <ArrowDownToLine class="size-6" />
           </Button>
           
           <InputWithLabel v-if="item.episode_ids.length" :with-label="false" :is-search="true" v-model="filterStr"></InputWithLabel>
           
           <Button v-if="item.type === 'show' && item.source !== 'ytPlaylist'" @click="updateEpisodesFromTvdb" :disabled="!item.tvdb_id || store.loading">
-            <ScanIcon />
+            <Radar class="size-5" />
             Update from TVDB
           </Button>
           
           <Button v-if="item.source === 'ytPlaylist'" @click="updateEpisodesFromYoutube" :disabled="!item.url || store.loading || !store.settings.youtube_api_key">
-            <ScanIcon />
+            <Radar class="size-5" />
             Update from YouTube
           </Button>
           

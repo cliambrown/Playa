@@ -10,6 +10,7 @@ use std::fs;
 use std::path::Path;
 use tauri::AppHandle;
 use tauri::Manager;
+use tauri::is_dev;
 use tauri_plugin_sql::{Migration, MigrationKind};
 use trash;
 
@@ -91,12 +92,14 @@ fn main() {
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .plugin(
             tauri_plugin_sql::Builder::default()
-                .add_migrations("sqlite:playa.db", migrations)
+                .add_migrations(
+                    if is_dev() {"sqlite:playa_dev.db"} else {"sqlite:playa.db"},
+                    migrations
+                )
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![
             playback_positions::get_playback_positions,
-            // scanner::get_duration,
             scanner::scan_shows,
             scanner::scan_movies,
             images::copy_local_image,

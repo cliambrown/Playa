@@ -26,8 +26,7 @@ defineEmits(['buttonClick']);
 </script>
 
 <template>
-  <button 
-    type="button"
+  <button :type="type"
     class="inline-flex justify-center items-center gap-x-2 disabled:opacity-60 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 font-medium text-sm leading-6 transition duration-150 ease-in-out cursor-pointer disabled:pointer-events-none"
     :class="{
       'shadow-xs': variant !== 'tertiary' && variant !== 'tertiary-light' && variant !== 'close',

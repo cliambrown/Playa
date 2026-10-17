@@ -1,17 +1,11 @@
 <script setup>
-import { computed, ref, watch, onMounted, nextTick } from 'vue';
-import { store } from '../store.js'
-import { useGetProp } from '../helpers';
-import TextareaWithLabel from '../components/TextareaWithLabel.vue';
-import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
+import { File, Globe, MonitorCheck, MonitorPlay, Pencil, SquareChevronDown, SquareChevronUp } from '@lucide/vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import Badge from '../components/Badge.vue';
-import UnplayedIcon from '../icons/UnplayedIcon.vue';
-import PlayedIcon from '../icons/PlayedIcon.vue';
-import EditIcon from '../icons/EditIcon.vue';
-import ExpandIcon from '../icons/ExpandIcon.vue';
-import CollapseIcon from '../icons/CollapseIcon.vue';
-import FileIcon from '../icons/FileIcon.vue';
-import GlobeIcon from '../icons/GlobeIcon.vue';
+import CheckboxWithLabel from '../components/CheckboxWithLabel.vue';
+import TextareaWithLabel from '../components/TextareaWithLabel.vue';
+import { useGetProp } from '../helpers';
+import { store } from '../store.js';
 
 const props = defineProps(['itemID', 'episodeID']);
 
@@ -105,12 +99,12 @@ watch(
     >
     
     <div v-if="episodeID === 0" class="flex items-center gap-2 bg-white px-6 py-4 rounded-lg">
-      <UnplayedIcon />
+      <MonitorPlay class="size-5" />
       Unfinished
     </div>
     
     <div v-else-if="episodeID === null" class="flex items-center gap-2 bg-white px-6 py-4 rounded-lg">
-      <PlayedIcon class="text-green-700" />
+      <MonitorCheck class="size-5 text-green-700" />
       <span>
         Finished
       </span>
@@ -148,12 +142,12 @@ watch(
           </div>
           
           <Button variant="tertiary-light" :square="true" class="-mx-2 -mt-2 ml-auto" @click.stop="showEdit = !showEdit">
-            <EditIcon />
+            <Pencil class="size-5" />
           </Button>
           
           <Button variant="tertiary-light" :square="true" class="-mx-2 -mt-2" @click.stop="expanded = !expanded">
-            <CollapseIcon v-if="expanded" />
-            <ExpandIcon v-else />
+            <SquareChevronUp v-if="expanded" class="size-5" />
+            <SquareChevronDown v-else class="size-5" />
           </Button>
           
         </div>
@@ -186,11 +180,11 @@ watch(
           
           <div v-show="expanded && episode.overview && (episode.filename || episode.url)" class="mt-1 text-slate-600">
             <template v-if="episode.filename">
-              <FileIcon class="inline-block bottom-0.5 relative mr-1 text-slate-600" />
+              <File class="inline-block bottom-0.5 relative mr-1 size-5 text-slate-600" />
               {{ episode.filename }}
             </template>
             <template v-else>
-              <GlobeIcon class="inline-block bottom-0.5 relative mr-1 text-slate-600" />
+              <Globe class="inline-block bottom-0.5 relative mr-1 size-5 text-slate-600" />
               {{ episode.url }}
             </template>
           </div>
