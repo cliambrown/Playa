@@ -88,7 +88,7 @@ async function handleUpdate() {
     store.setStatusMsg('Saving Item...');
     const response = await item.value.saveToDB();
     if (parseInt(useGetProp(response, 'rowsAffected'))) {
-      store.setStatusMsg('Item saved: ' + item.value.name, true, true);
+      store.setStatusMsg('Item saved: ' + (item.value.name ?? '[unnamed]'), true, true);
     }
   }, 500);
 }
@@ -169,8 +169,9 @@ async function deleteItem() {
   if (!item.value || !item.value.id) return false;
   const confirmed = await confirm('Are you sure you want to delete this item?', { title: 'Playa - Delete Item', type: 'warning' });
   if (!confirmed) return false;
+  const itemName = (item.value.name ?? '[unnamed]');
   await item.value.delete();
-  store.setStatusMsg('Item deleted: ' + item.value.name, true, true);
+  store.setStatusMsg('Item deleted: ' + itemName, true, true);
   store.router.push({ name: 'home' });
 }
 

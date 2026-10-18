@@ -70,8 +70,11 @@ export const store = reactive({
     new_episodes_count: 0,
     deleted_items_count: 0,
     deleted_episodes_count: 0,
+    item_ids_needing_edits: new Set([]),
+    item_ids_with_eps_needing_edits: new Set([]),
   },
   
+  // Also store these temporarily in scan results to avoid partial updates
   item_ids_needing_edits: new Set([]),
   item_ids_with_eps_needing_edits: new Set([]),
   
@@ -81,6 +84,8 @@ export const store = reactive({
     this.scan_results.new_episodes_count = 0;
     this.scan_results.deleted_items_count = 0;
     this.scan_results.deleted_episodes_count = 0;
+    this.scan_results.item_ids_needing_edits.clear();
+    this.scan_results.item_ids_with_eps_needing_edits.clear();
   },
   
   setStatusMsg(msg, saveToHistory = false, timeout = false) {
@@ -342,6 +347,12 @@ export const store = reactive({
     }
     this.sortItems();
     this.setStatusMsg(`Scan complete. New items: ${this.scan_results.new_item_ids.size} — Items with new episodes: ${this.scan_results.item_ids_with_new_episodes.size} — New episodes: ${this.scan_results.new_episodes_count} — Deleted items: ${this.scan_results.deleted_items_count} — Deleted episodes: ${this.scan_results.deleted_episodes_count}`, true);
+    for (const itemID of this.scan_results.item_ids_needing_edits) {
+      this.item_ids_needing_edits.add(itemID);
+    }
+    for (const itemID of this.scan_results.item_ids_with_eps_needing_edits) {
+      this.item_ids_with_eps_needing_edits.add(itemID);
+    }
     this.loading = false;
   },
   
@@ -387,6 +398,12 @@ export const store = reactive({
     await this.pruneMissingMovies(foundMoviePathnames);
     this.sortItems();
     this.setStatusMsg(`Scan complete. New items: ${this.scan_results.new_item_ids.size} — Deleted items: ${this.scan_results.deleted_items_count}`, true);
+    for (const itemID of this.scan_results.item_ids_needing_edits) {
+      this.item_ids_needing_edits.add(itemID);
+    }
+    for (const itemID of this.scan_results.item_ids_with_eps_needing_edits) {
+      this.item_ids_with_eps_needing_edits.add(itemID);
+    }
     this.loading = false;
   },
   
@@ -407,7 +424,7 @@ export const store = reactive({
     this.items[item.id] = item;
     this.item_ids.push(item.id);
     this.scan_results.new_item_ids.add(item.id);
-    if (item.source === 'local') store.item_ids_needing_edits.add(item.id);
+    if (item.source === 'local') store.scan_results.item_ids_needing_edits.add(item.id);
     return item;
   },
   

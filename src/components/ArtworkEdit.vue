@@ -20,7 +20,11 @@ const artworkSrc = ref('url');
 const artworkSrcUrl = ref('');
 const artworkSrcFilepath = ref('');
 const showArtworks = ref(true);
-const artworks = computed(() => useGet(store, ['items', props.itemID, 'artwork_matches']) );
+const artworks = computed(() => {
+  const arr = useGet(store, ['items', props.itemID, 'artwork_matches']);
+  if (!arr) return [];
+  return arr;
+});
 
 async function getArtworksFromTvdb() {
   if (!props.tvdbID) return false;

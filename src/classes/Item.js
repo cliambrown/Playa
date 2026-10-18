@@ -205,7 +205,7 @@ Item.prototype.getEpisodeFromData = async function(episodeData, fromScan = true)
       await this.saveToDB();
     }
     store.scan_results.item_ids_with_new_episodes.add(this.id);
-    if (this.source === 'local') store.item_ids_with_eps_needing_edits.add(this.id);
+    if (this.source === 'local') store.scan_results.item_ids_with_eps_needing_edits.add(this.id);
     store.scan_results.new_episodes_count++;
   }
   return episode;
