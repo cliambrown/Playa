@@ -13,7 +13,7 @@ const props = defineProps({
         case 'updated':
           return 'slate';
         case 'premiere':
-          return 'teal';
+          return 'cyan';
         case 'seasonfinale':
           return 'violet';
         case 'seriesfinale':
