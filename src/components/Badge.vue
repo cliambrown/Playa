@@ -30,7 +30,7 @@ const props = defineProps({
 
 <template>
   <span
-    class="inline-block bottom-0.5 px-2 rounded-full font-semibold text-white text-sm tracking-wider"
+    class="inline-block bottom-0.5 px-2 py-0.5 rounded-full font-semibold text-white text-sm tracking-wider"
     :class="{
       'bg-slate-700': color === 'slate',
       'bg-gray-700': color === 'gray',

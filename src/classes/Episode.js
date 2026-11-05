@@ -1,5 +1,5 @@
+import { useAlphaName, useGetProp } from '../helpers.js';
 import { store } from '../store';
-import { useGetProp, useAlphaName } from '../helpers.js';
 
 export function Episode(episodeData) {
     

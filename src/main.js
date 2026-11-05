@@ -6,19 +6,19 @@ import '@morev/vue-transitions/styles';
 import { VueDatePicker } from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 
-import './styles.css';
 import App from './App.vue';
+import './styles.css';
 
-import { createWebHistory, createRouter } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 
-import HomeView from './views/HomeView.vue';
 import ArchivesView from './views/ArchivesView.vue';
-import SettingsView from './views/SettingsView.vue';
 import ClearPlaybackView from './views/ClearPlaybackView.vue';
+import HomeView from './views/HomeView.vue';
 import ItemPageView from './views/ItemPageView.vue';
+import SettingsView from './views/SettingsView.vue';
 
-import InputWithLabel from './components/InputWithLabel.vue';
 import Button from './components/Button.vue';
+import InputWithLabel from './components/InputWithLabel.vue';
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },

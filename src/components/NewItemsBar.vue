@@ -1,8 +1,8 @@
 <script setup>
 import { Check } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
-import { store } from '../store';
 import { RouterLink } from 'vue-router';
+import { store } from '../store';
 import Button from './Button.vue';
 
 const itemID = ref(null);

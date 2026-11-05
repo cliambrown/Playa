@@ -1,8 +1,8 @@
-import { reactive } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { useGetDuration, useSecondsToTimeStr, useGetProp, useAlphaName } from './helpers.js';
-import { Item } from './classes/Item.js';
+import { reactive } from 'vue';
 import { Episode } from './classes/Episode.js';
+import { Item } from './classes/Item.js';
+import { useAlphaName, useGetDuration, useGetProp, useSecondsToTimeStr } from './helpers.js';
 
 function compareItems(itemIdA, itemIdB) {
   const itemA = store.items[itemIdA];

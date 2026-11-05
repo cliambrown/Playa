@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { useTextareaAutosize } from '@vueuse/core'
+import { useTextareaAutosize } from '@vueuse/core';
+import { watch } from 'vue';
 const props = defineProps(['id']);
 const { textarea, input } = useTextareaAutosize();
 const val = defineModel();

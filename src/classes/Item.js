@@ -1,9 +1,9 @@
 import { openPath, openUrl } from '@tauri-apps/plugin-opener';
-import { Command, open } from '@tauri-apps/plugin-shell';
+import { open } from '@tauri-apps/plugin-shell';
 
 import { invoke } from '@tauri-apps/api/core';
+import { isYoutubeUrl, useAlphaName, useGetProp, useMinutesToTimeStr, useOpenOrHomeDir, useShowInExplorer } from '../helpers.js';
 import { store } from '../store';
-import { useGetProp, useAlphaName, useMinutesToTimeStr, useOpenOrHomeDir, useShowInExplorer, isYoutubeUrl } from '../helpers.js';
 import { getEpisodes } from '../tvdb.js';
 import { getYtPlaylistVideos } from '../youtube';
 import { Episode } from './Episode.js';

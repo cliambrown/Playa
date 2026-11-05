@@ -1,11 +1,8 @@
 <script setup>
-import { store } from '../store';
-import { ref, onBeforeMount, onBeforeUnmount } from 'vue';
-import { TransitionExpand } from '@morev/vue-transitions';
-import { onClickOutside } from '@vueuse/core';
-import SearchModal from '../components/SearchModal.vue';
+import { onBeforeMount, onBeforeUnmount } from 'vue';
 import ItemCard from '../components/ItemCard.vue';
 import { useGetProp } from '../helpers';
+import { store } from '../store';
 
 function handleKeydown(event) {
   let item;
@@ -44,14 +41,14 @@ onBeforeUnmount(() => {
   
   <div class="px-12 pt-8 pb-20 overflow-y-scroll grow">
     
-    <div v-if="store.archives_show_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,570px))]">
+    <div v-if="store.archives_show_ids.length" class="flex flex-wrap justify-center items-start gap-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(520px,570px))] mt-12">
       <ItemCard
         v-for="itemID in store.archives_show_ids"
         :itemID="itemID"
       ></ItemCard>
     </div>
     
-    <div v-if="store.archives_movie_ids.length" class="flex flex-wrap items-start justify-center gap-12 mt-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,360px))]">
+    <div v-if="store.archives_movie_ids.length" class="flex flex-wrap justify-center items-start gap-12 sm:grid sm:grid-cols-[repeat(auto-fill,minmax(200px,360px))] mt-12">
       <ItemCard
         v-for="itemID in store.archives_movie_ids"
         :itemID="itemID"

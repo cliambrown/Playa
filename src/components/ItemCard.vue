@@ -131,31 +131,19 @@ watch(
         
         <div>
           <Badge v-if="item.is_new" class="bottom-1 relative mr-2" variant="new">New</Badge>
-          <span class="font-semibold text-2xl">
+          <RouterLink :to="{ name: 'item', params: { id: itemID }, query: { view: 'edit' } }" @click.stop class="rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 font-semibold text-2xl transition duration-150 ease-in-out">
             {{ item.name }}
-          </span>
+          </RouterLink>
         </div>
           
         <div v-if="currentEp" class="mt-1 font-semibold text-gray-700">
-          <Badge v-if="currentEp.episode_num == 1 && currentEp.season_num != 0" class="bottom-0.5 relative mr-2" variant="premiere">
-            Season Premiere
-          </Badge>
-          <Badge v-if="currentEp.is_season_finale && !currentEp.is_series_finale" class="bottom-0.5 relative mr-2" variant="seasonfinale">
-            Season Finale
-          </Badge>
-          <Badge v-if="currentEp.is_series_finale" class="bottom-0.5 relative mr-2" variant="seriesfinale">
-            Series Finale
-          </Badge>
-          <Badge v-if="currentEp.is_special" class="bottom-0.5 relative mr-2" variant="special">
-            Special
-          </Badge>
           <span v-if="item.source !== 'ytPlaylist'" class="mr-2">{{ currentEp.sXXeXX }}</span>
           <span>{{ currentEp.name }}</span>
         </div>
         
         <div>
           
-          <div class="flex justify-between items-center gap-8 mt-1 text-gray-900">
+          <div class="flex justify-between items-center gap-4 mt-1 text-gray-900">
             
             <MonitorCheck v-if="item.current_episode_id === null" class="-mr-4 size-5 text-green-600" />
             
@@ -166,26 +154,43 @@ watch(
               {{ duration }} 
             </span>
             
-            <div class="flex items-center gap-2 ml-auto">
+            <template v-if="currentEp">
+              <Badge v-if="currentEp.is_series_finale" class="" variant="seriesfinale">
+                Series Finale
+              </Badge>
+              <Badge v-else-if="currentEp.is_season_finale" class="" variant="seasonfinale">
+                Season Finale
+              </Badge>
+              <Badge v-else-if="currentEp.is_special" class="" variant="special">
+                Special
+              </Badge>
+              <Badge v-else-if="currentEp.episode_num == 1" class="" variant="premiere">
+                Season Premiere
+              </Badge>
+            </template>
+            
+            <!-- <div class="flex items-center gap-2 ml-auto"> -->
               
-              <template v-if="item.episode_ids.length">
+              <RouterLink v-if="item.episode_ids.length" :to="{ name: 'item', params: { id: itemID }, query: { view: 'episodes' } }" @click.stop class="ml-auto rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 transition duration-150 ease-in-out">
                 <span v-if="remainingEps > 0" class="text-black">
-                  {{ remainingEps }} remaining
+                  <span class="text-xl">{{ remainingEps }}</span>
+                  <span class="ml-1 text-sm">remaining</span>
                   /
-                  {{ item.episode_ids.length }}
-                  total
+                  <span class="text-xl">{{ item.episode_ids.length }}</span>
+                  <span class="ml-1 text-sm">total</span>
                 </span>
                 <span v-else class="text-black">
-                  {{ item.episode_ids.length }} episodes
+                  <span class="text-xl">{{ item.episode_ids.length }}</span>
+                  <span class="ml-1 text-sm">episodes</span>
                 </span>
                 <Badge v-if="hasNewEpisodes" class="bottom-px relative ml-2" variant="new">New</Badge>
-              </template>
-              
-              <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="flex justify-center items-center bg-gray-100 hover:bg-gray-200 -my-2 -mr-3 ml-4 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 size-10 text-indigo-600 transition duration-150 ease-in-out">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-icon lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
               </RouterLink>
               
-            </div>
+              <!-- <RouterLink :to="{ name: 'item', params: { id: itemID } }" @click.stop class="flex justify-center items-center bg-gray-100 hover:bg-gray-200 -my-2 -mr-3 ml-4 rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 size-10 text-indigo-600 transition duration-150 ease-in-out">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis-icon lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </RouterLink> -->
+              
+            <!-- </div> -->
             
           </div>
           

@@ -1,5 +1,5 @@
-import { openPath } from '@tauri-apps/plugin-opener';
 import { invoke } from '@tauri-apps/api/core';
+import { openPath } from '@tauri-apps/plugin-opener';
 import { Command } from '@tauri-apps/plugin-shell';
 
 export async function useGetDuration(pathname) {
