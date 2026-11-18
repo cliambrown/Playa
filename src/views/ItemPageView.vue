@@ -223,10 +223,10 @@ onBeforeUnmount(() => {
   
   <div
     v-if="!!item"
-    class="pt-8 w-full grow"
+    class="pt-8 w-full overflow-y-auto grow"
     :class="{
       'flex flex-col max-h-full mx-auto': item.episode_ids.length,
-      'overflow-y-auto': !item.episode_ids.length
+      // 'overflow-y-auto': !item.episode_ids.length
     }"
     >
     

@@ -173,14 +173,14 @@ watch(
               
               <RouterLink v-if="item.episode_ids.length" :to="{ name: 'item', params: { id: itemID }, query: { view: 'episodes' } }" @click.stop class="ml-auto rounded-md focus:outline-hidden focus-visible:ring-2 focus-visible:ring-indigo-500 transition duration-150 ease-in-out">
                 <span v-if="remainingEps > 0" class="text-black">
-                  <span class="text-xl">{{ remainingEps }}</span>
+                  <span class="text-lg">{{ remainingEps }}</span>
                   <span class="ml-1 text-sm">remaining</span>
                   /
-                  <span class="text-xl">{{ item.episode_ids.length }}</span>
+                  <span class="text-lg">{{ item.episode_ids.length }}</span>
                   <span class="ml-1 text-sm">total</span>
                 </span>
                 <span v-else class="text-black">
-                  <span class="text-xl">{{ item.episode_ids.length }}</span>
+                  <span class="text-lg">{{ item.episode_ids.length }}</span>
                   <span class="ml-1 text-sm">episodes</span>
                 </span>
                 <Badge v-if="hasNewEpisodes" class="bottom-px relative ml-2" variant="new">New</Badge>
